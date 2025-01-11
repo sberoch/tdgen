@@ -40,7 +40,7 @@ ng serve -o
 
 If you don't have the Angular CLI (`ng`) already installed, you may use `npm install -g @angular/cli` to install it.
 
-## How to build and run a cntainer image
+## How to build and run a container image
 
 ### build
 
