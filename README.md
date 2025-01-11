@@ -24,7 +24,7 @@ Start server:
 ```
 cd server
 npm install
-npx ts-node src/server.ts
+npx ts-node src/server.ts | ./node_modules/.bin/pino-pretty -c
 ```
 
 

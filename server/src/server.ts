@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import pino from "pino-http";
 import { connectToDatabase } from "./database";
 import { employeeRouter } from "./employee.routes";
 
@@ -20,12 +21,13 @@ connectToDatabase(MONGODB_URI, MONGODB_DB_NAME)
   .then(() => {
     const app = express();
     app.use(cors());
+    app.use(pino());
 
     // start the Express server
     app.use(express.static(CLIENT_DIST_DIR));
     app.use("/employees", employeeRouter);
     app.listen(APP_HTTP_PORT, () => {
-      console.log(`Server running at http://localhost:${APP_HTTP_PORT} ...`);
+      pino().logger.info(`Server running at http://localhost:${APP_HTTP_PORT} ...`);
     });
   })
   .catch((error) => console.error(error));
