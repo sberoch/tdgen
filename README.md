@@ -64,6 +64,5 @@ podman run \
     -e MONGODB_SCHEME="mongodb+srv" \
     -e MONGODB_HOST="cluster0.o7jh8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" \
     -e MONGODB_DB_NAME="tdgen" \
-    -e CLIENT_DIST_DIR="client" \
     ${TDGEN_IMAGE_TAG}
 ```
