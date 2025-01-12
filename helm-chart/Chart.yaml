@@ -1,0 +1,13 @@
+apiVersion: v2
+name: tdgen
+description: The bestest TD generator ever.
+type: application
+version: 0.1.0
+appVersion: "0.1"
+maintainers:
+  - email: christoph.scholz@polizei.bund.de
+    name: Christoph Scholz
+    url: https://github.com/ChaosKid42
+sources:
+  - https://gitlab.ref54dev.net1/csz/tdgen
+  - https://github.com/area-42/tdgen

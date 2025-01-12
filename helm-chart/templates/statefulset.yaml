@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tdgen.mongodb.fullname" . }}
+  labels:
+    {{- include "tdgen.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.mongodb.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tdgen.mongodb.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "tdgen.mongodb.fullname" . }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "tdgen.mongodb.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - image: "{{ .Values.mongodb.image.repository }}:{{ .Values.mongodb.image.tag }}"
+        imagePullPolicy: {{ .Values.mongodb.image.pullPolicy }}
+        name: mongodb
+        securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+        ports:
+          - containerPort: {{ .Values.mongodb.port }}
+        volumeMounts:
+          - name: mongodb-storage
+            mountPath: "/data/db"
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            value: {{ .Values.mongodb.username | quote }}
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "tdgen.mongodb.secretName" . }}
+                key: mongodb-password
+        {{- if .Values.mongodb.customLivenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.mongodb.customLivenessProbe | nindent 10 }}
+        {{- else }}
+        {{- if .Values.mongodb.livenessProbe.enabled }}
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - mongosh --eval "db.adminCommand('ping')"
+        {{- with .Values.mongodb.livenessProbe }}
+          initialDelaySeconds: {{ .initialDelaySeconds }}
+          timeoutSeconds: {{ .timeoutSeconds }}
+          periodSeconds: {{ .periodSeconds }}
+          failureThreshold: {{ .failureThreshold }}
+          successThreshold: {{ .successThreshold }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.mongodb.customReadinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.mongodb.customReadinessProbe | nindent 10 }}
+        {{- else }}
+        {{- if .Values.mongodb.readinessProbe.enabled }}
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - mongosh --eval "db.adminCommand('ping')"
+        {{- with .Values.mongodb.readinessProbe }}
+          initialDelaySeconds: {{ .initialDelaySeconds }}
+          timeoutSeconds: {{ .timeoutSeconds }}
+          periodSeconds: {{ .periodSeconds }}
+          failureThreshold: {{ .failureThreshold }}
+          successThreshold: {{ .successThreshold }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+      volumes:
+      - name: mongodb-storage
+      {{- if .Values.mongodb.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.mongodb.persistence.existingClaim | default (include "tdgen.mongodb.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end -}}
