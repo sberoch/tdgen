@@ -6,7 +6,7 @@ COPY server server
 COPY client client
 RUN npm install -g @angular/cli
 RUN cd server && npm install
-RUN cd client && npm install && ng b
+RUN cd client && npm install && ng build
 
 
 FROM node:${NODE_VERSION}-alpine
