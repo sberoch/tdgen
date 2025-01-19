@@ -47,46 +47,10 @@ spec:
               secretKeyRef:
                 name: {{ include "tdgen.mongodb.secretName" . }}
                 key: mongodb-password
-        {{- if .Values.mongodb.customLivenessProbe }}
         livenessProbe:
-          {{- toYaml .Values.mongodb.customLivenessProbe | nindent 10 }}
-        {{- else }}
-        {{- if .Values.mongodb.livenessProbe.enabled }}
-        livenessProbe:
-          exec:
-            command:
-              - /bin/sh
-              - -c
-              - mongosh --eval "db.adminCommand('ping')"
-        {{- with .Values.mongodb.livenessProbe }}
-          initialDelaySeconds: {{ .initialDelaySeconds }}
-          timeoutSeconds: {{ .timeoutSeconds }}
-          periodSeconds: {{ .periodSeconds }}
-          failureThreshold: {{ .failureThreshold }}
-          successThreshold: {{ .successThreshold }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
-        {{- if .Values.mongodb.customReadinessProbe }}
+          {{- toYaml .Values.mongodb.livenessProbe | nindent 10 }}
         readinessProbe:
-          {{- toYaml .Values.mongodb.customReadinessProbe | nindent 10 }}
-        {{- else }}
-        {{- if .Values.mongodb.readinessProbe.enabled }}
-        readinessProbe:
-          exec:
-            command:
-              - /bin/sh
-              - -c
-              - mongosh --eval "db.adminCommand('ping')"
-        {{- with .Values.mongodb.readinessProbe }}
-          initialDelaySeconds: {{ .initialDelaySeconds }}
-          timeoutSeconds: {{ .timeoutSeconds }}
-          periodSeconds: {{ .periodSeconds }}
-          failureThreshold: {{ .failureThreshold }}
-          successThreshold: {{ .successThreshold }}
-        {{- end }}
-        {{- end }}
-        {{- end }}
+          {{- toYaml .Values.mongodb.readinessProbe | nindent 10 }}
       volumes:
       - name: mongodb-storage
       {{- if .Values.mongodb.persistence.enabled }}

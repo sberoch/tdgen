@@ -47,22 +47,18 @@ mongodb:
       - kubernetes.io/pvc-protection
     selectorLabels: {}
     existingClaim: null
-  customLivenessProbe: {}
   livenessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
-    periodSeconds: 10
-  customReadinessProbe: {}
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - mongosh --eval "db.adminCommand('ping')"
   readinessProbe:
-    enabled: true
-    initialDelaySeconds: 5
-    timeoutSeconds: 5
-    failureThreshold: 3
-    successThreshold: 1
-    periodSeconds: 10
+    exec:
+      command:
+        - /bin/sh
+        - -c
+        - mongosh --eval "db.adminCommand('ping')"
 
 #This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
