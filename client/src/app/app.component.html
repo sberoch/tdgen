@@ -1,7 +1,10 @@
 <div class="flex flex-col min-h-screen">
   <app-header></app-header>
-  <main class="flex-grow">
-    <h1 class="text-3xl font-bold text-red-500 m-4">Work in progress</h1>
+  <main class="flex flex-grow flex-row">
+    <app-card-backlog-column class="w-[20%]"></app-card-backlog-column>
+    <app-card-display-column class="w-[50%]"></app-card-display-column>
+    <app-card-sizing-column class="w-[10%]"></app-card-sizing-column>
+    <app-card-notes-column class="w-[20%]"></app-card-notes-column>
   </main>
   <app-footer></app-footer>
 </div>

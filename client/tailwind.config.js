@@ -9,6 +9,8 @@ module.exports = {
       colors: {
         "footer-primary": "#006FB4",
         "footer-secondary": "#004371",
+        lightgray: "#F2F2F2",
+        gray: "#E4E4E4",
       },
     },
   },
