@@ -1,3 +1,70 @@
-<div class="flex flex-col bg-gray shadow-md h-full">
-  card-backlog-column works!
+<div class="flex w-full h-full">
+  <div class="flex flex-col bg-gray shadow-md h-full p-2 w-[28%]">
+    <input
+      type="text"
+      placeholder="Search notes..."
+      class="w-full px-2 py-1 border focus:outline-none text-xs 2xl:text-sm 3xl:text-base border-black/30"
+      (input)="onSearch($event)"
+    />
+
+    <div
+      class="flex flex-col gap-2 mt-2 overflow-y-scroll"
+      cdkDropList
+      #backlogList="cdkDropList"
+      [cdkDropListData]="backlogCards"
+      [cdkDropListConnectedTo]="[displayList]"
+      (cdkDropListDropped)="drop($event)"
+    >
+      @for (card of backlogCards; track card) {
+        <div class="bg-white shadow-md rounded-md p-2 cursor-move" cdkDrag>
+          <div
+            class="bg-black/10 h-full w-full border-dotted border-2 border-black/30 min-h-[100px] transition-all duration-200"
+            *cdkDragPlaceholder
+          ></div>
+          <p class="text-xs 2xl:text-sm 3xl:text-base">{{ card.text }}</p>
+          <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
+            {{ card.classification }}
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="flex flex-col h-full p-2 w-[72%]">
+    <div
+      class="flex flex-col gap-2 mt-2 overflow-y-scroll min-h-[200px]"
+      cdkDropList
+      #displayList="cdkDropList"
+      [cdkDropListData]="displayCards"
+      [cdkDropListConnectedTo]="[backlogList]"
+      (cdkDropListDropped)="drop($event)"
+    >
+      @if (displayCards.length > 0) {
+        @for (card of displayCards; track card) {
+          <div
+            class="shadow-md rounded-md p-2 cursor-move"
+            cdkDrag
+            [style.backgroundColor]="getPastelColor($index)"
+          >
+            <div
+              class="bg-black/10 h-full w-full border-dotted border-2 border-black/30 min-h-[200px] transition-all duration-200"
+              *cdkDragPlaceholder
+            ></div>
+            <p class="text-xs 2xl:text-sm 3xl:text-base">{{ card.text }}</p>
+            <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
+              {{ card.classification }}
+            </p>
+          </div>
+        }
+      } @else {
+        <div class="flex flex-col justify-center items-center relative">
+          <p
+            class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
+          >
+            Legen Sie zur Erzeugung einer Tätigkeitsdarstellung hier
+            Arbeitsvorgänge ab.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
 </div>
