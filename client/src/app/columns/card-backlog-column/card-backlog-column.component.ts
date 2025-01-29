@@ -6,6 +6,7 @@ import {
   CdkDropList,
   CdkDragPlaceholder,
   copyArrayItem,
+  CdkDragPreview,
 } from '@angular/cdk/drag-drop';
 import { Card, getNextPastelColor } from './card-backlog-column.utils';
 import { createCards } from './card-backlog-column.utils';
@@ -16,7 +17,7 @@ const MAX_DISPLAY_CARDS = 10;
   selector: 'app-card-backlog-column',
   templateUrl: './card-backlog-column.component.html',
   standalone: true,
-  imports: [CdkDropList, CdkDrag, CdkDragPlaceholder],
+  imports: [CdkDropList, CdkDrag, CdkDragPlaceholder, CdkDragPreview],
 })
 export class CardBacklogColumnComponent {
   private allBacklogCards = createCards(20);
