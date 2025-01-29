@@ -32,3 +32,7 @@ body {
     min-height: 0 !important;
   }
 }
+
+.mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}

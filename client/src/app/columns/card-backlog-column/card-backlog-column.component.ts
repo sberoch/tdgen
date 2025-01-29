@@ -2,13 +2,15 @@ import { Component } from '@angular/core';
 import {
   CdkDragDrop,
   moveItemInArray,
-  transferArrayItem,
   CdkDrag,
   CdkDropList,
   CdkDragPlaceholder,
+  copyArrayItem,
 } from '@angular/cdk/drag-drop';
 import { Card, getNextPastelColor } from './card-backlog-column.utils';
 import { createCards } from './card-backlog-column.utils';
+
+const MAX_DISPLAY_CARDS = 10;
 
 @Component({
   selector: 'app-card-backlog-column',
@@ -41,12 +43,20 @@ export class CardBacklogColumnComponent {
         event.currentIndex,
       );
     } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
+      if (
+        this.displayCards.length < MAX_DISPLAY_CARDS &&
+        event.previousContainer.id === 'backlog'
+      ) {
+        copyArrayItem(
+          event.previousContainer.data,
+          event.container.data,
+          event.previousIndex,
+          event.currentIndex,
+        );
+      }
+      if (event.previousContainer.id === 'display') {
+        this.displayCards.splice(event.previousIndex, 1);
+      }
     }
   }
 
