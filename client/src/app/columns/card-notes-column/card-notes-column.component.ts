@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CardService } from '../../services/card.service';
 import { Card } from '../card-backlog-column/card-backlog-column.utils';
+import { getNextPastelColor } from '../card-backlog-column/card-backlog-column.utils';
 
 @Component({
   selector: 'app-card-notes-column',
@@ -19,6 +20,8 @@ export class CardNotesColumnComponent implements OnInit {
   ];
   selectedCard: Card | null = null;
   selectedClassification: string | null = null;
+  selectedCardColor: string = '#ffffff';
+
   constructor(private cardService: CardService) {}
 
   ngOnInit() {
@@ -30,6 +33,16 @@ export class CardNotesColumnComponent implements OnInit {
     this.cardService.selectedCard$.subscribe((card) => {
       this.selectedCard = card;
       this.selectedClassification = card?.classification || null;
+
+      if (card) {
+        const cardIndex = this.cards.findIndex(
+          (c) => c.classification === card.classification,
+        );
+        this.selectedCardColor =
+          cardIndex >= 0 ? getNextPastelColor(cardIndex) : '#ffffff';
+      } else {
+        this.selectedCardColor = '#ffffff';
+      }
     });
   }
 

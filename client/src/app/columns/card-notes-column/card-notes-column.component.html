@@ -1,12 +1,12 @@
 <div class="flex flex-col bg-lightgray shadow-md h-full w-full justify-between">
-  <div class="w-full flex items-center">
-    <mat-form-field class="w-full">
+  <div class="w-full flex items-center gap-2 px-1">
+    <mat-form-field class="w-full custom-select">
       <select
         matNativeControl
         required
-        class="w-full bg-white py-1 px-2 border border-black/20"
         (change)="onCardSelected($event)"
         [ngModel]="selectedClassification"
+        [style.backgroundColor]="selectedCardColor"
       >
         @for (card of cards; track card) {
           <option [value]="card.classification" class="rounded-none">
@@ -15,11 +15,11 @@
         }
       </select>
     </mat-form-field>
-    <mat-form-field class="w-full">
+    <mat-form-field class="w-full custom-select">
       <select
         matNativeControl
         required
-        class="w-full bg-white py-1 px-2 border border-black/20"
+        [style.backgroundColor]="selectedCardColor"
       >
         @for (percentage of percentages; track percentage) {
           <option [value]="percentage">{{ percentage }}%</option>

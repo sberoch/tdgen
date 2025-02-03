@@ -53,7 +53,7 @@
         @for (card of displayCards; track card) {
           <div
             class="shadow-md rounded-md p-2 cursor-move border border-transparent"
-            [class.border-[#333]]="card === selectedCard"
+            [class.!border-[#333]]="card === selectedCard"
             cdkDrag
             [style.backgroundColor]="getPastelColor($index)"
             (click)="selectCard(card)"

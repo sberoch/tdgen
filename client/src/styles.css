@@ -52,3 +52,28 @@ body {
 .mat-mdc-dialog-actions {
   padding: 8px 24px 16px;
 }
+
+.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix {
+  padding: 0 !important;
+  border: 1px solid #333 !important;
+  border-radius: 0 !important;
+  min-height: 0 !important;
+  background: white;
+}
+
+.custom-select {
+  padding: 0.5rem 0.25rem !important;
+}
+
+.custom-select .mat-mdc-text-field-wrapper {
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.custom-select .mat-mdc-input-element {
+  padding: 0 0.25rem !important;
+}
+
+.mdc-line-ripple {
+  display: none !important;
+}
