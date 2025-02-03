@@ -1,19 +1,16 @@
-import { Component, OnInit } from '@angular/core';
 import {
-  CdkDragDrop,
-  moveItemInArray,
   CdkDrag,
-  CdkDropList,
+  CdkDragDrop,
   CdkDragPlaceholder,
-  copyArrayItem,
   CdkDragPreview,
+  CdkDropList,
 } from '@angular/cdk/drag-drop';
-import { Card, getNextPastelColor } from './card-backlog-column.utils';
-import { createCards } from './card-backlog-column.utils';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivityDialogComponent } from '../../components/activity-dialog/activity-dialog.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
+import { Card, getNextPastelColor } from './card-backlog-column.utils';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -31,18 +28,28 @@ const MAX_DISPLAY_CARDS = 10;
 })
 export class CardBacklogColumnComponent implements OnInit {
   currentTitle: string = '';
-  private allBacklogCards = createCards(15);
-  backlogCards: Card[] = this.allBacklogCards;
+  private allBacklogCards: Card[] = [];
+  backlogCards: Card[] = [];
   displayCards: Card[] = [];
 
   constructor(
     private dialog: MatDialog,
     private titleService: TitleService,
+    private cardService: CardService,
   ) {}
 
   ngOnInit() {
     this.titleService.currentTitle.subscribe((title) => {
       if (title) this.currentTitle = title;
+    });
+
+    this.cardService.cards$.subscribe((cards) => {
+      this.allBacklogCards = cards;
+      this.backlogCards = [...this.allBacklogCards];
+    });
+
+    this.cardService.displayCards$.subscribe((displayCards) => {
+      this.displayCards = displayCards;
     });
   }
 
@@ -60,25 +67,19 @@ export class CardBacklogColumnComponent implements OnInit {
 
   drop(event: CdkDragDrop<Card[]>) {
     if (event.previousContainer === event.container) {
-      moveItemInArray(
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
+      this.cardService.moveInDisplay(event.previousIndex, event.currentIndex);
     } else {
       if (
         this.displayCards.length < MAX_DISPLAY_CARDS &&
         event.previousContainer.id === 'backlog'
       ) {
-        copyArrayItem(
-          event.previousContainer.data,
-          event.container.data,
-          event.previousIndex,
+        this.cardService.addToDisplay(
+          event.previousContainer.data[event.previousIndex],
           event.currentIndex,
         );
       }
       if (event.previousContainer.id === 'display') {
-        this.displayCards.splice(event.previousIndex, 1);
+        this.cardService.removeFromDisplay(event.previousIndex);
       }
     }
   }
