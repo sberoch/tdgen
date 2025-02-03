@@ -11,6 +11,10 @@ import { ActivityDialogComponent } from '../../components/activity-dialog/activi
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from './card-backlog-column.utils';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -24,6 +28,10 @@ const MAX_DISPLAY_CARDS = 10;
     CdkDragPlaceholder,
     CdkDragPreview,
     MatDialogModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatDividerModule,
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {
@@ -107,5 +115,9 @@ export class CardBacklogColumnComponent implements OnInit {
 
   selectCard(card: Card) {
     this.cardService.selectCard(card);
+  }
+
+  emitAlert() {
+    alert('TODO');
   }
 }
