@@ -31,6 +31,7 @@ export class CardBacklogColumnComponent implements OnInit {
   private allBacklogCards: Card[] = [];
   backlogCards: Card[] = [];
   displayCards: Card[] = [];
+  selectedCard: Card | null = null;
 
   constructor(
     private dialog: MatDialog,
@@ -50,6 +51,10 @@ export class CardBacklogColumnComponent implements OnInit {
 
     this.cardService.displayCards$.subscribe((displayCards) => {
       this.displayCards = displayCards;
+    });
+
+    this.cardService.selectedCard$.subscribe((card) => {
+      this.selectedCard = card;
     });
   }
 
@@ -98,5 +103,9 @@ export class CardBacklogColumnComponent implements OnInit {
         this.titleService.updateTitle(result);
       }
     });
+  }
+
+  selectCard(card: Card) {
+    this.cardService.selectCard(card);
   }
 }

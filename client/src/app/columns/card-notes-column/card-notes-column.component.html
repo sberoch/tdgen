@@ -5,6 +5,8 @@
         matNativeControl
         required
         class="w-full bg-white py-1 px-2 border border-black/20"
+        (change)="onCardSelected($event)"
+        [ngModel]="selectedClassification"
       >
         @for (card of cards; track card) {
           <option [value]="card.classification" class="rounded-none">
