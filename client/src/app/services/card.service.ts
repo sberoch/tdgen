@@ -29,7 +29,7 @@ export class CardService {
   addToDisplay(card: Card, index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     const isDuplicate = currentDisplay.some(
-      (existingCard) => existingCard.text === card.text,
+      (existingCard) => existingCard.classification === card.classification,
     );
     if (!isDuplicate) {
       currentDisplay.splice(index, 0, card);

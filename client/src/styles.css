@@ -77,3 +77,13 @@ body {
 .mdc-line-ripple {
   display: none !important;
 }
+
+.custom-textarea {
+  padding: 0.5rem 0.5rem !important;
+}
+
+.custom-textarea .mat-mdc-text-field-wrapper {
+  border-radius: 0 !important;
+  background: white !important;
+  border: 1px solid #ccc !important;
+}
