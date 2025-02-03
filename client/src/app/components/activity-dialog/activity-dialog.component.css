@@ -1,0 +1,50 @@
+::ng-deep .activity-dialog-input .mat-mdc-text-field-wrapper {
+  background-color: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.25rem !important;
+}
+
+::ng-deep .activity-dialog-input .mat-mdc-form-field-infix {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem 0 !important;
+  min-height: 40px;
+}
+
+::ng-deep .activity-dialog-input .mat-mdc-input-element {
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 0.5rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+::ng-deep
+  .activity-dialog-input
+  .mdc-text-field--focused
+  .mat-mdc-text-field-wrapper {
+  border-color: #94a3b8 !important;
+}
+
+::ng-deep .activity-dialog-input .mdc-notched-outline__leading,
+::ng-deep .activity-dialog-input .mdc-notched-outline__notch,
+::ng-deep .activity-dialog-input .mdc-notched-outline__trailing {
+  display: none !important;
+}
+
+::ng-deep
+  .activity-dialog-input
+  .mdc-text-field--no-label
+  .mat-mdc-form-field-infix {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+::ng-deep .activity-dialog-input .mdc-line-ripple {
+  display: none !important;
+}
+
+::ng-deep .activity-dialog-input .mdc-notched-outline * {
+  transition: none !important;
+}

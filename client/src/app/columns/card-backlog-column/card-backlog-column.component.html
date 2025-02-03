@@ -68,12 +68,21 @@
         }
       } @else {
         <div class="flex flex-col justify-center items-center relative">
-          <p
-            class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
-          >
-            Legen Sie zur Erzeugung einer Tätigkeitsdarstellung hier
-            Arbeitsvorgänge ab.
-          </p>
+          @if (currentTitle) {
+            <p
+              class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
+            >
+              Legen Sie zur Erzeugung einer Tätigkeitsdarstellung hier
+              Arbeitsvorgänge ab.
+            </p>
+          } @else {
+            <p
+              class="cursor-pointer text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
+              (click)="openCreateDialog()"
+            >
+              Neue Tätigkeitsdarstellung erzeugen
+            </p>
+          }
         </div>
       }
     </div>

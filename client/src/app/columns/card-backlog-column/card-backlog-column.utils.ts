@@ -29,7 +29,7 @@ export const getNextPastelColor = (currentIndex: number): string => {
 
 export const createCards = (length: number): Card[] => {
   return Array.from({ length }, (_, index) => ({
-    classification: `E${index + 1}`,
+    classification: `EG ${index + 1}`,
     text: possibleTexts[index % possibleTexts.length],
   }));
 };

@@ -36,3 +36,19 @@ body {
 .mat-mdc-form-field-subscript-wrapper {
   display: none !important;
 }
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 4px !important;
+}
+
+.mat-mdc-dialog-title {
+  padding: 16px 24px 8px;
+}
+
+.mat-mdc-dialog-content {
+  padding: 8px 24px;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 8px 24px 16px;
+}

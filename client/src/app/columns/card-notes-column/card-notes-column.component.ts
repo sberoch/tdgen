@@ -3,12 +3,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { createCards } from '../card-backlog-column/card-backlog-column.utils';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-card-notes-column',
   templateUrl: './card-notes-column.component.html',
   standalone: true,
-  imports: [MatFormFieldModule, MatSelectModule, FormsModule],
+  imports: [MatFormFieldModule, MatSelectModule, FormsModule, MatInputModule],
 })
 export class CardNotesColumnComponent {
   cards = createCards(20);
