@@ -26,13 +26,42 @@ export class CardService {
     this.cardsSubject.next(cards);
   }
 
+  private calculateAdjustedPercentages(count: number): number[] {
+    if (count === 0) return [];
+    const base = 100 / count;
+    let percentages = Array.from(
+      { length: count },
+      () => Math.round(base / 5) * 5,
+    );
+    let sum = percentages.reduce((a, b) => a + b, 0);
+    let delta = sum - 100;
+
+    while (delta !== 0) {
+      if (delta > 0) {
+        const maxIndex = percentages.indexOf(Math.max(...percentages));
+        percentages[maxIndex] -= 5;
+        delta -= 5;
+      } else {
+        const minIndex = percentages.indexOf(Math.min(...percentages));
+        percentages[minIndex] += 5;
+        delta += 5;
+      }
+    }
+    return percentages;
+  }
+
   addToDisplay(card: Card, index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     const isDuplicate = currentDisplay.some(
       (existingCard) => existingCard.classification === card.classification,
     );
+
     if (!isDuplicate) {
       currentDisplay.splice(index, 0, card);
+      const percentages = this.calculateAdjustedPercentages(
+        currentDisplay.length,
+      );
+      currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
       this.displayCardsSubject.next(currentDisplay);
     }
     this.selectedCardSubject.next(card);
@@ -41,6 +70,10 @@ export class CardService {
   removeFromDisplay(index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     currentDisplay.splice(index, 1);
+    const percentages = this.calculateAdjustedPercentages(
+      currentDisplay.length,
+    );
+    currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
     this.displayCardsSubject.next(currentDisplay);
     this.selectedCardSubject.next(null);
   }

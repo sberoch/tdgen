@@ -1,6 +1,7 @@
 export type Card = {
   classification: string;
   text: string;
+  percentage: number;
 };
 
 const possibleTexts = [
@@ -31,5 +32,6 @@ export const createCards = (length: number): Card[] => {
   return Array.from({ length }, (_, index) => ({
     classification: `EG ${index + 1}`,
     text: possibleTexts[index % possibleTexts.length],
+    percentage: 5,
   }));
 };

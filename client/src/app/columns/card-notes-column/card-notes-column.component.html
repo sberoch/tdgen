@@ -21,6 +21,8 @@
       <select
         matNativeControl
         required
+        (change)="onPercentageSelected($event)"
+        [ngModel]="selectedCard?.percentage?.toString()"
         [style.backgroundColor]="selectedCardColor"
       >
         @for (percentage of percentages; track percentage) {
