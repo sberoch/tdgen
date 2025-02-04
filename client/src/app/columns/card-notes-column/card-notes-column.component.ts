@@ -74,6 +74,7 @@ export class CardNotesColumnComponent implements OnInit {
       const numericPercentage = parseInt(newPercentage, 10);
       this.selectedCard.percentage = numericPercentage;
       this.cardService.selectCard(this.selectedCard);
+      this.cardService.updateWithNewPercentage(this.selectedCard);
     }
   }
 }

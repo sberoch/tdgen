@@ -88,4 +88,48 @@ export class CardService {
   selectCard(card: Card) {
     this.selectedCardSubject.next(card);
   }
+
+  updateWithNewPercentage(card: Card) {
+    const currentDisplay = [...this.displayCardsSubject.value];
+    const cardIndex = currentDisplay.findIndex(
+      (c) => c.classification === card.classification,
+    );
+    if (cardIndex >= 0) {
+      const count = currentDisplay.length;
+      const minOtherTotal = 5 * (count - 1);
+      const maxNewPercentage = 100 - minOtherTotal;
+
+      // Clamp and round to nearest 5
+      let adjustedPercentage = Math.max(
+        5,
+        Math.min(card.percentage, maxNewPercentage),
+      );
+      adjustedPercentage = Math.round(adjustedPercentage / 5) * 5;
+
+      currentDisplay[cardIndex].percentage = adjustedPercentage;
+
+      const remaining = 100 - adjustedPercentage;
+      const remainingAfterMin = remaining - 5 * (count - 1);
+      const extraSteps = remainingAfterMin / 5; // Will be integer due to clamping
+
+      const otherIndices = currentDisplay
+        .map((_, i) => i)
+        .filter((i) => i !== cardIndex);
+
+      if (otherIndices.length > 0) {
+        const stepsPerCard = Math.floor(extraSteps / otherIndices.length);
+        let remainder = extraSteps % otherIndices.length;
+
+        otherIndices.forEach((i, index) => {
+          let steps = stepsPerCard;
+          if (index < remainder) {
+            steps += 1;
+          }
+          currentDisplay[i].percentage = 5 + steps * 5;
+        });
+      }
+
+      this.displayCardsSubject.next(currentDisplay);
+    }
+  }
 }
