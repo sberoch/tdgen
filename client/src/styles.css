@@ -80,6 +80,10 @@ body {
 
 .custom-textarea {
   padding: 0.5rem 0.5rem !important;
+
+  .mdc-text-field--filled.mdc-text-field--disabled {
+    background: #ccc !important;
+  }
 }
 
 .custom-textarea .mat-mdc-text-field-wrapper {

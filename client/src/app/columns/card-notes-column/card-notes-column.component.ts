@@ -36,9 +36,9 @@ export class CardNotesColumnComponent implements OnInit {
           (c) => c.classification === card.classification,
         );
         this.selectedCardColor =
-          cardIndex >= 0 ? getNextPastelColor(cardIndex) : '#ffffff';
+          cardIndex >= 0 ? getNextPastelColor(cardIndex) : '#ccc';
       } else {
-        this.selectedCardColor = '#ffffff';
+        this.selectedCardColor = '#ccc';
       }
     });
   }

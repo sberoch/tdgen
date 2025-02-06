@@ -9,6 +9,7 @@
         (change)="onCardSelected($event)"
         [ngModel]="selectedClassification"
         [style.backgroundColor]="selectedCardColor"
+        [disabled]="cards.length === 0"
       >
         @for (card of cards; track card) {
           <option [value]="card.classification" class="rounded-none">
@@ -22,8 +23,10 @@
     <textarea
       matInput
       placeholder="Notizen"
-      class="w-full py-1 px-2 mb-1 bg-white"
+      class="w-full py-1 px-2 mb-1 bg-[#ccc]"
       rows="6"
+      [disabled]="cards.length === 0"
+      [style.backgroundColor]="cards.length === 0 ? '#ccc' : '#fff'"
     ></textarea>
   </mat-form-field>
 </div>
