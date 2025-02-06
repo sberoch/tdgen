@@ -5,7 +5,13 @@ import {
   CdkDragPreview,
   CdkDropList,
 } from '@angular/cdk/drag-drop';
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivityDialogComponent } from '../../components/activity-dialog/activity-dialog.component';
 import { CardService } from '../../services/card.service';
@@ -40,6 +46,9 @@ const MAX_DISPLAY_CARDS = 10;
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {
+  @ViewChild('displayScrollContainer', { static: false })
+  private scrollContainer?: ElementRef<HTMLElement>;
+
   currentTitle: string = '';
   private allBacklogCards: Card[] = [];
   backlogCards: Card[] = [];
@@ -70,7 +79,28 @@ export class CardBacklogColumnComponent implements OnInit {
 
     this.cardService.selectedCard$.subscribe((card) => {
       this.selectedCard = card;
+      setTimeout(() => this.scrollToSelectedCard(), 50);
     });
+  }
+
+  private scrollToSelectedCard() {
+    if (!this.selectedCard || !this.scrollContainer) return;
+
+    const container = this.scrollContainer.nativeElement;
+    const cardElement = container.querySelector(
+      `[data-classification="${this.selectedCard.classification}"]`,
+    ) as HTMLElement;
+
+    if (cardElement) {
+      const containerRect = container.getBoundingClientRect();
+      const cardRect = cardElement.getBoundingClientRect();
+
+      if (cardRect.top < containerRect.top) {
+        container.scrollTop -= containerRect.top - cardRect.top;
+      } else if (cardRect.bottom > containerRect.bottom) {
+        container.scrollTop += cardRect.bottom - containerRect.bottom;
+      }
+    }
   }
 
   onSearch(event: Event) {

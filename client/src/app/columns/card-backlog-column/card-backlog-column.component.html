@@ -58,6 +58,7 @@
       [cdkDropListData]="displayCards"
       [cdkDropListConnectedTo]="[backlogList]"
       (cdkDropListDropped)="drop($event)"
+      #displayScrollContainer
     >
       @if (displayCards.length > 0) {
         @for (card of displayCards; track card) {
@@ -67,6 +68,7 @@
             cdkDrag
             [style.backgroundColor]="getPastelColor($index)"
             (click)="selectCard(card)"
+            [attr.data-classification]="card.classification"
           >
             <div
               class="bg-black/10 h-full w-full border-dotted border-2 border-black/30 min-h-[200px] transition-all duration-200"
