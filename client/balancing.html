@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stack Size Calculator</title>
+    <style>
+      body {
+        font-family: monospace;
+        margin: 20px;
+        background: #f0f0f0;
+      }
+      #output {
+        background: #000;
+        color: #0f0;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+      .error {
+        color: #ff4444;
+        margin: 10px 0;
+      }
+      .test-case {
+        color: #44ff44;
+        margin: 10px 0;
+      }
+      button {
+        padding: 10px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Stack Size Calculator Tester</h1>
+    <button onclick="runTests()">Run All Tests</button>
+    <button onclick="clearLog()">Clear Log</button>
+    <div id="output"></div>
+
+    <script>
+      function recalcSizes(newNumberOfParts, existingSizes = []) {
+        if (newNumberOfParts < 1 || newNumberOfParts > 10) {
+          throw new Error("Number of parts must be between 1 and 10");
+        }
+
+        if (existingSizes.length === 0) {
+          // Special case: Empty stack
+          if (newNumberOfParts === 1) {
+            return [100];
+          }
+
+          const baseValue = Math.floor(100 / newNumberOfParts) * 5;
+          let result = Array(newNumberOfParts).fill(baseValue);
+
+          // Add remaining percentages to the first element
+          result[0] += 100 - baseValue * newNumberOfParts;
+          return result;
+        }
+
+        const areAllDivisibleByFive = (arr) =>
+          arr.every((num) => num % 5 === 0);
+        const sumArray = (arr) => arr.reduce((sum, curr) => sum + curr, 0);
+
+        function balanceArray(arr) {
+          let maxAttempts = 100;
+
+          while (sumArray(arr) !== 100 && maxAttempts > 0) {
+            if (sumArray(arr) < 100) {
+              const maxIndex = arr.indexOf(Math.max(...arr));
+              arr[maxIndex] += 5;
+            } else {
+              const sortedIndices = arr
+                .map((val, idx) => ({ val, idx }))
+                .filter((item) => item.val > 5)
+                .sort((a, b) => b.val - a.val);
+
+              if (sortedIndices.length === 0) {
+                throw new Error("No valid distribution possible");
+              }
+
+              arr[sortedIndices[0].idx] -= 5;
+            }
+
+            maxAttempts--;
+          }
+
+          if (maxAttempts === 0) {
+            throw new Error(
+              "Could not balance array within reasonable attempts",
+            );
+          }
+
+          return arr;
+        }
+
+        let result = [...existingSizes];
+
+        // Add parts by splitting the largest value
+        if (newNumberOfParts > existingSizes.length) {
+          while (result.length < newNumberOfParts) {
+            const maxVal = Math.max(...result);
+            const maxIndex = result.indexOf(maxVal);
+
+            // Check whether division is possible
+            if (maxVal <= 5) {
+              throw new Error(
+                "Cannot split values smaller than or equal to 5%",
+              );
+            }
+
+            // Divide into two parts that are as equal as possible and divisible by 5
+            const halfValue = Math.floor(maxVal / 2);
+            const firstHalf = Math.floor(halfValue / 5) * 5;
+            const secondHalf = maxVal - firstHalf;
+
+            if (firstHalf < 5 || secondHalf < 5) {
+              // If the simple division does not work, try balancing
+              return balanceArray(
+                result.concat(Array(newNumberOfParts - result.length).fill(5)),
+              );
+            }
+
+            // Remove the shared value
+            result.splice(maxIndex, 1);
+
+            // Insert the new values at the beginning
+            result.unshift(
+              Math.min(firstHalf, secondHalf),
+              Math.max(firstHalf, secondHalf),
+            );
+          }
+        }
+
+        // Remove parts by merging with the next smaller value
+        else if (newNumberOfParts < existingSizes.length) {
+          while (result.length > newNumberOfParts) {
+            const smallest = Math.min(...result);
+            const smallestIndex = result.indexOf(smallest);
+
+            // Find the next smallest value
+            let nextSmallest = Infinity;
+            let nextSmallestIndex = -1;
+
+            for (let i = 0; i < result.length; i++) {
+              if (i !== smallestIndex && result[i] < nextSmallest) {
+                nextSmallest = result[i];
+                nextSmallestIndex = i;
+              }
+            }
+
+            if (nextSmallestIndex === -1) {
+              throw new Error("Cannot find valid merge target");
+            }
+
+            // Merge the values
+            result[nextSmallestIndex] += result[smallestIndex];
+            result.splice(smallestIndex, 1);
+
+            // If the result is not divisible by 5, try balancing
+            if (!areAllDivisibleByFive([result[nextSmallestIndex]])) {
+              return balanceArray(result);
+            }
+          }
+        }
+
+        // Final validation
+        if (!areAllDivisibleByFive(result)) {
+          throw new Error("Not all values are divisible by 5");
+        }
+
+        if (Math.min(...result) < 5) {
+          throw new Error("Minimum size of 5% not met");
+        }
+
+        if (sumArray(result) !== 100) {
+          throw new Error("Sum does not equal 100%");
+        }
+
+        return result;
+      }
+
+      function log(message, isError = false) {
+        const output = document.getElementById("output");
+        const div = document.createElement("div");
+        div.textContent = message;
+
+        if (isError) {
+          div.classList.add("error");
+        }
+
+        output.appendChild(div);
+        output.scrollTop = output.scrollHeight;
+      }
+
+      function logTestCase(testNumber, parts, existing, result) {
+        const message = `Test #${testNumber}:
+Input: parts=${parts}, existing=[${existing}]
+Result: [${result}]
+Stack size: ${result.length}
+Sum: ${result.reduce((a, b) => a + b, 0)}%
+Min value: ${Math.min(...result)}%
+Max value: ${Math.max(...result)}%`;
+        const div = document.createElement("div");
+        div.textContent = message;
+        div.classList.add("test-case");
+        output.appendChild(div);
+      }
+
+      function clearLog() {
+        document.getElementById("output").innerHTML = "";
+      }
+
+      function runTests() {
+        const tests = [
+          { parts: 1, existing: [] },
+          { parts: 2, existing: [100] },
+          { parts: 3, existing: [50, 50] },
+          { parts: 4, existing: [50, 25, 25] },
+          { parts: 5, existing: [25, 25, 25, 25] },
+          { parts: 5, existing: [20, 20, 20, 20, 15, 5] },
+          { parts: 3, existing: [35, 35, 30] },
+          { parts: 4, existing: [40, 30, 30] },
+          { parts: 2, existing: [40, 30, 30] },
+          { parts: 6, existing: [20, 20, 15, 15, 15, 15] },
+
+          // Edge cases
+          { parts: 10, existing: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10] },
+          { parts: 9, existing: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10] },
+
+          // Error cases
+          { parts: 11, existing: [] },
+          { parts: 0, existing: [] },
+          { parts: 8, existing: [13, 13, 13, 13, 12, 12, 12, 12] },
+        ];
+
+        log("Starting test suite...\n");
+
+        tests.forEach((test, index) => {
+          try {
+            const result = recalcSizes(test.parts, test.existing);
+            logTestCase(index + 1, test.parts, test.existing, result);
+          } catch (error) {
+            log(`Test #${index + 1} failed: ${error.message}`, true);
+          }
+        });
+
+        log("\nTest suite completed.");
+      }
+    </script>
+  </body>
+</html>

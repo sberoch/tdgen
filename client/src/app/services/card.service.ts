@@ -26,28 +26,101 @@ export class CardService {
     this.cardsSubject.next(cards);
   }
 
-  private calculateAdjustedPercentages(count: number): number[] {
-    if (count === 0) return [];
-    const base = 100 / count;
-    let percentages = Array.from(
-      { length: count },
-      () => Math.round(base / 5) * 5,
-    );
-    let sum = percentages.reduce((a, b) => a + b, 0);
-    let delta = sum - 100;
+  private balanceArray(arr: number[]): number[] {
+    const sumArray = (arr: number[]) =>
+      arr.reduce((sum, curr) => sum + curr, 0);
+    let maxAttempts = 100;
 
-    while (delta !== 0) {
-      if (delta > 0) {
-        const maxIndex = percentages.indexOf(Math.max(...percentages));
-        percentages[maxIndex] -= 5;
-        delta -= 5;
+    while (sumArray(arr) !== 100 && maxAttempts > 0) {
+      if (sumArray(arr) < 100) {
+        const maxIndex = arr.indexOf(Math.max(...arr));
+        arr[maxIndex] += 5;
       } else {
-        const minIndex = percentages.indexOf(Math.min(...percentages));
-        percentages[minIndex] += 5;
-        delta += 5;
+        const sortedIndices = arr
+          .map((val, idx) => ({ val, idx }))
+          .filter((item) => item.val > 5)
+          .sort((a, b) => b.val - a.val);
+
+        if (sortedIndices.length === 0) {
+          throw new Error('No valid distribution possible');
+        }
+
+        arr[sortedIndices[0].idx] -= 5;
+      }
+
+      maxAttempts--;
+    }
+
+    if (maxAttempts === 0) {
+      throw new Error('Could not balance array within reasonable attempts');
+    }
+
+    return arr;
+  }
+
+  private calculateAdjustedPercentages(
+    newCount: number,
+    existingPercentages: number[],
+  ): number[] {
+    if (newCount === 0) return [];
+    if (newCount === 1) return [100];
+
+    let result = [...existingPercentages];
+    // Add parts by splitting the largest value
+    if (newCount > existingPercentages.length) {
+      const maxVal = Math.max(...result);
+      const maxIndex = result.indexOf(maxVal);
+      if (maxVal <= 5) {
+        throw new Error('Cannot split values smaller than or equal to 5%');
+      }
+      const halfValue = Math.floor(maxVal / 2);
+      const firstHalf = Math.floor(halfValue / 5) * 5;
+      const secondHalf = maxVal - firstHalf;
+      if (firstHalf < 5 || secondHalf < 5) {
+        return this.balanceArray(
+          result.concat(Array(newCount - result.length).fill(5)),
+        );
+      }
+      result.splice(maxIndex, 1);
+      result.unshift(
+        Math.min(firstHalf, secondHalf),
+        Math.max(firstHalf, secondHalf),
+      );
+    }
+    // Remove parts by merging with the next smaller value
+    else if (newCount < existingPercentages.length) {
+      const areAllDivisibleByFive = (arr: number[]) =>
+        arr.every((num: number) => num % 5 === 0);
+      while (result.length > newCount) {
+        const smallest = Math.min(...result);
+        const smallestIndex = result.indexOf(smallest);
+
+        // Find the next smallest value
+        let nextSmallest = Infinity;
+        let nextSmallestIndex = -1;
+
+        for (let i = 0; i < result.length; i++) {
+          if (i !== smallestIndex && result[i] < nextSmallest) {
+            nextSmallest = result[i];
+            nextSmallestIndex = i;
+          }
+        }
+
+        if (nextSmallestIndex === -1) {
+          throw new Error('Cannot find valid merge target');
+        }
+
+        // Merge the values
+        result[nextSmallestIndex] += result[smallestIndex];
+        result.splice(smallestIndex, 1);
+
+        // If the result is not divisible by 5, try balancing
+        if (!areAllDivisibleByFive([result[nextSmallestIndex]])) {
+          return this.balanceArray(result);
+        }
       }
     }
-    return percentages;
+    return result;
   }
 
   addToDisplay(card: Card, index: number) {
@@ -61,11 +134,11 @@ export class CardService {
         (c) => c.classification !== card.classification,
       );
       this.cardsSubject.next(currentBacklog);
-
-      currentDisplay.splice(index, 0, card);
       const percentages = this.calculateAdjustedPercentages(
-        currentDisplay.length,
+        currentDisplay.length + 1,
+        currentDisplay.map((c) => c.percentage),
       );
+      currentDisplay.splice(index, 0, card);
       currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
       this.displayCardsSubject.next(currentDisplay);
     }
@@ -74,10 +147,11 @@ export class CardService {
 
   removeFromDisplay(index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
-    const removedCard = currentDisplay.splice(index, 1)[0];
     const percentages = this.calculateAdjustedPercentages(
-      currentDisplay.length,
+      currentDisplay.length - 1,
+      currentDisplay.map((c) => c.percentage),
     );
+    const removedCard = currentDisplay.splice(index, 1)[0];
     currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
     this.displayCardsSubject.next(currentDisplay);
 
@@ -101,49 +175,5 @@ export class CardService {
 
   selectCard(card: Card) {
     this.selectedCardSubject.next(card);
-  }
-
-  updateWithNewPercentage(card: Card) {
-    const currentDisplay = [...this.displayCardsSubject.value];
-    const cardIndex = currentDisplay.findIndex(
-      (c) => c.classification === card.classification,
-    );
-    if (cardIndex >= 0) {
-      const count = currentDisplay.length;
-      const minOtherTotal = 5 * (count - 1);
-      const maxNewPercentage = 100 - minOtherTotal;
-
-      // Clamp and round to nearest 5
-      let adjustedPercentage = Math.max(
-        5,
-        Math.min(card.percentage, maxNewPercentage),
-      );
-      adjustedPercentage = Math.round(adjustedPercentage / 5) * 5;
-
-      currentDisplay[cardIndex].percentage = adjustedPercentage;
-
-      const remaining = 100 - adjustedPercentage;
-      const remainingAfterMin = remaining - 5 * (count - 1);
-      const extraSteps = remainingAfterMin / 5; // Will be integer due to clamping
-
-      const otherIndices = currentDisplay
-        .map((_, i) => i)
-        .filter((i) => i !== cardIndex);
-
-      if (otherIndices.length > 0) {
-        const stepsPerCard = Math.floor(extraSteps / otherIndices.length);
-        let remainder = extraSteps % otherIndices.length;
-
-        otherIndices.forEach((i, index) => {
-          let steps = stepsPerCard;
-          if (index < remainder) {
-            steps += 1;
-          }
-          currentDisplay[i].percentage = 5 + steps * 5;
-        });
-      }
-
-      this.displayCardsSubject.next(currentDisplay);
-    }
   }
 }
