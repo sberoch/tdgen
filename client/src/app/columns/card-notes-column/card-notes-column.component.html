@@ -17,19 +17,6 @@
         }
       </select>
     </mat-form-field>
-    <mat-form-field class="w-full custom-select">
-      <select
-        matNativeControl
-        required
-        (change)="onPercentageSelected($event)"
-        [ngModel]="selectedCard?.percentage?.toString()"
-        [style.backgroundColor]="selectedCardColor"
-      >
-        @for (percentage of percentages; track percentage) {
-          <option [value]="percentage">{{ percentage }}%</option>
-        }
-      </select>
-    </mat-form-field>
   </div>
   <mat-form-field class="w-full custom-textarea">
     <textarea
