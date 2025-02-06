@@ -52,23 +52,18 @@ export class CardSizingColumnComponent implements OnInit {
 
     const deltaY = this.startY - event.clientY;
     const screenHeight = window.innerHeight;
-    const pixelsPerStep = screenHeight * 0.1;
+    const pixelsPerStep = screenHeight * 0.05;
 
     this.accumulatedDelta += deltaY;
-    const currentDirection = deltaY < 0 ? 'up' : 'down';
+    this.startY = event.clientY;
 
-    if (
-      this.lastAppliedDirection &&
-      currentDirection !== this.lastAppliedDirection
-    ) {
-      this.accumulatedDelta = 0;
-    }
+    const currentDirection = this.accumulatedDelta < 0 ? 'up' : 'down';
+    const absoluteDelta = Math.abs(this.accumulatedDelta);
 
-    const steps = Math.floor(Math.abs(this.accumulatedDelta) / pixelsPerStep);
+    const steps = Math.floor(absoluteDelta / pixelsPerStep);
     if (steps > 0) {
       this.adjustPercentages(currentDirection, steps * 5);
-      this.accumulatedDelta = 0;
-      this.startY = event.clientY;
+      this.accumulatedDelta = this.accumulatedDelta % pixelsPerStep;
       this.lastAppliedDirection = currentDirection;
     }
   }
