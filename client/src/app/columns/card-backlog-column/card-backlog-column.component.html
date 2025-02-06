@@ -16,6 +16,7 @@
       [cdkDropListConnectedTo]="[displayList]"
       (cdkDropListDropped)="drop($event)"
       [cdkDropListDisabled]="currentTitle === ''"
+      cdkDropListSortingDisabled
     >
       @for (card of backlogCards; track card) {
         <div
@@ -31,12 +32,16 @@
             *cdkDragPreview
             class="opacity-50 bg-white border-2 border-black/30 rounded-md p-2 max-w-[28%]"
           >
-            <p class="text-xs 2xl:text-sm 3xl:text-base">{{ card.text }}</p>
+            <p class="text-xs 2xl:text-sm 3xl:text-base">
+              {{ truncate(card.text, 100) }}
+            </p>
             <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
               {{ card.classification }}
             </p>
           </div>
-          <p class="text-xs 2xl:text-sm 3xl:text-base">{{ card.text }}</p>
+          <p class="text-xs 2xl:text-sm 3xl:text-base">
+            {{ truncate(card.text, 200) }}
+          </p>
           <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
             {{ card.classification }}
           </p>
@@ -75,7 +80,7 @@
                 mat-icon-button
                 class="compact-icon"
                 [matMenuTriggerFor]="cardMenu"
-                (click)="$event.stopPropagation()"
+                (click)="$event.stopPropagation(); currentIndex = $index"
               >
                 <mat-icon>more_vert</mat-icon>
               </button>
@@ -112,7 +117,11 @@
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="emitAlert()">Editieren</button>
   <mat-divider></mat-divider>
-  <button mat-menu-item (click)="emitAlert()" class="!text-red-500">
+  <button
+    mat-menu-item
+    (click)="removeFromDisplay(currentIndex)"
+    class="!text-red-500"
+  >
     Entfernen
   </button>
 </mat-menu>

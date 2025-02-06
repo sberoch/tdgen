@@ -5,16 +5,21 @@ import {
   CdkDragPreview,
   CdkDropList,
 } from '@angular/cdk/drag-drop';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivityDialogComponent } from '../../components/activity-dialog/activity-dialog.component';
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
-import { Card, getNextPastelColor } from './card-backlog-column.utils';
+import {
+  Card,
+  getNextPastelColor,
+  truncateText,
+} from './card-backlog-column.utils';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -40,6 +45,8 @@ export class CardBacklogColumnComponent implements OnInit {
   backlogCards: Card[] = [];
   displayCards: Card[] = [];
   selectedCard: Card | null = null;
+  currentIndex = 0;
+  private _snackBar = inject(MatSnackBar);
 
   constructor(
     private dialog: MatDialog,
@@ -82,14 +89,18 @@ export class CardBacklogColumnComponent implements OnInit {
     if (event.previousContainer === event.container) {
       this.cardService.moveInDisplay(event.previousIndex, event.currentIndex);
     } else {
-      if (
-        this.displayCards.length < MAX_DISPLAY_CARDS &&
-        event.previousContainer.id === 'backlog'
-      ) {
-        this.cardService.addToDisplay(
-          event.previousContainer.data[event.previousIndex],
-          event.currentIndex,
-        );
+      if (event.previousContainer.id === 'backlog') {
+        if (this.displayCards.length < MAX_DISPLAY_CARDS) {
+          this.cardService.addToDisplay(
+            event.previousContainer.data[event.previousIndex],
+            event.currentIndex,
+          );
+        } else {
+          this.openSnackBar(
+            'Maximale Anzahl an Karten erreicht',
+            'Akzeptieren',
+          );
+        }
       }
       if (event.previousContainer.id === 'display') {
         this.cardService.removeFromDisplay(event.previousIndex);
@@ -99,6 +110,10 @@ export class CardBacklogColumnComponent implements OnInit {
 
   getPastelColor(currentIndex: number): string {
     return getNextPastelColor(currentIndex);
+  }
+
+  truncate(text: string, maxLength: number): string {
+    return truncateText(text, maxLength);
   }
 
   openCreateDialog() {
@@ -113,11 +128,19 @@ export class CardBacklogColumnComponent implements OnInit {
     });
   }
 
+  openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action);
+  }
+
   selectCard(card: Card) {
     this.cardService.selectCard(card);
   }
 
   emitAlert() {
     alert('TODO');
+  }
+
+  removeFromDisplay(index: number) {
+    this.cardService.removeFromDisplay(index);
   }
 }

@@ -57,6 +57,11 @@ export class CardService {
     );
 
     if (!isDuplicate) {
+      const currentBacklog = this.cardsSubject.value.filter(
+        (c) => c.classification !== card.classification,
+      );
+      this.cardsSubject.next(currentBacklog);
+
       currentDisplay.splice(index, 0, card);
       const percentages = this.calculateAdjustedPercentages(
         currentDisplay.length,
@@ -69,12 +74,21 @@ export class CardService {
 
   removeFromDisplay(index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
-    currentDisplay.splice(index, 1);
+    const removedCard = currentDisplay.splice(index, 1)[0];
     const percentages = this.calculateAdjustedPercentages(
       currentDisplay.length,
     );
     currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
     this.displayCardsSubject.next(currentDisplay);
+
+    const currentBacklog = [...this.cardsSubject.value, removedCard];
+    currentBacklog.sort((a, b) => {
+      const numA = parseInt(a.classification.split(' ')[1], 10);
+      const numB = parseInt(b.classification.split(' ')[1], 10);
+      return numA - numB;
+    });
+    this.cardsSubject.next(currentBacklog);
+
     this.selectedCardSubject.next(null);
   }
 
