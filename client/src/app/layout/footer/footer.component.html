@@ -3,14 +3,16 @@
 >
   <div class="flex w-full justify-end items-center p-2 gap-4">
     <button
-      class="rounded-sm bg-white text-black/70 py-1 px-4"
+      class="rounded-sm bg-white text-black/70 py-1 px-4 disabled:bg-[#ccc]"
       (click)="onButtonClick()"
+      [disabled]="!currentTitle"
     >
       Rahmendaten eingeben
     </button>
     <button
-      class="rounded-sm bg-white text-black/70 py-1 px-4"
+      class="rounded-sm bg-white text-black/70 py-1 px-4 disabled:bg-[#ccc]"
       (click)="onButtonClick()"
+      [disabled]="!currentTitle"
     >
       Tätigkeitsdarstellung exportieren
     </button>

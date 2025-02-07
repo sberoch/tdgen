@@ -21,7 +21,7 @@
     >
       @for (card of backlogCards; track card) {
         <div
-          class="bg-white shadow-[1px_1px_6px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move"
+          class="bg-white shadow-[1px_1px_6px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none"
           cdkDrag
           [style.cursor]="currentTitle === '' ? 'not-allowed' : 'move'"
         >
@@ -50,9 +50,9 @@
       }
     </div>
   </div>
-  <div class="flex flex-col h-full pt-2 w-[72%]">
+  <div class="flex flex-col h-full w-[72%]">
     <div
-      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden min-h-[200px] h-full px-2 pb-2"
+      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden min-h-[200px] h-full p-2"
       cdkDropList
       #displayList="cdkDropList"
       id="display"
@@ -64,7 +64,7 @@
       @if (displayCards.length > 0) {
         @for (card of displayCards; track card) {
           <div
-            class="shadow-[1px_1px_6px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move border border-transparent"
+            class="shadow-[1px_1px_6px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent"
             [class.!border-[#333]]="card === selectedCard"
             cdkDrag
             [style.backgroundColor]="getPastelColor($index)"
@@ -105,7 +105,7 @@
               class="cursor-pointer text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
               (click)="openCreateDialog()"
             >
-              Neue Tätigkeitsdarstellung erzeugen
+              Hier klicken, um neue Tätigkeitsdarstellung zu erzeugen
             </p>
           }
         </div>

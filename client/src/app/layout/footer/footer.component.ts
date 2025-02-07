@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { TitleService } from '../../services/title.service';
 
 @Component({
   selector: 'app-footer',
@@ -6,6 +7,14 @@ import { Component } from '@angular/core';
   standalone: true,
 })
 export class FooterComponent {
+  currentTitle: string = '';
+
+  constructor(private titleService: TitleService) {
+    this.titleService.currentTitle.subscribe((title) => {
+      this.currentTitle = title;
+    });
+  }
+
   onButtonClick() {
     alert('TODO');
   }
