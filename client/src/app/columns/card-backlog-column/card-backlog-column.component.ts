@@ -127,7 +127,7 @@ export class CardBacklogColumnComponent implements OnInit {
           );
         } else {
           this.openSnackBar(
-            'Maximale Anzahl an Karten erreicht',
+            'Maximale Anzahl an Arbeitsvorgängen erreicht',
             'Akzeptieren',
           );
         }
