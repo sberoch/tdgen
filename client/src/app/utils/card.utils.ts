@@ -1,8 +1,16 @@
 export type Card = {
   classification: string;
+  title: string;
   text: string;
   percentage: number;
 };
+
+const possibleTitles = [
+  'Lorem ipsum dolor sit amet',
+  'Consectetur adipiscing elit',
+  'Sed do eiusmod tempor incididunt',
+  'Ut labore et dolore magna aliqua',
+];
 
 const possibleTexts = [
   'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum.',
@@ -14,6 +22,7 @@ const possibleTexts = [
 export const createCards = (length: number): Card[] => {
   return Array.from({ length }, (_, index) => ({
     classification: `EG ${index + 1}`,
+    title: possibleTitles[index % possibleTitles.length],
     text: possibleTexts[index % possibleTexts.length],
     percentage: 5,
   }));

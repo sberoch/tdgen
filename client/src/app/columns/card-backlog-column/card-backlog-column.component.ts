@@ -107,8 +107,10 @@ export class CardBacklogColumnComponent implements OnInit {
       return;
     }
 
-    this.backlogCards = this.allBacklogCards.filter((card) =>
-      card.text.toLowerCase().includes(searchTerm.toLowerCase()),
+    this.backlogCards = this.allBacklogCards.filter(
+      (card) =>
+        card.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        card.title.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }
 
