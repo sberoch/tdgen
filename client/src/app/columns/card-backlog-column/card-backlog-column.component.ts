@@ -16,16 +16,13 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivityDialogComponent } from '../../components/activity-dialog/activity-dialog.component';
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
-import {
-  Card,
-  getNextPastelColor,
-  truncateText,
-} from './card-backlog-column.utils';
+import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { truncateText } from './card-backlog-column.utils';
 
 const MAX_DISPLAY_CARDS = 10;
 

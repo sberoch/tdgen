@@ -1,9 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CardService } from '../../services/card.service';
-import {
-  Card,
-  getNextPastelColor,
-} from '../card-backlog-column/card-backlog-column.utils';
+import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { MatIconModule } from '@angular/material/icon';
 
 interface Section {

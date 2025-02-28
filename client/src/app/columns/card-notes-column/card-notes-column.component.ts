@@ -4,8 +4,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CardService } from '../../services/card.service';
-import { Card } from '../card-backlog-column/card-backlog-column.utils';
-import { getNextPastelColor } from '../card-backlog-column/card-backlog-column.utils';
+import { Card, getNextPastelColor } from '../../utils/card.utils';
 
 @Component({
   selector: 'app-card-notes-column',

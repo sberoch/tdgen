@@ -1,9 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import {
-  Card,
-  createCards,
-} from '../columns/card-backlog-column/card-backlog-column.utils';
+import { Card, createCards } from '../utils/card.utils';
 import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Injectable({
