@@ -126,8 +126,12 @@
 </div>
 
 <mat-menu #cardMenu="matMenu" class="custom-menu">
-  <button mat-menu-item (click)="emitAlert()">Nach oben verschieben</button>
-  <button mat-menu-item (click)="emitAlert()">Nach unten verschieben</button>
+  <button mat-menu-item (click)="moveCardToTop(currentIndex)">
+    An den Anfang verschieben
+  </button>
+  <button mat-menu-item (click)="moveCardToBottom(currentIndex)">
+    Ans Ende verschieben
+  </button>
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="emitAlert()">Editieren</button>
   <mat-divider></mat-divider>

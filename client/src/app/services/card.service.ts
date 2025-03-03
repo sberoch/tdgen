@@ -170,6 +170,20 @@ export class CardService {
     this.selectedCardSubject.next(currentDisplay[currentIndex]);
   }
 
+  moveCardToTop(index: number) {
+    const currentDisplay = [...this.displayCardsSubject.value];
+    moveItemInArray(currentDisplay, index, 0);
+    this.displayCardsSubject.next(currentDisplay);
+    this.selectedCardSubject.next(currentDisplay[0]);
+  }
+
+  moveCardToBottom(index: number) {
+    const currentDisplay = [...this.displayCardsSubject.value];
+    moveItemInArray(currentDisplay, index, currentDisplay.length - 1);
+    this.displayCardsSubject.next(currentDisplay);
+    this.selectedCardSubject.next(currentDisplay[currentDisplay.length - 1]);
+  }
+
   selectCard(card: Card) {
     this.selectedCardSubject.next(card);
   }

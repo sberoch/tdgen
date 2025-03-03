@@ -137,6 +137,14 @@ export class CardBacklogColumnComponent implements OnInit {
     }
   }
 
+  moveCardToTop(index: number) {
+    this.cardService.moveCardToTop(index);
+  }
+
+  moveCardToBottom(index: number) {
+    this.cardService.moveCardToBottom(index);
+  }
+
   getPastelColor(currentIndex: number): string {
     return getNextPastelColor(currentIndex);
   }
