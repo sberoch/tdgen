@@ -23,6 +23,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { truncateText } from './card-backlog-column.utils';
+import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -40,6 +41,7 @@ const MAX_DISPLAY_CARDS = 10;
     MatButtonModule,
     MatMenuModule,
     MatDividerModule,
+    CardTooltipDirective,
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {
@@ -57,7 +59,7 @@ export class CardBacklogColumnComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private titleService: TitleService,
-    private cardService: CardService,
+    private cardService: CardService
   ) {}
 
   ngOnInit() {
@@ -85,7 +87,7 @@ export class CardBacklogColumnComponent implements OnInit {
 
     const container = this.scrollContainer.nativeElement;
     const cardElement = container.querySelector(
-      `[data-classification="${this.selectedCard.classification}"]`,
+      `[data-classification="${this.selectedCard.classification}"]`
     ) as HTMLElement;
 
     if (cardElement) {
@@ -110,7 +112,7 @@ export class CardBacklogColumnComponent implements OnInit {
     this.backlogCards = this.allBacklogCards.filter(
       (card) =>
         card.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        card.title.toLowerCase().includes(searchTerm.toLowerCase()),
+        card.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
 
@@ -122,12 +124,12 @@ export class CardBacklogColumnComponent implements OnInit {
         if (this.displayCards.length < MAX_DISPLAY_CARDS) {
           this.cardService.addToDisplay(
             event.previousContainer.data[event.previousIndex],
-            event.currentIndex,
+            event.currentIndex
           );
         } else {
           this.openSnackBar(
             'Maximale Anzahl an Arbeitsvorgängen erreicht',
-            'Akzeptieren',
+            'Akzeptieren'
           );
         }
       }
