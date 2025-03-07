@@ -13,7 +13,6 @@ import {
   ElementRef,
 } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ActivityDialogComponent } from '../../components/activity-dialog/activity-dialog.component';
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
@@ -24,7 +23,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { truncateText } from './card-backlog-column.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-
+import { TitleActivityDialogComponent } from '../../components/title-activity-dialog/title-activity-dialog.component';
 const MAX_DISPLAY_CARDS = 10;
 
 @Component({
@@ -156,7 +155,7 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   openCreateDialog() {
-    const dialogRef = this.dialog.open(ActivityDialogComponent, {
+    const dialogRef = this.dialog.open(TitleActivityDialogComponent, {
       width: '600px',
     });
 
