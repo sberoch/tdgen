@@ -4,6 +4,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { TitleActivityDialogComponent } from '../../components/title-activity-dialog/title-activity-dialog.component';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { TitleService } from '../../services/title.service';
@@ -17,7 +18,11 @@ import { TitleService } from '../../services/title.service';
 export class HeaderComponent implements OnInit {
   currentTitle: string = '';
 
-  constructor(private dialog: MatDialog, private titleService: TitleService) {}
+  constructor(
+    private dialog: MatDialog,
+    private titleService: TitleService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.titleService.currentTitle.subscribe((title) => {
@@ -45,5 +50,11 @@ export class HeaderComponent implements OnInit {
 
   onButtonClick() {
     alert('TODO');
+  }
+
+  logout() {
+    // Here you would typically clear any authentication tokens or user data
+    // For now, we'll just navigate to the login page
+    this.router.navigate(['/login']);
   }
 }
