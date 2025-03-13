@@ -13,8 +13,14 @@
       </button>
     </div>
     <p class="italic">{{ currentTitle }}</p>
-    <button mat-icon-button aria-label="Open side panel">
-      <mat-icon>chevron_left</mat-icon>
+    <button
+      mat-icon-button
+      aria-label="Open side panel"
+      (click)="togglePanel()"
+      [disabled]="!currentTitle"
+      class="disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <mat-icon>{{ isPanelOpen ? "chevron_right" : "chevron_left" }}</mat-icon>
     </button>
   </div>
 </header>
@@ -39,3 +45,11 @@
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="logout()">Abmelden</button>
 </mat-menu>
+
+<!-- Flyout Panel Component -->
+<app-flyout-panel
+  [isOpen]="isPanelOpen"
+  [title]="'Rahmendaten'"
+  (close)="closePanel()"
+>
+</app-flyout-panel>

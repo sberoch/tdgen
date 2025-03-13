@@ -8,15 +8,23 @@ import { Router } from '@angular/router';
 import { TitleActivityDialogComponent } from '../../components/title-activity-dialog/title-activity-dialog.component';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { TitleService } from '../../services/title.service';
+import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   standalone: true,
-  imports: [MatButtonModule, MatMenuModule, MatIconModule, MatDividerModule],
+  imports: [
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule,
+    MatDividerModule,
+    FlyoutPanelComponent,
+  ],
 })
 export class HeaderComponent implements OnInit {
   currentTitle: string = '';
+  isPanelOpen = false;
 
   constructor(
     private dialog: MatDialog,
@@ -28,6 +36,14 @@ export class HeaderComponent implements OnInit {
     this.titleService.currentTitle.subscribe((title) => {
       if (title) this.currentTitle = title;
     });
+  }
+
+  togglePanel() {
+    this.isPanelOpen = !this.isPanelOpen;
+  }
+
+  closePanel() {
+    this.isPanelOpen = false;
   }
 
   openCreateDialog() {
