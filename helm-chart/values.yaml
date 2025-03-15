@@ -20,45 +20,21 @@ nameOverride: ""
 fullnameOverride: ""
 
 tdgen:
-  monogodbDbName: tdgen
   appPort: 80
+  databaseURL: file:/storage/prod.db
 
-mongodb:
-  nameOverride: ""
-  fullnameOverride: ""
-  replicaCount: 1
-  port: 27017
-  image:
-    repository: mongodb/mongodb-community-server
-    pullPolicy: IfNotPresent
-    tag: 8.0.4-ubuntu2204
-  username: admin
-  password: ""
-  existingSecret: ""
-  persistence:
-    enabled: true
-    storageClass: null
-    accessModes:
-      - ReadWriteOnce
-    size: 16Gi
-    annotations:
-      helm.sh/resource-policy: "keep"
-    finalizers:
-      - kubernetes.io/pvc-protection
-    selectorLabels: {}
-    existingClaim: null
-  livenessProbe:
-    exec:
-      command:
-        - /bin/sh
-        - -c
-        - mongosh --eval "db.adminCommand('ping')"
-  readinessProbe:
-    exec:
-      command:
-        - /bin/sh
-        - -c
-        - mongosh --eval "db.adminCommand('ping')"
+persistence:
+  enabled: true
+  storageClass: null
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  annotations:
+    helm.sh/resource-policy: "keep"
+  finalizers:
+    - kubernetes.io/pvc-protection
+  selectorLabels: {}
+  existingClaim: null
 
 #This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccount:
@@ -144,18 +120,28 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
-# Additional volumes on the output Deployment definition.
-volumes: []
-# - name: foo
-#   secret:
-#     secretName: mysecret
-#     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
-volumeMounts: []
-# - name: foo
-#   mountPath: "/etc/foo"
+# -- This allows you to mount additional volumes
+# into the tdgen container
+extraVolumeMounts: []
+# - name: extra-volume-0
+#   mountPath: /mnt/volume0
 #   readOnly: true
+#   existingClaim: volume-claim
+# - name: extra-volume-1
+#   mountPath: /mnt/volume1
+#   readOnly: true
+#   hostPath: /usr/shared/
+# - name: extra-volume-configmap
+#   configMap: tdgen
+#   items:
+#   - key: config.js
+#     path: application/config/config.js
+
+# -- This allows you to mount additional "emptyDirs"
+# into the tdgen container
+extraEmptyDirMounts: []
+# - name: extra-empty-dir
+#   mountPath: /var/lib/foobar
 
 nodeSelector: {}
 

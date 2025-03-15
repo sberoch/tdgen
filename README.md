@@ -50,14 +50,12 @@ podman build \
 ### run
 
 ```bash
+mkdir -p storage
 podman run \
     --name tdgen \
     --rm \
+    -e DATABASE_URL="file:/storage/prod.db" \
     -p 5200:5200 \
-    -e MONGODB_ADMINUSERNAME="admin" \
-    -e MONGODB_ADMINPASSWORD="T4hAVkP7LUjcDwGy" \
-    -e MONGODB_SCHEME="mongodb+srv" \
-    -e MONGODB_HOST="cluster0.o7jh8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" \
-    -e MONGODB_DB_NAME="tdgen" \
+    -v ./storage:/storage \
     ${TDGEN_IMAGE_TAG}
 ```

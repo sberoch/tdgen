@@ -23,31 +23,6 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 {{- end }}
 
-{{- define "tdgen.mongodb.name" -}}
-{{- default "mongodb" .Values.mongodb.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{- define "tdgen.mongodb.fullname" -}}
-{{- if .Values.mongodb.fullnameOverride }}
-{{- .Values.mongodb.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default "mongodb" .Values.mongodb.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{- define "tdgen.mongodb.secretName" -}}
-{{- if .Values.mongodb.existingSecret -}}
-    {{- printf "%s" .Values.mongodb.existingSecret -}}
-{{- else -}}
-    {{- printf "%s" (include "tdgen.mongodb.fullname" .) -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -67,25 +42,11 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
-{{- define "tdgen.mongodb.labels" -}}
-helm.sh/chart: {{ include "tdgen.chart" . }}
-{{ include "tdgen.mongodb.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
 {{/*
 Selector labels
 */}}
 {{- define "tdgen.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "tdgen.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }}
-
-{{- define "tdgen.mongodb.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "tdgen.mongodb.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 

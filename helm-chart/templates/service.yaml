@@ -13,17 +13,3 @@ spec:
       name: http
   selector:
     {{- include "tdgen.selectorLabels" . | nindent 4 }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ include "tdgen.mongodb.fullname" . }}
-  labels:
-    {{- include "tdgen.mongodb.labels" . | nindent 4 }}
-spec:
-  ports:
-    - port: {{ .Values.mongodb.port }}
-      targetPort: {{ .Values.mongodb.port }}
-      protocol: TCP
-  selector:
-    {{- include "tdgen.mongodb.selectorLabels" . | nindent 4 }}

@@ -30,43 +30,20 @@ spec:
       serviceAccountName: {{ include "tdgen.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: db-isalive
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env:
-            - name: MONGODB_HOST
-              value: {{ include "tdgen.mongodb.fullname" . }}
-            - name: MONGODB_PORT
-              value: {{ .Values.mongodb.port | quote }}
-          command:
-            - "sh"
-            - "-c"
-            - "until nc -z -v -w30 ${MONGODB_HOST} ${MONGODB_PORT}; do echo waiting for db; sleep 5; done;"
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: tdgen-storage
+              mountPath: "/storage"
           env:
-            - name: MONGODB_ADMINUSERNAME
-              value: {{ .Values.mongodb.username | quote }}
-            - name: MONGODB_ADMINPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "tdgen.mongodb.secretName" . }}
-                  key: mongodb-password
-            - name: MONGODB_SCHEME
-              value: mongodb
-            - name: MONGODB_HOST
-              value: {{ include "tdgen.mongodb.fullname" . }}
-            - name: MONGODB_DB_NAME
-              value: {{ .Values.tdgen.monogodbDbName | quote }}
             - name: APP_HTTP_PORT
               value: {{ .Values.tdgen.appPort | quote }}
+            - name: DATABASE_URL
+              value: {{ .Values.tdgen.databaseURL | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -81,19 +58,34 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.volumes }}
       volumes:
-        {{- toYaml . | nindent 8 }}
+        - name: tdgen-storage
+      {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "tdgen.fullname" .) }}
+      {{- else }}
+          emptyDir: {}
+      {{- end -}}
+      {{- range .Values.extraVolumeMounts }}
+        - name: {{ .name }}
+          {{- if .existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .existingClaim }}
+          {{- else if .hostPath }}
+          hostPath:
+            path: {{ .hostPath }}
+          {{- else if .configMap }}
+          configMap:
+            name: {{ .configMap }}
+            {{- with .items }}
+            items:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
       {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      {{- range .Values.extraEmptyDirMounts }}
+        - name: {{ .name }}
+          emptyDir: {}
+      {{- end -}}
