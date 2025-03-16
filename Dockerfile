@@ -4,8 +4,9 @@ FROM node:${NODE_VERSION}-alpine AS build
 WORKDIR /usr/src/app
 COPY server server
 COPY client client
+RUN npm install -g @nestjs/cli
 RUN npm install -g @angular/cli
-RUN cd server && npm install
+RUN cd server && npm install && nest build
 RUN cd client && npm install && ng build
 
 
@@ -18,4 +19,4 @@ COPY --from=build /usr/src/app/client/dist/client/browser client
 EXPOSE 5200
 
 USER node
-CMD ["npm", "run", "serve"]
+CMD ["npm", "run", "start:prod"]
