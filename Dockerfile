@@ -17,4 +17,5 @@ COPY --from=build /usr/src/app/client/dist/client/browser client
 
 EXPOSE 5200
 
+USER node
 CMD ["npm", "run", "serve"]

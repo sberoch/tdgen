@@ -57,5 +57,6 @@ podman run \
     -e DATABASE_URL="file:/storage/prod.db" \
     -p 5200:5200 \
     -v ./storage:/storage \
+    --userns=keep-id:uid=1000,gid=1000 \
     ${TDGEN_IMAGE_TAG}
 ```
