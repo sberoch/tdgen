@@ -19,7 +19,7 @@ Start server:
 ```bash
 cd server
 npm install
-npm run serve | npx pino-pretty -c
+npm run start:dev
 ```
 
 
@@ -32,6 +32,8 @@ cd client
 npm install
 ng serve -o
 ```
+
+If you don't have the NestJS CLI (`nest`) already installed, you may use `npm install -g @nestjs/cli` to install it.
 
 If you don't have the Angular CLI (`ng`) already installed, you may use `npm install -g @angular/cli` to install it.
 
