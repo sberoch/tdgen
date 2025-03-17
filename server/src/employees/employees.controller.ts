@@ -1,12 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Employee as EmployeeModel, Level as LevelModel } from '@prisma/client';
 
 @Controller('employees')
 export class EmployeesController {
-  constructor(
-    private readonly employeesService: EmployeesService,
-  ) {}
+  constructor(private readonly employeesService: EmployeesService) {}
 
   @Get()
   async getEmployees(): Promise<EmployeeModel[]> {
@@ -14,7 +20,9 @@ export class EmployeesController {
   }
 
   @Get(':id')
-  async getEmployeeById(@Param('id') id: string): Promise<EmployeeModel|null> {
+  async getEmployeeById(
+    @Param('id') id: string,
+  ): Promise<EmployeeModel | null> {
     return this.employeesService.employee({ id: Number(id) });
   }
 
@@ -26,7 +34,7 @@ export class EmployeesController {
     return this.employeesService.createEmployee({
       name,
       position,
-      level
+      level,
     });
   }
 
@@ -41,7 +49,7 @@ export class EmployeesController {
       data: {
         name,
         position,
-        level
+        level,
       },
     });
   }
