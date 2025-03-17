@@ -3,6 +3,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { EmployeesModule } from './employees/employees.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { JobTasksModule } from './job-tasks/job-tasks.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     EmployeesModule,
     PrismaModule,
+    JobTasksModule,
   ],
 })
 export class AppModule {}
