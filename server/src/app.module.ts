@@ -8,7 +8,7 @@ import { JobTasksModule } from './job-tasks/job-tasks.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
+      rootPath: join(__dirname, '../..', 'client'),
     }),
     EmployeesModule,
     PrismaModule,
