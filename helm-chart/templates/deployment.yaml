@@ -46,7 +46,7 @@ spec:
               value: {{ .Values.tdgen.databaseURL | quote }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.tdgen.appPort }}
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}

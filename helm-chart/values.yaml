@@ -20,7 +20,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 tdgen:
-  appPort: 80
+  appPort: 8080
   databaseURL: file:/storage/prod.db
 
 persistence:
@@ -109,11 +109,11 @@ resources: {}
 livenessProbe:
   httpGet:
     path: /
-    port: http
+    port: 8080
 readinessProbe:
   httpGet:
     path: /
-    port: http
+    port: 8080
 
 #This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
