@@ -36,7 +36,7 @@ model JobTask {
 
 model JobDescription {
   id        Int        @id @default(autoincrement())
-  title     String
+  title     String @unique
   metadata Json
   tasks     JobTask[]
 }
