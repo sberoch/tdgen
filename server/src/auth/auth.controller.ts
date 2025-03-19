@@ -20,4 +20,12 @@ export class AuthController {
       message: 'Register successful',
     };
   }
+
+  @Post('logout')
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async logout() {
+    return {
+      message: 'Logout successful',
+    };
+  }
 }
