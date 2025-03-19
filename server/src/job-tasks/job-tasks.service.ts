@@ -15,6 +15,7 @@ export class JobTasksService {
   async get(id: string): Promise<JobTask> {
     const jobTask = await this.prisma.jobTask.findUnique({
       where: { id: Number(id) },
+      include: { jobDescription: true },
     });
     if (!jobTask) {
       throw new NotFoundException('Job task not found');
