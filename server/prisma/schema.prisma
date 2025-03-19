@@ -31,3 +31,9 @@ model JobTask {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 } 
+
+model JobDescription {
+  id        Int        @id @default(autoincrement())
+  title     String
+  metadata Json
+}

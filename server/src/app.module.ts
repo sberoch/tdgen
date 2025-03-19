@@ -4,6 +4,7 @@ import { join } from 'path';
 import { EmployeesModule } from './employees/employees.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobTasksModule } from './job-tasks/job-tasks.module';
+import { JobDescriptionsModule } from './job-descriptions/job-descriptions.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JobTasksModule } from './job-tasks/job-tasks.module';
     EmployeesModule,
     PrismaModule,
     JobTasksModule,
+    JobDescriptionsModule,
   ],
 })
 export class AppModule {}
