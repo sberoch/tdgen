@@ -10,28 +10,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Employee {
-  id        Int        @id @default(autoincrement())
-  name      String
-  position  String
-  level     Level
-}
-
-enum Level {
-  JUNIOR
-  MID
-  SENIOR
-}
-
 model JobTask {
   id        Int        @id @default(autoincrement())
   title     String
   text String
   metadata Json
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
   jobDescriptionId Int?
   jobDescription JobDescription? @relation(fields: [jobDescriptionId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 } 
 
 model JobDescription {
