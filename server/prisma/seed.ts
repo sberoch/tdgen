@@ -55,13 +55,40 @@ const getRandomSentence = (minWords: number, maxWords: number) => {
 };
 
 async function main() {
+  await prisma.permission.createMany({
+    data: [
+      { name: 'CREATE' },
+      { name: 'READ' },
+      { name: 'UPDATE' },
+      { name: 'DELETE' },
+    ],
+  });
+  const permissions = await prisma.permission.findMany();
+  console.log('Created permissions.');
+
+  const user = await prisma.user.create({
+    data: {
+      id: 4016651,
+      email: 'admin@example.com',
+      firstName: 'Admin',
+      lastName: 'User',
+      isAdmin: true,
+      permissions: {
+        connect: permissions.map((permission) => ({ id: permission.id })),
+      },
+    },
+  });
+  console.log('Created admin user.');
+
   await prisma.jobTask.createMany({
     data: Array.from({ length: 100 }, () => ({
       title: getRandomSentence(3, 10).slice(0, 100),
       text: getRandomSentence(50, 150).slice(0, 2000),
       metadata: {},
+      createdById: user.id,
     })),
   });
+  console.log('Created job tasks.');
 }
 
 main()

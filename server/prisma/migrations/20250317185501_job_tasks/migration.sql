@@ -1,9 +1,0 @@
--- CreateTable
-CREATE TABLE "JobTask" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "title" TEXT NOT NULL,
-    "text" TEXT NOT NULL,
-    "metadata" JSONB NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
-);
