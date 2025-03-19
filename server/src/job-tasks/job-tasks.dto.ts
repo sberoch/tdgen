@@ -3,6 +3,7 @@ export type CreateJobTaskDto = {
   text: string;
   jobDescriptionId?: number;
   metadata: Record<string, any>;
+  tags: string[];
 };
 
 export type UpdateJobTaskDto = Partial<CreateJobTaskDto>;
