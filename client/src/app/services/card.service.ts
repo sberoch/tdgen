@@ -1,7 +1,9 @@
+import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Card, createCards } from '../utils/card.utils';
-import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { environment } from '../../environments/environment';
+import { Card, JobTask } from '../utils/card.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -10,17 +12,26 @@ export class CardService {
   private cardsSubject = new BehaviorSubject<Card[]>([]);
   private displayCardsSubject = new BehaviorSubject<Card[]>([]);
   private selectedCardSubject = new BehaviorSubject<Card | null>(null);
+  private apiUrl = `${environment.apiUrl}api/job-tasks`;
 
   cards$ = this.cardsSubject.asObservable();
   displayCards$ = this.displayCardsSubject.asObservable();
   selectedCard$ = this.selectedCardSubject.asObservable();
-  constructor() {
+
+  constructor(private http: HttpClient) {
     this.initializeCards();
   }
 
   private initializeCards() {
-    const cards = createCards(15);
-    this.cardsSubject.next(cards);
+    this.http.get<JobTask[]>(this.apiUrl).subscribe((tasks) => {
+      const cards = tasks.map((task, index) => ({
+        classification: `EG ${index + 1}`,
+        title: task.title,
+        text: task.text,
+        percentage: 5,
+      }));
+      this.cardsSubject.next(cards);
+    });
   }
 
   private balanceArray(arr: number[]): number[] {
@@ -57,7 +68,7 @@ export class CardService {
 
   private calculateAdjustedPercentages(
     newCount: number,
-    existingPercentages: number[],
+    existingPercentages: number[]
   ): number[] {
     if (newCount === 0) return [];
     if (newCount === 1) return [100];
@@ -75,13 +86,13 @@ export class CardService {
       const secondHalf = maxVal - firstHalf;
       if (firstHalf < 5 || secondHalf < 5) {
         return this.balanceArray(
-          result.concat(Array(newCount - result.length).fill(5)),
+          result.concat(Array(newCount - result.length).fill(5))
         );
       }
       result.splice(maxIndex, 1);
       result.unshift(
         Math.min(firstHalf, secondHalf),
-        Math.max(firstHalf, secondHalf),
+        Math.max(firstHalf, secondHalf)
       );
     }
     // Remove parts by merging with the next smaller value
@@ -123,17 +134,17 @@ export class CardService {
   addToDisplay(card: Card, index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     const isDuplicate = currentDisplay.some(
-      (existingCard) => existingCard.classification === card.classification,
+      (existingCard) => existingCard.classification === card.classification
     );
 
     if (!isDuplicate) {
       const currentBacklog = this.cardsSubject.value.filter(
-        (c) => c.classification !== card.classification,
+        (c) => c.classification !== card.classification
       );
       this.cardsSubject.next(currentBacklog);
       const percentages = this.calculateAdjustedPercentages(
         currentDisplay.length + 1,
-        currentDisplay.map((c) => c.percentage),
+        currentDisplay.map((c) => c.percentage)
       );
       currentDisplay.splice(index, 0, card);
       currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
@@ -146,7 +157,7 @@ export class CardService {
     const currentDisplay = [...this.displayCardsSubject.value];
     const percentages = this.calculateAdjustedPercentages(
       currentDisplay.length - 1,
-      currentDisplay.map((c) => c.percentage),
+      currentDisplay.map((c) => c.percentage)
     );
     const removedCard = currentDisplay.splice(index, 1)[0];
     currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));

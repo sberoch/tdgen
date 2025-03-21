@@ -1,3 +1,20 @@
+export type JobTask = {
+  id: number;
+  title: string;
+  text: string;
+  metadata: Record<string, any>;
+  tags: string[];
+  jobDescriptionId?: number;
+  jobDescription?: JobDescription;
+};
+
+export type JobDescription = {
+  id: number;
+  title: string;
+  metadata: Record<string, any>;
+  tasks: JobTask[];
+};
+
 export type Card = {
   classification: string;
   title: string;
