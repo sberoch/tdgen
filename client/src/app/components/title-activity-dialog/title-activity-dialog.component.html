@@ -3,6 +3,7 @@
   <mat-form-field class="w-full activity-dialog-input">
     <input matInput [(ngModel)]="title" />
   </mat-form-field>
+  <p *ngIf="errorMessage" class="text-red-500 py-2">{{ errorMessage }}</p>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Abbrechen</button>

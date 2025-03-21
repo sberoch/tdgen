@@ -4,7 +4,7 @@ import { JobDescription } from '@prisma/client';
 import { CreateJobDescriptionDto } from './job-descriptions.dto';
 import { UpdateJobDescriptionDto } from './job-descriptions.dto';
 
-const ADMIN_ID = 4016651;
+const ADMIN_ID = '4016651';
 
 @Injectable()
 export class JobDescriptionsService {
@@ -45,19 +45,28 @@ export class JobDescriptionsService {
     return !!jobDescription;
   }
 
+  async hasByTitle(title: string): Promise<boolean> {
+    const jobDescription = await this.prisma.jobDescription.findUnique({
+      where: { title, deletedAt: null },
+    });
+    return !!jobDescription;
+  }
+
   async create(data: CreateJobDescriptionDto): Promise<JobDescription> {
     const { tags, formFields, ...rest } = data;
     return this.prisma.jobDescription.create({
       data: {
         ...rest,
-        tags: { create: tags.map((tag) => ({ name: tag })) },
+        tags: { create: tags?.map((tag) => ({ name: tag })) },
         formFields: {
-          create: Object.entries(formFields).map(([key, value]) => ({
-            key,
-            value,
-          })),
+          create: formFields
+            ? Object.entries(formFields).map(([key, value]) => ({
+                key,
+                value,
+              }))
+            : undefined,
         },
-        createdBy: { connect: { id: ADMIN_ID } },
+        createdBy: { connect: { userId: ADMIN_ID } },
       },
     });
   }
@@ -81,7 +90,7 @@ export class JobDescriptionsService {
               }))
             : undefined,
         },
-        updatedBy: { connect: { id: ADMIN_ID } },
+        updatedBy: { connect: { userId: ADMIN_ID } },
       },
     });
   }
@@ -92,7 +101,7 @@ export class JobDescriptionsService {
       where: { id: jobDescription.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { id: ADMIN_ID } },
+        deletedBy: { connect: { userId: ADMIN_ID } },
       },
     });
   }

@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Body,
+  Query,
 } from '@nestjs/common';
 import { JobDescription } from '@prisma/client';
 import { JobDescriptionsService } from './job-descriptions.service';
@@ -25,14 +26,19 @@ export class JobDescriptionsController {
     return this.jobDescriptionsService.list();
   }
 
-  @Get(':id')
-  async get(@Param('id') id: string): Promise<JobDescription> {
-    return this.jobDescriptionsService.get(id);
+  @Get('exists')
+  async existsByTitle(@Query('title') title: string): Promise<boolean> {
+    return this.jobDescriptionsService.hasByTitle(title);
   }
 
   @Get(':id/exists')
-  async exists(@Param('id') id: string): Promise<boolean> {
+  async existsById(@Param('id') id: string): Promise<boolean> {
     return this.jobDescriptionsService.has(id);
+  }
+
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<JobDescription> {
+    return this.jobDescriptionsService.get(id);
   }
 
   @Post()
