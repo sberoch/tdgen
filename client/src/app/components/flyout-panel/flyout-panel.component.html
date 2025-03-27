@@ -7,11 +7,13 @@
   (click)="onOverlayClick($event)"
 >
   <div
-    class="bg-white h-full w-1/5 min-w-[300px] shadow-lg flex flex-col transform transition-transform duration-300"
+    class="bg-white h-full w-1/3 min-w-[300px] shadow-lg flex flex-col transform transition-transform duration-300"
     [class.translate-x-full]="!isOpen"
     [class.translate-x-0]="isOpen"
   >
-    <div class="p-3 border-b border-b-gray flex items-center justify-between">
+    <div
+      class="p-3 pb-2 border-b border-b-gray flex items-center justify-between"
+    >
       <button mat-icon-button (click)="onClose()" class="mb-1">
         <mat-icon>chevron_right</mat-icon>
       </button>

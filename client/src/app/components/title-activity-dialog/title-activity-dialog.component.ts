@@ -58,7 +58,7 @@ export class TitleActivityDialogComponent {
         );
         this.dialogRef.close(this.title.trim());
       } else {
-        this.errorMessage = 'Dieser Titel existiert bereits.';
+        this.errorMessage = 'Der Titel darf nicht leer sein.';
         console.log('Title already exists');
       }
     }

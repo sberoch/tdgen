@@ -55,7 +55,7 @@ export class CardTooltipDirective implements OnDestroy {
     // Create title element
     const titleElement = this.renderer.createElement('p');
     this.renderer.addClass(titleElement, 'font-bold');
-    this.renderer.addClass(titleElement, 'text-sm');
+    this.renderer.addClass(titleElement, 'text-base');
     const titleText = this.renderer.createText(this.card.title);
     this.renderer.appendChild(titleElement, titleText);
 
