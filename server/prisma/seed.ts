@@ -69,9 +69,9 @@ async function main() {
   const user = await prisma.user.create({
     data: {
       userId: '4016651',
-      email: 'admin@example.com',
-      firstName: 'Admin',
-      lastName: 'User',
+      email: 'markus.nix@polizei.bund.de',
+      firstName: 'Markus',
+      lastName: 'Nix',
       isAdmin: true,
       permissions: {
         connect: permissions.map((permission) => ({ id: permission.id })),
