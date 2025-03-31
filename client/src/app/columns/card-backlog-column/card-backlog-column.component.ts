@@ -108,11 +108,11 @@ export class CardBacklogColumnComponent implements OnInit {
       return;
     }
 
-    this.backlogCards = this.allBacklogCards.filter(
-      (card) =>
-        card.text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        card.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    this.backlogCards = this.allBacklogCards.filter((card) => {
+      const text = `${card.title} ${card.text}`.toLowerCase();
+      const keywords = searchTerm.toLowerCase().split(/\s+/);
+      return keywords.every((keyword) => text.includes(keyword));
+    });
   }
 
   drop(event: CdkDragDrop<Card[]>) {
