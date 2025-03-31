@@ -15,6 +15,7 @@ import packageJson from '../../../../package.json';
 })
 export class AboutDialogComponent {
   version = packageJson.version ?? '1.0.0';
+  year = new Date().getFullYear();
 
   constructor(private dialogRef: MatDialogRef<AboutDialogComponent>) {}
 }
