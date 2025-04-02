@@ -1,0 +1,14 @@
+services:
+  tdgen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tdgen
+    ports:
+      - "5200:5200"
+    environment:
+      - DATABASE_URL=file:/storage/prod.db
+    volumes:
+      - ./storage:/storage
+    user: "1000:1000"
+    restart: always
