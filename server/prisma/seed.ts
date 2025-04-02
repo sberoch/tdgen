@@ -55,40 +55,54 @@ const getRandomSentence = (minWords: number, maxWords: number) => {
 };
 
 async function main() {
-  await prisma.permission.createMany({
-    data: [
-      { name: 'CREATE' },
-      { name: 'READ' },
-      { name: 'UPDATE' },
-      { name: 'DELETE' },
-    ],
-  });
   const permissions = await prisma.permission.findMany();
-  console.log('Created permissions.');
+  if (permissions.length === 0) {
+    await prisma.permission.createMany({
+      data: [
+        { name: 'CREATE' },
+        { name: 'READ' },
+        { name: 'UPDATE' },
+        { name: 'DELETE' },
+      ],
+    });
+    console.log('Created permissions.');
+  }
+  const createdPermissions = await prisma.permission.findMany();
 
-  const user = await prisma.user.create({
-    data: {
-      userId: '4016651',
-      email: 'markus.nix@polizei.bund.de',
-      firstName: 'Markus',
-      lastName: 'Nix',
-      isAdmin: true,
-      permissions: {
-        connect: permissions.map((permission) => ({ id: permission.id })),
+  const users = await prisma.user.findMany();
+  if (users.length === 0) {
+    await prisma.user.create({
+      data: {
+        userId: '4016651',
+        email: 'markus.nix@polizei.bund.de',
+        firstName: 'Markus',
+        lastName: 'Nix',
+        isAdmin: true,
+        permissions: {
+          connect: createdPermissions.map((permission) => ({
+            id: permission.id,
+          })),
+        },
       },
-    },
+    });
+    console.log('Created admin user.');
+  }
+  const createdUser = await prisma.user.findUnique({
+    where: { userId: '4016651' },
   });
-  console.log('Created admin user.');
 
-  await prisma.jobTask.createMany({
-    data: Array.from({ length: 100 }, () => ({
-      title: getRandomSentence(3, 10).slice(0, 100),
-      text: getRandomSentence(50, 150).slice(0, 2000),
-      metadata: {},
-      createdById: user.id,
-    })),
-  });
-  console.log('Created job tasks.');
+  const jobTasks = await prisma.jobTask.findMany();
+  if (jobTasks.length === 0) {
+    await prisma.jobTask.createMany({
+      data: Array.from({ length: 100 }, () => ({
+        title: getRandomSentence(3, 10).slice(0, 100),
+        text: getRandomSentence(50, 150).slice(0, 2000),
+        metadata: {},
+        createdById: createdUser!.id,
+      })),
+    });
+    console.log('Created job tasks.');
+  }
 }
 
 main()
