@@ -4,6 +4,7 @@ import { HeaderComponent } from '../../layout/header/header.component';
 import { FooterComponent } from '../../layout/footer/footer.component';
 import { CardBacklogColumnComponent } from '../../columns/card-backlog-column/card-backlog-column.component';
 import { CardSizingColumnComponent } from '../../columns/card-sizing-column/card-sizing-column.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-home',
@@ -14,6 +15,7 @@ import { CardSizingColumnComponent } from '../../columns/card-sizing-column/card
     FooterComponent,
     CardBacklogColumnComponent,
     CardSizingColumnComponent,
+    MatDialogModule,
   ],
   templateUrl: './home.component.html',
 })

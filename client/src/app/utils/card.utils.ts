@@ -29,6 +29,7 @@ export type Card = {
   title: string;
   text: string;
   percentage: number;
+  tags: string[];
 };
 
 const pastelColors = [

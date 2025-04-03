@@ -38,7 +38,7 @@
             {{ card.title }}
           </p>
           <p class="text-xs 2xl:text-sm 3xl:text-base">
-            {{ truncate(card.text, 100) }}
+            {{ truncate(card.text, 75) }}
           </p>
           <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
             {{ card.classification }}
@@ -48,7 +48,7 @@
           {{ card.title }}
         </p>
         <p class="text-xs 2xl:text-sm mt-1">
-          {{ truncate(card.text, 200) }}
+          {{ truncate(card.text, 145) }}
         </p>
         <p class="text-xs 2xl:text-sm text-black/50 mt-1">
           {{ card.classification }}
@@ -98,7 +98,7 @@
           {{ card.text }}
         </p>
         <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
-          {{ card.classification }}
+          {{ card.classification }} | Tags: {{ card.tags.join(", ") }}
         </p>
       </div>
       } } @else {

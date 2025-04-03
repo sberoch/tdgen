@@ -109,7 +109,8 @@ export class CardBacklogColumnComponent implements OnInit {
     }
 
     this.backlogCards = this.allBacklogCards.filter((card) => {
-      const text = `${card.title} ${card.text}`.toLowerCase();
+      const tags = card.tags.join(' ');
+      const text = `${tags} ${card.title} ${card.text}`.toLowerCase();
       const keywords = searchTerm.toLowerCase().split(/\s+/);
       return keywords.every((keyword) => text.includes(keyword));
     });

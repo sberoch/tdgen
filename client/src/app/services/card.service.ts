@@ -29,6 +29,7 @@ export class CardService {
         title: task.title,
         text: task.text,
         percentage: 5,
+        tags: task.tags,
       }));
       this.cardsSubject.next(cards);
     });
