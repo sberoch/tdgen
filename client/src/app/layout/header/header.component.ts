@@ -9,6 +9,7 @@ import { TitleActivityDialogComponent } from '../../components/title-activity-di
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { TitleService } from '../../services/title.service';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
+import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 
 @Component({
   selector: 'app-header',
@@ -20,11 +21,13 @@ import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel
     MatIconModule,
     MatDividerModule,
     FlyoutPanelComponent,
+    OverlayModalComponent,
   ],
 })
 export class HeaderComponent implements OnInit {
   currentTitle: string = '';
   isPanelOpen = false;
+  isModalOpen = false;
 
   constructor(
     private dialog: MatDialog,
@@ -46,6 +49,14 @@ export class HeaderComponent implements OnInit {
     this.isPanelOpen = false;
   }
 
+  openModal() {
+    this.isModalOpen = true;
+  }
+
+  closeModal() {
+    this.isModalOpen = false;
+  }
+
   openCreateDialog() {
     const dialogRef = this.dialog.open(TitleActivityDialogComponent, {
       width: '600px',
@@ -65,7 +76,7 @@ export class HeaderComponent implements OnInit {
   }
 
   onButtonClick() {
-    alert('TODO');
+    alert('TODsO');
   }
 
   logout() {

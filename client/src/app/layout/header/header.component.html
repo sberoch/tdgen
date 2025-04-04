@@ -26,7 +26,7 @@
     Neue Tätigkeitsdarstellung
   </button>
   <mat-divider></mat-divider>
-  <button mat-menu-item (click)="onButtonClick()">
+  <button mat-menu-item (click)="openModal()">
     Tätigkeitsdarstellungen verwalten
   </button>
   <button mat-menu-item (click)="onButtonClick()">
@@ -44,3 +44,10 @@
   (close)="closePanel()"
 >
 </app-flyout-panel>
+
+<!-- Overlay Modal Component -->
+<app-overlay-modal [isOpen]="isModalOpen" (close)="closeModal()">
+  <h2>Tätigkeitsdarstellungen verwalten</h2>
+  <p>Hier können Sie Ihre Tätigkeitsdarstellungen verwalten.</p>
+  <!-- Add your content here -->
+</app-overlay-modal>
