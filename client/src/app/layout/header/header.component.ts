@@ -10,7 +10,8 @@ import { AboutDialogComponent } from '../../components/about-dialog/about-dialog
 import { TitleService } from '../../services/title.service';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
-
+import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
+import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -22,12 +23,15 @@ import { OverlayModalComponent } from '../../components/overlay-modal/overlay-mo
     MatDividerModule,
     FlyoutPanelComponent,
     OverlayModalComponent,
+    JdOverviewAccordionComponent,
+    JtOverviewAccordionComponent,
   ],
 })
 export class HeaderComponent implements OnInit {
   currentTitle: string = '';
   isPanelOpen = false;
-  isModalOpen = false;
+  isJobDescriptionModalOpen = false;
+  isJobTaskModalOpen = false;
 
   constructor(
     private dialog: MatDialog,
@@ -49,12 +53,20 @@ export class HeaderComponent implements OnInit {
     this.isPanelOpen = false;
   }
 
-  openModal() {
-    this.isModalOpen = true;
+  openJobDescriptionModal() {
+    this.isJobDescriptionModalOpen = true;
   }
 
-  closeModal() {
-    this.isModalOpen = false;
+  closeJobDescriptionModal() {
+    this.isJobDescriptionModalOpen = false;
+  }
+
+  openJobTaskModal() {
+    this.isJobTaskModalOpen = true;
+  }
+
+  closeJobTaskModal() {
+    this.isJobTaskModalOpen = false;
   }
 
   openCreateDialog() {
@@ -76,7 +88,7 @@ export class HeaderComponent implements OnInit {
   }
 
   onButtonClick() {
-    alert('TODsO');
+    alert('TODO');
   }
 
   logout() {

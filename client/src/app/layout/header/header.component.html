@@ -26,10 +26,10 @@
     Neue Tätigkeitsdarstellung
   </button>
   <mat-divider></mat-divider>
-  <button mat-menu-item (click)="openModal()">
+  <button mat-menu-item (click)="openJobDescriptionModal()">
     Tätigkeitsdarstellungen verwalten
   </button>
-  <button mat-menu-item (click)="onButtonClick()">
+  <button mat-menu-item (click)="openJobTaskModal()">
     Arbeitsvorgänge verwalten
   </button>
   <mat-divider></mat-divider>
@@ -37,7 +37,6 @@
   <button mat-menu-item (click)="openAboutDialog()">Über TDGen</button>
 </mat-menu>
 
-<!-- Flyout Panel Component -->
 <app-flyout-panel
   [isOpen]="isPanelOpen"
   [title]="'Rahmendaten'"
@@ -45,9 +44,13 @@
 >
 </app-flyout-panel>
 
-<!-- Overlay Modal Component -->
-<app-overlay-modal [isOpen]="isModalOpen" (close)="closeModal()">
-  <h2>Tätigkeitsdarstellungen verwalten</h2>
-  <p>Hier können Sie Ihre Tätigkeitsdarstellungen verwalten.</p>
-  <!-- Add your content here -->
+<app-overlay-modal
+  [isOpen]="isJobDescriptionModalOpen"
+  (close)="closeJobDescriptionModal()"
+>
+  <app-jd-overview-accordion></app-jd-overview-accordion>
+</app-overlay-modal>
+
+<app-overlay-modal [isOpen]="isJobTaskModalOpen" (close)="closeJobTaskModal()">
+  <app-jt-overview-accordion></app-jt-overview-accordion>
 </app-overlay-modal>
