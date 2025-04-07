@@ -48,3 +48,7 @@ const pastelColors = [
 export const getNextPastelColor = (currentIndex: number): string => {
   return pastelColors[currentIndex % pastelColors.length];
 };
+
+export const truncateText = (text: string, maxLength: number): string => {
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+};
