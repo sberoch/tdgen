@@ -1,6 +1,6 @@
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 h-full">
   <div class="flex justify-between">
-    <h1 class="text-4xl font-medium tracking-wide text-zinc-600">
+    <h1 class="text-2xl 3xl:text-3xl font-medium tracking-wide text-zinc-600">
       Arbeitsvorgänge
     </h1>
     <button
@@ -8,5 +8,109 @@
     >
       Neuer Arbeitsvorgang
     </button>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <input
+      type="text"
+      placeholder="Arbeitsvorgänge filtern"
+      class="w-full border border-lightgray rounded-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm max-w-md"
+    />
+    <input
+      type="checkbox"
+      id="showDeleted"
+      class="!ml-8 h-4 w-4 rounded border-lightgray text-secondary focus:ring-secondary/50"
+    />
+    <label for="showDeleted" class="text-sm text-gray-700">
+      gelöschte Einträge einblenden
+    </label>
+  </div>
+
+  <div class="overflow-y-auto mt-2 flex-grow h-full border-y border-y-tertiary">
+    <div class="w-full">
+      <!-- Header row -->
+      <div
+        class="flex bg-tertiary text-white font-medium text-sm 3xl:text-base"
+      >
+        <div class="px-4 py-2 flex-1 text-left">Titel</div>
+        <div class="px-4 py-2 w-28 3xl:w-32 text-left">erstellt am</div>
+        <div class="px-4 py-2 w-28 3xl:w-32 text-left">geändert am</div>
+        <div class="px-4 py-2 w-28 3xl:w-32 text-left">gelöscht am</div>
+        <div class="px-4 py-2 w-28 3xl:w-32"></div>
+      </div>
+
+      <!-- Accordion items -->
+      <div *ngFor="let item of mockData; let i = index">
+        <!-- Accordion header row -->
+        <div
+          class="flex items-center cursor-pointer transition-colors"
+          [style.background-color]="
+            i % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(229 231 235)'
+          "
+          [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+          (click)="toggleAccordion(item.id!)"
+        >
+          <div
+            class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg flex-1 flex items-center"
+            [class.line-through]="item.deletedAt"
+          >
+            <span class="mr-2">
+              {{ truncate(item.title, 100) }}
+            </span>
+            <button
+              mat-icon-button
+              class="text-gray-500 hover:text-secondary"
+              title="Bearbeiten"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
+            </button>
+          </div>
+          <div
+            class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
+          >
+            {{ item.createdAt }}
+          </div>
+          <div
+            class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
+          >
+            {{ item.updatedAt }}
+          </div>
+          <div
+            class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
+          >
+            {{ item.deletedAt }}
+          </div>
+          <div
+            class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32 flex justify-end"
+          >
+            <button
+              mat-icon-button
+              class="text-gray-500 hover:text-secondary"
+              title="Löschen"
+              (click)="$event.stopPropagation()"
+            >
+              <mat-icon class="text-lg -translate-y-1">delete</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion content with animation -->
+        <div
+          [@expandCollapse]="getAccordionState(item.id!)"
+          class="bg-white border-b border-lightgray overflow-hidden"
+        >
+          <div class="p-4 w-full">
+            <h3 class="text-lg font-medium mb-2">
+              Details für {{ item.title }}
+            </h3>
+            <p>
+              Hier können detaillierte Informationen zum Arbeitsvorgang
+              angezeigt werden.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

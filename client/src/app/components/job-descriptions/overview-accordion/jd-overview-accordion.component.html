@@ -49,11 +49,11 @@
             i % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(229 231 235)'
           "
           [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
-          [class.line-through]="item.deletedAt"
           (click)="toggleAccordion(item.id!)"
         >
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg flex-1 flex items-center"
+            [class.line-through]="item.deletedAt"
           >
             <span class="mr-2">
               {{ truncate(item.title, 100) }}
