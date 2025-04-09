@@ -101,20 +101,28 @@
           class="bg-white border-b border-lightgray overflow-hidden"
         >
           <div class="p-4 w-full">
-            <div class="flex items-center gap-2 mb-4">
-              <input
-                type="text"
-                placeholder="Tag hinzufügen"
-                [(ngModel)]="tagInput"
-                (keyup.enter)="handleKeyPress($any($event), item)"
-                class="border border-lightgray rounded-sm py-1 px-2 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm w-[400px]"
-              />
-              <button
-                (click)="addTags(item)"
-                class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm"
+            <div class="flex w-full justify-between">
+              <div class="flex items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Tag hinzufügen"
+                  [(ngModel)]="tagInput"
+                  (keyup.enter)="handleKeyPress($any($event), item)"
+                  class="border border-lightgray rounded-sm py-1 px-2 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm w-[400px]"
+                />
+                <button
+                  (click)="addTags(item)"
+                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm"
+                >
+                  Hinzufügen
+                </button>
+              </div>
+              <select
+                class="text-zinc-600 text-sm border border-lightgray rounded-sm px-2 focus:outline-none focus:ring-2 focus:ring-black/80"
+                (change)="onEgSelected($any($event.target).value)"
               >
-                Hinzufügen
-              </button>
+                <option *ngFor="let eg of EG_OPTIONS">{{ eg }}</option>
+              </select>
             </div>
             <div
               class="flex flex-wrap gap-2"
@@ -132,6 +140,12 @@
                 </button>
                 <span>{{ tag }}</span>
               </div>
+            </div>
+            <div class="mt-2">
+              <angular-editor
+                [(ngModel)]="htmlContent"
+                [config]="editorConfig"
+              ></angular-editor>
             </div>
           </div>
         </div>

@@ -10,7 +10,9 @@ import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
+import { AngularEditorModule } from '@kolkov/angular-editor';
 import { truncateText } from '../../../utils/card.utils';
+import { AngularEditorConfig } from '@kolkov/angular-editor';
 
 interface JobTask {
   title: string;
@@ -26,7 +28,13 @@ interface JobTask {
   selector: 'app-jt-overview-accordion',
   templateUrl: './jt-overview-accordion.component.html',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    FormsModule,
+    AngularEditorModule,
+  ],
   animations: [
     trigger('expandCollapse', [
       state(
@@ -54,7 +62,33 @@ interface JobTask {
 export class JtOverviewAccordionComponent {
   expandedItemId: number | null = null;
   tagInput: string = '';
-
+  htmlContent: string = '';
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    spellcheck: true,
+    minHeight: '300px',
+    toolbarHiddenButtons: [
+      ['subscript', 'superscript'],
+      ['insertImage', 'insertVideo'],
+    ],
+  };
+  EG_OPTIONS = [
+    'EG 1',
+    'EG 2',
+    'EG 3',
+    'EG 4',
+    'EG 5',
+    'EG 6',
+    'EG 7',
+    'EG 8',
+    'EG 9',
+    'EG 10',
+    'EG 11',
+    'EG 12',
+    'EG 13',
+    'EG 14',
+    'EG 15',
+  ];
   mockData: JobTask[] = [
     {
       id: 1,
@@ -88,6 +122,10 @@ export class JtOverviewAccordionComponent {
   ];
 
   constructor() {}
+
+  onEgSelected(selectedEg: string): void {
+    console.log('Selected:', selectedEg);
+  }
 
   truncate(text: string, maxLength: number): string {
     return truncateText(text, maxLength);
