@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 import { truncateText } from '../../../utils/card.utils';
 
 interface JobTask {
@@ -18,13 +19,14 @@ interface JobTask {
   deletedAt?: string;
   id?: number;
   expanded?: boolean;
+  tags?: string[];
 }
 
 @Component({
   selector: 'app-jt-overview-accordion',
   templateUrl: './jt-overview-accordion.component.html',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
   animations: [
     trigger('expandCollapse', [
       state(
@@ -51,6 +53,7 @@ interface JobTask {
 })
 export class JtOverviewAccordionComponent {
   expandedItemId: number | null = null;
+  tagInput: string = '';
 
   mockData: JobTask[] = [
     {
@@ -58,6 +61,7 @@ export class JtOverviewAccordionComponent {
       title: 'Arbeitsvorgang Linux-Administration A',
       createdAt: '24.02.2025',
       updatedAt: '25.02.2025',
+      tags: ['Linux', 'Administration'],
     },
     {
       id: 2,
@@ -103,5 +107,30 @@ export class JtOverviewAccordionComponent {
 
   getAccordionState(id: number): string {
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
+  }
+
+  addTags(item: JobTask): void {
+    if (!this.tagInput.trim()) return;
+
+    const newTags = this.tagInput
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+    if (!item.tags) {
+      item.tags = [];
+    }
+    item.tags = [...new Set([...item.tags, ...newTags])];
+    this.tagInput = '';
+  }
+
+  removeTag(item: JobTask, tagToRemove: string): void {
+    if (!item.tags) return;
+    item.tags = item.tags.filter((tag) => tag !== tagToRemove);
+  }
+
+  handleKeyPress(event: KeyboardEvent, item: JobTask): void {
+    if (event.key === 'Enter') {
+      this.addTags(item);
+    }
   }
 }

@@ -5,6 +5,7 @@ import { TitleService } from '../../../services/title.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
 import { truncateText } from '../../../utils/card.utils';
 import {
   animate,
@@ -21,13 +22,14 @@ interface JobDescription {
   deletedAt?: string;
   id?: number;
   expanded?: boolean;
+  tags?: string[];
 }
 
 @Component({
   selector: 'app-jd-overview-accordion',
   templateUrl: './jd-overview-accordion.component.html',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
   animations: [
     trigger('expandCollapse', [
       state(
@@ -54,6 +56,7 @@ interface JobDescription {
 })
 export class JdOverviewAccordionComponent {
   expandedItemId: number | null = null;
+  tagInput: string = '';
 
   mockData: JobDescription[] = [
     {
@@ -61,6 +64,7 @@ export class JdOverviewAccordionComponent {
       title: 'Sachbearbeiter CIT Linux-Experte A',
       createdAt: '24.02.2025',
       updatedAt: '25.02.2025',
+      tags: ['Linux', 'System Administration'],
     },
     {
       id: 2,
@@ -153,5 +157,31 @@ export class JdOverviewAccordionComponent {
 
   getAccordionState(id: number): string {
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
+  }
+
+  addTags(item: JobDescription): void {
+    console.log(this.tagInput);
+    if (!this.tagInput.trim()) return;
+
+    const newTags = this.tagInput
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+    if (!item.tags) {
+      item.tags = [];
+    }
+    item.tags = [...new Set([...item.tags, ...newTags])];
+    this.tagInput = '';
+  }
+
+  removeTag(item: JobDescription, tagToRemove: string): void {
+    if (!item.tags) return;
+    item.tags = item.tags.filter((tag) => tag !== tagToRemove);
+  }
+
+  handleKeyPress(event: KeyboardEvent, item: JobDescription): void {
+    if (event.key === 'Enter') {
+      this.addTags(item);
+    }
   }
 }

@@ -110,13 +110,38 @@
           class="bg-white border-b border-lightgray overflow-hidden"
         >
           <div class="p-4 w-full">
-            <h3 class="text-lg font-medium mb-2">
-              Details für {{ item.title }}
-            </h3>
-            <p>
-              Hier können detaillierte Informationen zur Tätigkeitsdarstellung
-              angezeigt werden.
-            </p>
+            <div class="flex items-center gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="Tag hinzufügen"
+                [(ngModel)]="tagInput"
+                (keyup.enter)="handleKeyPress($any($event), item)"
+                class="border border-lightgray rounded-sm py-1 px-2 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm w-[400px]"
+              />
+              <button
+                (click)="addTags(item)"
+                class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm"
+              >
+                Hinzufügen
+              </button>
+            </div>
+            <div
+              class="flex flex-wrap gap-2"
+              *ngIf="item.tags && item.tags.length > 0"
+            >
+              <div
+                *ngFor="let tag of item.tags"
+                class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-xs"
+              >
+                <button
+                  (click)="removeTag(item, tag)"
+                  class="w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700"
+                >
+                  <mat-icon class="text-xs mt-2">close</mat-icon>
+                </button>
+                <span>{{ tag }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
