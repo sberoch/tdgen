@@ -63,6 +63,7 @@
               class="text-gray-500 hover:text-secondary"
               title="Bearbeiten"
               (click)="$event.stopPropagation()"
+              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
@@ -88,6 +89,7 @@
             <button
               mat-icon-button
               class="text-gray-500 hover:text-secondary"
+              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               title="Details anzeigen"
               (click)="$event.stopPropagation()"
             >
@@ -95,7 +97,8 @@
             </button>
             <button
               mat-icon-button
-              class="text-gray-500 hover:text-secondary"
+              class="text-gray-500 hover:text-red-500"
+              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               title="Löschen"
               (click)="$event.stopPropagation()"
             >
