@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TitleActivityDialogComponent } from '../../title-activity-dialog/title-activity-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { TitleService } from '../../../services/title.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
@@ -15,15 +15,11 @@ import {
   trigger,
 } from '@angular/animations';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { JobDescriptionsService } from '../../../services/job-descriptions.service';
+import { JobDescription } from '../../../types/job-descriptions';
 
-interface JobDescription {
-  title: string;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
-  id?: number;
-  expanded?: boolean;
-  tags?: string[];
+interface ExpandableJobDescription extends JobDescription {
+  expanded: boolean;
 }
 
 @Component({
@@ -31,6 +27,7 @@ interface JobDescription {
   templateUrl: './jd-overview-accordion.component.html',
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
+  providers: [DatePipe],
   animations: [
     trigger('expandCollapse', [
       state(
@@ -55,78 +52,35 @@ interface JobDescription {
     ]),
   ],
 })
-export class JdOverviewAccordionComponent {
+export class JdOverviewAccordionComponent implements OnInit {
   expandedItemId: number | null = null;
   tagInput: string = '';
 
-  mockData: JobDescription[] = [
-    {
-      id: 1,
-      title: 'Sachbearbeiter CIT Linux-Experte A',
-      createdAt: '24.02.2025',
-      updatedAt: '25.02.2025',
-      tags: ['Linux', 'System Administration'],
-    },
-    {
-      id: 2,
-      title: 'Sachbearbeiter CIT Linux-Experte C',
-      createdAt: '03.05.2025',
-    },
-    {
-      id: 3,
-      title: 'Sachbearbeiter CIT Linux-Experte D',
-      createdAt: '24.01.2025',
-      updatedAt: '03.03.2025',
-      deletedAt: '04.04.2025',
-    },
-    {
-      id: 4,
-      title: 'Sachbearbeiter CIT Linux-Experte E',
-      createdAt: '12.06.2025',
-    },
-    {
-      id: 5,
-      title: 'Sachbearbeiter CIT Linux-Experte F',
-      createdAt: '18.07.2025',
-    },
-    {
-      id: 6,
-      title: 'Sachbearbeiter CIT Linux-Experte G',
-      createdAt: '30.08.2025',
-    },
-    {
-      id: 7,
-      title: 'Sachbearbeiter CIT Linux-Experte H',
-      createdAt: '02.09.2025',
-    },
-    {
-      id: 8,
-      title: 'Sachbearbeiter CIT Linux-Experte I',
-      createdAt: '14.10.2025',
-    },
-    {
-      id: 9,
-      title: 'Sachbearbeiter CIT Linux-Experte J',
-      createdAt: '05.11.2025',
-    },
-    {
-      id: 10,
-      title: 'Sachbearbeiter CIT Linux-Experte K',
-      createdAt: '19.12.2025',
-    },
-    {
-      id: 11,
-      title: 'Sachbearbeiter CIT Linux-Experte L',
-      createdAt: '13.01.2026',
-    },
-    {
-      id: 12,
-      title: 'Sachbearbeiter CIT Linux-Experte M',
-      createdAt: '27.02.2026',
-    },
-  ];
+  jobDescriptions: ExpandableJobDescription[] = [];
 
-  constructor(private dialog: MatDialog, private titleService: TitleService) {}
+  constructor(
+    private dialog: MatDialog,
+    private titleService: TitleService,
+    private jobDescriptionsService: JobDescriptionsService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadJobDescriptions();
+  }
+
+  loadJobDescriptions(): void {
+    this.jobDescriptionsService.getJobDescriptions().subscribe(
+      (data) => {
+        this.jobDescriptions = data.map((jd) => ({
+          ...jd,
+          expanded: false,
+        }));
+      },
+      (error) => {
+        console.error('Error loading job descriptions:', error);
+      }
+    );
+  }
 
   openCreateDialog() {
     const dialogRef = this.dialog.open(TitleActivityDialogComponent, {

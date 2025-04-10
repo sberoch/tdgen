@@ -8,8 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { CreateJobDescription } from '../../utils/card.utils';
-
+import { CreateJobDescription } from '../../types/job-descriptions';
 @Component({
   selector: 'app-title-activity-dialog',
   standalone: true,

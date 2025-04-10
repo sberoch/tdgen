@@ -40,7 +40,7 @@
       </div>
 
       <!-- Accordion items -->
-      <div *ngFor="let item of mockData; let i = index">
+      <div *ngFor="let item of jobTasks; let i = index">
         <!-- Accordion header row -->
         <div
           class="flex items-center cursor-pointer transition-colors"
@@ -70,17 +70,17 @@
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
           >
-            {{ item.createdAt }}
+            {{ item.createdAt | date : "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
           >
-            {{ item.updatedAt }}
+            {{ item.updatedAt | date : "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
           >
-            {{ item.deletedAt }}
+            {{ item.deletedAt | date : "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32 flex justify-end"

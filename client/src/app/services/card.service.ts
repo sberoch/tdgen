@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Card, JobTask } from '../utils/card.utils';
+import { Card } from '../utils/card.utils';
+import { JobTask } from '../types/job-tasks';
 
 @Injectable({
   providedIn: 'root',

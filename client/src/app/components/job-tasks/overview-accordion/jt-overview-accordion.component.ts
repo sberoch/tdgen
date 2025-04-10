@@ -6,7 +6,7 @@ import {
   trigger,
 } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -15,16 +15,10 @@ import { truncateText } from '../../../utils/card.utils';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
-
-interface JobTask {
-  title: string;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
-  id?: number;
-  expanded?: boolean;
-  tags?: string[];
-}
+import { JobTasksService } from '../../../services/job-tasks.service';
+import { JobTask } from '../../../types/job-tasks';
+import { Subscription } from 'rxjs';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-jt-overview-accordion',
@@ -37,6 +31,7 @@ interface JobTask {
     FormsModule,
     AngularEditorModule,
   ],
+  providers: [DatePipe],
   animations: [
     trigger('expandCollapse', [
       state(
@@ -61,10 +56,12 @@ interface JobTask {
     ]),
   ],
 })
-export class JtOverviewAccordionComponent {
+export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
   expandedItemId: number | null = null;
   tagInput: string = '';
   htmlContent: string = '';
+  jobTasks: JobTask[] = [];
+  private subscription: Subscription = new Subscription();
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -91,39 +88,24 @@ export class JtOverviewAccordionComponent {
     'EG 14',
     'EG 15',
   ];
-  mockData: JobTask[] = [
-    {
-      id: 1,
-      title: 'Arbeitsvorgang Linux-Administration A',
-      createdAt: '24.02.2025',
-      updatedAt: '25.02.2025',
-      tags: ['Linux', 'Administration'],
-    },
-    {
-      id: 2,
-      title: 'Arbeitsvorgang Systembetreuung B',
-      createdAt: '03.05.2025',
-    },
-    {
-      id: 3,
-      title: 'Arbeitsvorgang Netzwerksicherheit C',
-      createdAt: '24.01.2025',
-      updatedAt: '03.03.2025',
-      deletedAt: '04.04.2025',
-    },
-    {
-      id: 4,
-      title: 'Arbeitsvorgang Anwendungsentwicklung D',
-      createdAt: '12.06.2025',
-    },
-    {
-      id: 5,
-      title: 'Arbeitsvorgang Datenbankadministration E',
-      createdAt: '18.07.2025',
-    },
-  ];
+  showDeleted: boolean = false;
 
-  constructor(private dialog: MatDialog) {}
+  constructor(
+    private dialog: MatDialog,
+    private jobTasksService: JobTasksService
+  ) {}
+
+  ngOnInit(): void {
+    this.subscription.add(
+      this.jobTasksService.getJobTasks().subscribe((tasks) => {
+        this.jobTasks = tasks;
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 
   onEgSelected(selectedEg: string): void {
     console.log('Selected:', selectedEg);
@@ -138,6 +120,9 @@ export class JtOverviewAccordionComponent {
       this.expandedItemId = null;
     } else {
       this.expandedItemId = id;
+      this.jobTasksService.getJobTaskById(id).subscribe((task) => {
+        this.htmlContent = task.text || '';
+      });
     }
   }
 
@@ -156,16 +141,21 @@ export class JtOverviewAccordionComponent {
       .split(',')
       .map((tag) => tag.trim())
       .filter((tag) => tag);
+
     if (!item.tags) {
       item.tags = [];
     }
+
     item.tags = [...new Set([...item.tags, ...newTags])];
     this.tagInput = '';
+
+    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
   }
 
   removeTag(item: JobTask, tagToRemove: string): void {
     if (!item.tags) return;
     item.tags = item.tags.filter((tag) => tag !== tagToRemove);
+    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
   }
 
   handleKeyPress(event: KeyboardEvent, item: JobTask): void {
@@ -184,5 +174,10 @@ export class JtOverviewAccordionComponent {
         },
       },
     });
+  }
+
+  saveContent(item: JobTask): void {
+    item.text = this.htmlContent;
+    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
   }
 }
