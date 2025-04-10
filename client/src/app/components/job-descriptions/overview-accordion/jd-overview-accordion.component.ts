@@ -14,6 +14,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 
 interface JobDescription {
   title: string;
@@ -183,5 +184,17 @@ export class JdOverviewAccordionComponent {
     if (event.key === 'Enter') {
       this.addTags(item);
     }
+  }
+
+  deleteItem(item: JobDescription): void {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eintrag löschen?',
+        onConfirmCallback: () => {
+          console.log('deleteItem', item);
+        },
+      },
+    });
   }
 }

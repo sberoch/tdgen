@@ -100,7 +100,7 @@
               class="text-gray-500 hover:text-red-500"
               [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               title="Löschen"
-              (click)="$event.stopPropagation()"
+              (click)="$event.stopPropagation(); deleteItem(item)"
             >
               <mat-icon class="text-lg -translate-y-1">delete</mat-icon>
             </button>

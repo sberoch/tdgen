@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { truncateText } from '../../../utils/card.utils';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
+import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { MatDialog } from '@angular/material/dialog';
 
 interface JobTask {
   title: string;
@@ -121,7 +123,7 @@ export class JtOverviewAccordionComponent {
     },
   ];
 
-  constructor() {}
+  constructor(private dialog: MatDialog) {}
 
   onEgSelected(selectedEg: string): void {
     console.log('Selected:', selectedEg);
@@ -170,5 +172,17 @@ export class JtOverviewAccordionComponent {
     if (event.key === 'Enter') {
       this.addTags(item);
     }
+  }
+
+  deleteItem(item: JobTask): void {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eintrag löschen?',
+        onConfirmCallback: () => {
+          console.log('deleteItem', item);
+        },
+      },
+    });
   }
 }
