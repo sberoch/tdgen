@@ -7,3 +7,11 @@ export type CreateJobTaskDto = {
 };
 
 export type UpdateJobTaskDto = Partial<CreateJobTaskDto>;
+
+export type JobTaskParams = {
+  title?: string;
+  metadata?: Record<string, any>;
+  tags?: string[];
+  includeDeleted?: boolean;
+  search?: string;
+};

@@ -15,7 +15,10 @@ import { truncateText } from '../../../utils/card.utils';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
-import { JobTasksService } from '../../../services/job-tasks.service';
+import {
+  JobTasksService,
+  JobTaskFilter,
+} from '../../../services/job-tasks.service';
 import { JobTask } from '../../../types/job-tasks';
 import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
@@ -62,6 +65,8 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
   htmlContent: string = '';
   jobTasks: JobTask[] = [];
   private subscription: Subscription = new Subscription();
+  filter: JobTaskFilter = {};
+  showDeleted: boolean = false;
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -88,7 +93,6 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
     'EG 14',
     'EG 15',
   ];
-  showDeleted: boolean = false;
 
   constructor(
     private dialog: MatDialog,
@@ -96,15 +100,34 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.subscription.add(
-      this.jobTasksService.getJobTasks().subscribe((tasks) => {
-        this.jobTasks = tasks;
-      })
-    );
+    this.loadJobTasks();
   }
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+  loadJobTasks(): void {
+    this.subscription.add(
+      this.jobTasksService.getJobTasks(this.filter).subscribe({
+        next: (tasks) => {
+          this.jobTasks = tasks;
+        },
+        error: (error) => {
+          console.error('Error loading job tasks:', error);
+        },
+      })
+    );
+  }
+
+  applyFilter(newFilter: Partial<JobTaskFilter>): void {
+    this.filter = { ...this.filter, ...newFilter };
+    this.loadJobTasks();
+  }
+
+  clearFilter(): void {
+    this.filter = {};
+    this.loadJobTasks();
   }
 
   onEgSelected(selectedEg: string): void {
@@ -170,7 +193,15 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
       data: {
         title: 'Eintrag löschen?',
         onConfirmCallback: () => {
-          console.log('deleteItem', item);
+          this.jobTasksService.deleteJobTask(item.id!).subscribe({
+            next: () => {
+              console.log('Job task deleted successfully');
+              this.loadJobTasks();
+            },
+            error: (error) => {
+              console.error('Error deleting job task:', error);
+            },
+          });
         },
       },
     });

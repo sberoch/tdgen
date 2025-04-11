@@ -1,21 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { JobTask } from '@prisma/client';
-import { CreateJobTaskDto, UpdateJobTaskDto } from './job-tasks.dto';
+import { JobTask, Prisma } from '@prisma/client';
+import {
+  CreateJobTaskDto,
+  UpdateJobTaskDto,
+  JobTaskParams,
+} from './job-tasks.dto';
 
-const ADMIN_ID = 4016651;
+const ADMIN_ID = '4016651';
 
 @Injectable()
 export class JobTasksService {
   constructor(private prisma: PrismaService) {}
 
-  async list(): Promise<JobTask[]> {
+  async list(params?: JobTaskParams): Promise<JobTask[]> {
     return this.prisma.jobTask.findMany({
-      where: {
-        deletedAt: null,
-      },
+      where: this.buildWhereClause(params),
       include: {
         tags: true,
+        jobDescription: true,
       },
     });
   }
@@ -50,7 +53,7 @@ export class JobTasksService {
           ? { connect: { id: jobDescriptionId } }
           : undefined,
         tags: { create: tags.map((tag) => ({ name: tag })) },
-        createdBy: { connect: { id: ADMIN_ID } },
+        createdBy: { connect: { userId: ADMIN_ID } },
       },
     });
   }
@@ -66,7 +69,7 @@ export class JobTasksService {
           ? { connect: { id: jobDescriptionId } }
           : undefined,
         tags: { create: tags?.map((tag) => ({ name: tag })) },
-        updatedBy: { connect: { id: ADMIN_ID } },
+        updatedBy: { connect: { userId: ADMIN_ID } },
       },
     });
   }
@@ -77,8 +80,55 @@ export class JobTasksService {
       where: { id: jobTask.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { id: ADMIN_ID } },
+        deletedBy: { connect: { userId: ADMIN_ID } },
       },
     });
+  }
+
+  private buildWhereClause(params?: JobTaskParams): Prisma.JobTaskWhereInput {
+    const where: Prisma.JobTaskWhereInput = {
+      deletedAt: params?.includeDeleted ? undefined : null,
+    };
+
+    if (params?.search) {
+      where.OR = [
+        {
+          title: {
+            contains: params.search,
+          },
+        },
+        {
+          tags: {
+            some: {
+              name: {
+                contains: params.search,
+              },
+            },
+          },
+        },
+      ];
+    } else {
+      if (params?.title) {
+        where.title = {
+          contains: params.title,
+        };
+      }
+
+      if (params?.tags && params.tags.length > 0) {
+        where.tags = {
+          some: {
+            name: {
+              in: params.tags,
+            },
+          },
+        };
+      }
+    }
+
+    if (params?.metadata) {
+      where.metadata = params.metadata;
+    }
+
+    return where;
   }
 }

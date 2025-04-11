@@ -6,9 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { JobTask } from '@prisma/client';
-import { CreateJobTaskDto, UpdateJobTaskDto } from './job-tasks.dto';
+import {
+  CreateJobTaskDto,
+  UpdateJobTaskDto,
+  JobTaskParams,
+} from './job-tasks.dto';
 import { JobTasksService } from './job-tasks.service';
 
 @Controller('job-tasks')
@@ -16,8 +21,8 @@ export class JobTasksController {
   constructor(private readonly jobTasksService: JobTasksService) {}
 
   @Get()
-  async list(): Promise<JobTask[]> {
-    return this.jobTasksService.list();
+  async list(@Query() params: JobTaskParams): Promise<JobTask[]> {
+    return this.jobTasksService.list(params);
   }
 
   @Get(':id')

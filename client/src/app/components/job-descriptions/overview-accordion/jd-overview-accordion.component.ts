@@ -15,7 +15,10 @@ import {
   trigger,
 } from '@angular/animations';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
-import { JobDescriptionsService } from '../../../services/job-descriptions.service';
+import {
+  JobDescriptionFilter,
+  JobDescriptionsService,
+} from '../../../services/job-descriptions.service';
 import { JobDescription } from '../../../types/job-descriptions';
 
 interface ExpandableJobDescription extends JobDescription {
@@ -55,6 +58,7 @@ interface ExpandableJobDescription extends JobDescription {
 export class JdOverviewAccordionComponent implements OnInit {
   expandedItemId: number | null = null;
   tagInput: string = '';
+  filter: JobDescriptionFilter = {};
 
   jobDescriptions: ExpandableJobDescription[] = [];
 
@@ -69,17 +73,27 @@ export class JdOverviewAccordionComponent implements OnInit {
   }
 
   loadJobDescriptions(): void {
-    this.jobDescriptionsService.getJobDescriptions().subscribe(
-      (data) => {
+    this.jobDescriptionsService.getJobDescriptions(this.filter).subscribe({
+      next: (data) => {
         this.jobDescriptions = data.map((jd) => ({
           ...jd,
           expanded: false,
         }));
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading job descriptions:', error);
-      }
-    );
+      },
+    });
+  }
+
+  applyFilter(newFilter: Partial<JobDescriptionFilter>): void {
+    this.filter = { ...this.filter, ...newFilter };
+    this.loadJobDescriptions();
+  }
+
+  clearFilter(): void {
+    this.filter = {};
+    this.loadJobDescriptions();
   }
 
   openCreateDialog() {
@@ -146,7 +160,15 @@ export class JdOverviewAccordionComponent implements OnInit {
       data: {
         title: 'Eintrag löschen?',
         onConfirmCallback: () => {
-          console.log('deleteItem', item);
+          this.jobDescriptionsService.deleteJobDescription(item.id).subscribe({
+            next: () => {
+              console.log('Job description deleted successfully');
+              this.loadJobDescriptions();
+            },
+            error: (error) => {
+              console.error('Error deleting job description:', error);
+            },
+          });
         },
       },
     });

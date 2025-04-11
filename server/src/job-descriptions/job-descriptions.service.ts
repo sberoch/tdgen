@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { JobDescription } from '@prisma/client';
-import { CreateJobDescriptionDto } from './job-descriptions.dto';
+import { JobDescription, Prisma } from '@prisma/client';
+import {
+  CreateJobDescriptionDto,
+  JobDescriptionParams,
+} from './job-descriptions.dto';
 import { UpdateJobDescriptionDto } from './job-descriptions.dto';
 
 const ADMIN_ID = '4016651';
@@ -10,11 +13,9 @@ const ADMIN_ID = '4016651';
 export class JobDescriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(): Promise<JobDescription[]> {
+  async list(params?: JobDescriptionParams): Promise<JobDescription[]> {
     return this.prisma.jobDescription.findMany({
-      where: {
-        deletedAt: null,
-      },
+      where: this.buildWhereClause(params),
       include: {
         tags: true,
         formFields: true,
@@ -104,5 +105,51 @@ export class JobDescriptionsService {
         deletedBy: { connect: { userId: ADMIN_ID } },
       },
     });
+  }
+
+  private buildWhereClause(
+    params?: JobDescriptionParams,
+  ): Prisma.JobDescriptionWhereInput {
+    const where: Prisma.JobDescriptionWhereInput = {
+      deletedAt: params?.includeDeleted ? undefined : null,
+    };
+
+    if (params?.search) {
+      where.OR = [
+        {
+          title: {
+            contains: params.search,
+          },
+        },
+        {
+          tags: {
+            some: {
+              name: {
+                contains: params.search,
+              },
+            },
+          },
+        },
+      ];
+    } else {
+      if (params?.title) {
+        where.title = {
+          contains: params.title,
+        };
+      }
+      if (params?.tags && params.tags.length > 0) {
+        where.tags = {
+          some: {
+            name: {
+              in: params.tags,
+            },
+          },
+        };
+      }
+    }
+    if (params?.metadata) {
+      where.metadata = params.metadata;
+    }
+    return where;
   }
 }

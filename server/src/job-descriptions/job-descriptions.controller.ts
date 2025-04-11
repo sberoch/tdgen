@@ -13,6 +13,7 @@ import { JobDescriptionsService } from './job-descriptions.service';
 import {
   UpdateJobDescriptionDto,
   CreateJobDescriptionDto,
+  JobDescriptionParams,
 } from './job-descriptions.dto';
 
 @Controller('job-descriptions')
@@ -22,8 +23,8 @@ export class JobDescriptionsController {
   ) {}
 
   @Get()
-  async list(): Promise<JobDescription[]> {
-    return this.jobDescriptionsService.list();
+  async list(@Query() params: JobDescriptionParams): Promise<JobDescription[]> {
+    return this.jobDescriptionsService.list(params);
   }
 
   @Get('exists')
