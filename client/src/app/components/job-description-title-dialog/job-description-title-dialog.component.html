@@ -1,4 +1,6 @@
-<h2 mat-dialog-title>Bitte Titel eingeben</h2>
+<h2 mat-dialog-title>
+  {{ isEditing ? "Titel ändern" : "Bitte Titel eingeben" }}
+</h2>
 <mat-dialog-content>
   <mat-form-field class="w-full activity-dialog-input">
     <input matInput [(ngModel)]="title" />

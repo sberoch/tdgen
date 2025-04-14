@@ -74,7 +74,6 @@ export class CardSizingColumnComponent implements OnInit {
   }
 
   startDrag(event: MouseEvent, index: number) {
-    console.log('startDrag');
     this.isDragging = true;
     this.startY = event.clientY;
     this.currentIndex = index;

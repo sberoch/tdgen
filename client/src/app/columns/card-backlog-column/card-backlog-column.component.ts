@@ -7,23 +7,24 @@ import {
 } from '@angular/cdk/drag-drop';
 import {
   Component,
+  ElementRef,
   inject,
   OnInit,
   ViewChild,
-  ElementRef,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { JobDescriptionTitleDialogComponent } from '../../components/job-description-title-dialog/job-description-title-dialog.component';
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { truncateText } from './card-backlog-column.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-import { TitleActivityDialogComponent } from '../../components/title-activity-dialog/title-activity-dialog.component';
+import { truncateText } from '../../utils/card.utils';
+
 const MAX_DISPLAY_CARDS = 10;
 
 @Component({
@@ -156,8 +157,11 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   openCreateDialog() {
-    const dialogRef = this.dialog.open(TitleActivityDialogComponent, {
+    const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
       width: '600px',
+      data: {
+        isEditing: false,
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

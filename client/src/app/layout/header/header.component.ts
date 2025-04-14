@@ -5,13 +5,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { TitleActivityDialogComponent } from '../../components/title-activity-dialog/title-activity-dialog.component';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { TitleService } from '../../services/title.service';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
+import { JobDescriptionTitleDialogComponent } from '../../components/job-description-title-dialog/job-description-title-dialog.component';
+
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -70,8 +71,11 @@ export class HeaderComponent implements OnInit {
   }
 
   openCreateDialog() {
-    const dialogRef = this.dialog.open(TitleActivityDialogComponent, {
+    const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
       width: '600px',
+      data: {
+        isEditing: false,
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

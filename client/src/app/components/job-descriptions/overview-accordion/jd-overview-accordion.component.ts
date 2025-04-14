@@ -1,12 +1,3 @@
-import { Component, OnInit } from '@angular/core';
-import { TitleActivityDialogComponent } from '../../title-activity-dialog/title-activity-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
-import { TitleService } from '../../../services/title.service';
-import { CommonModule, DatePipe } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { FormsModule } from '@angular/forms';
-import { truncateText } from '../../../utils/card.utils';
 import {
   animate,
   state,
@@ -14,12 +5,21 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import {
   JobDescriptionFilter,
   JobDescriptionsService,
 } from '../../../services/job-descriptions.service';
+import { TitleService } from '../../../services/title.service';
 import { JobDescription } from '../../../types/job-descriptions';
+import { truncateText } from '../../../utils/card.utils';
+import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { JobDescriptionTitleDialogComponent } from '../../job-description-title-dialog/job-description-title-dialog.component';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
@@ -97,13 +97,36 @@ export class JdOverviewAccordionComponent implements OnInit {
   }
 
   openCreateDialog() {
-    const dialogRef = this.dialog.open(TitleActivityDialogComponent, {
+    const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
       width: '600px',
+      data: {
+        isEditing: false,
+      },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.titleService.updateTitle(result);
+        this.loadJobDescriptions();
+      }
+    });
+  }
+
+  openEditDialog(item: JobDescription, event: Event) {
+    event.stopPropagation();
+
+    const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
+      width: '600px',
+      data: {
+        title: item.title,
+        id: item.id,
+        isEditing: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadJobDescriptions();
       }
     });
   }
@@ -129,7 +152,6 @@ export class JdOverviewAccordionComponent implements OnInit {
   }
 
   addTags(item: JobDescription): void {
-    console.log(this.tagInput);
     if (!this.tagInput.trim()) return;
 
     const newTags = this.tagInput
