@@ -19,7 +19,7 @@ import { TitleService } from '../../../services/title.service';
 import { JobDescription } from '../../../types/job-descriptions';
 import { truncateText } from '../../../utils/card.utils';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
-import { JobDescriptionTitleDialogComponent } from '../../job-description-title-dialog/job-description-title-dialog.component';
+import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;

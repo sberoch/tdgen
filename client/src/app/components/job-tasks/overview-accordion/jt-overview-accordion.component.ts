@@ -22,6 +22,7 @@ import {
 import { JobTask } from '../../../types/job-tasks';
 import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
+import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 
 @Component({
   selector: 'app-jt-overview-accordion',
@@ -137,6 +138,40 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
 
   onEgSelected(selectedEg: string): void {
     console.log('Selected:', selectedEg);
+  }
+
+  openCreateDialog() {
+    const dialogRef = this.dialog.open(JobTaskTitleDialogComponent, {
+      width: '600px',
+      data: {
+        isEditing: false,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadJobTasks();
+      }
+    });
+  }
+
+  openEditDialog(item: JobTask, event: Event) {
+    event.stopPropagation();
+
+    const dialogRef = this.dialog.open(JobTaskTitleDialogComponent, {
+      width: '600px',
+      data: {
+        title: item.title,
+        id: item.id,
+        isEditing: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.loadJobTasks();
+      }
+    });
   }
 
   truncate(text: string, maxLength: number): string {

@@ -18,7 +18,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { JobDescriptionTitleDialogComponent } from '../../components/job-description-title-dialog/job-description-title-dialog.component';
+import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { CardService } from '../../services/card.service';
 import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';

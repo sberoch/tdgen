@@ -12,3 +12,11 @@ export type JobTask = {
   updatedAt?: string;
   deletedAt?: string;
 };
+
+export type CreateJobTask = {
+  title: string;
+  text: string;
+  metadata: Record<string, any>;
+  tags: string[];
+  jobDescriptionId?: number;
+};

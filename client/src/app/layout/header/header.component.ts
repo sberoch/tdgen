@@ -11,7 +11,7 @@ import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
-import { JobDescriptionTitleDialogComponent } from '../../components/job-description-title-dialog/job-description-title-dialog.component';
+import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 
 @Component({
   selector: 'app-header',
