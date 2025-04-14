@@ -16,6 +16,9 @@ export class JobDescriptionsService {
   async list(params?: JobDescriptionParams): Promise<JobDescription[]> {
     return this.prisma.jobDescription.findMany({
       where: this.buildWhereClause(params),
+      orderBy: {
+        title: 'asc',
+      },
       include: {
         tags: true,
         formFields: true,
