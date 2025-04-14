@@ -108,6 +108,11 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
   }
 
   loadJobTasks(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = new Subscription();
+    }
+
     this.subscription.add(
       this.jobTasksService.getJobTasks(this.filter).subscribe({
         next: (tasks) => {
@@ -141,10 +146,17 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
   toggleAccordion(id: number): void {
     if (this.expandedItemId === id) {
       this.expandedItemId = null;
+      this.htmlContent = '';
     } else {
       this.expandedItemId = id;
-      this.jobTasksService.getJobTaskById(id).subscribe((task) => {
-        this.htmlContent = task.text || '';
+      this.jobTasksService.getJobTaskById(id).subscribe({
+        next: (task) => {
+          this.htmlContent = task.text || '';
+        },
+        error: (error) => {
+          console.error('Error loading task content:', error);
+          this.htmlContent = '';
+        },
       });
     }
   }
@@ -207,8 +219,7 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveContent(item: JobTask): void {
-    item.text = this.htmlContent;
-    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
+  trackById(index: number, item: JobTask): number {
+    return item.id!;
   }
 }

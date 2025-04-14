@@ -47,7 +47,7 @@
       </div>
 
       <!-- Accordion items -->
-      <div *ngFor="let item of jobTasks; let i = index">
+      <div *ngFor="let item of jobTasks; let i = index; trackBy: trackById">
         <!-- Accordion header row -->
         <div
           class="flex items-center cursor-pointer transition-colors"
@@ -152,6 +152,7 @@
             </div>
             <div class="mt-2">
               <angular-editor
+                *ngIf="isExpanded(item.id!)"
                 [(ngModel)]="htmlContent"
                 [config]="editorConfig"
               ></angular-editor>

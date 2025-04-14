@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { JobTask } from '../types/job-tasks';
+import { tap } from 'rxjs/operators';
 
 export interface JobTaskFilter {
   title?: string;
@@ -21,20 +22,19 @@ export class JobTasksService {
 
   jobTasks$ = this.jobTasksSubject.asObservable();
 
-  constructor(private http: HttpClient) {
-    this.loadJobTasks();
-  }
+  constructor(private http: HttpClient) {}
 
-  private loadJobTasks(filter?: JobTaskFilter) {
+  private loadJobTasks(filter?: JobTaskFilter): Observable<JobTask[]> {
     const params = this.buildWhereClause(filter);
-    this.http.get<JobTask[]>(this.apiUrl, { params }).subscribe((jobTasks) => {
-      this.jobTasksSubject.next(jobTasks);
-    });
+    return this.http.get<JobTask[]>(this.apiUrl, { params }).pipe(
+      tap((jobTasks) => {
+        this.jobTasksSubject.next(jobTasks);
+      })
+    );
   }
 
   getJobTasks(filter?: JobTaskFilter): Observable<JobTask[]> {
-    this.loadJobTasks(filter);
-    return this.jobTasks$;
+    return this.loadJobTasks(filter);
   }
 
   getJobTaskById(id: number): Observable<JobTask> {
