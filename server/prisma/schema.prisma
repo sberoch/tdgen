@@ -44,7 +44,7 @@ model Tag {
 
 model JobTask {
   id        Int        @id @default(autoincrement())
-  title     String
+  title     String @unique
   text String
   metadata Json
   tags      Tag[]

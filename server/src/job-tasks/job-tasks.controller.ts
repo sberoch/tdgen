@@ -25,14 +25,19 @@ export class JobTasksController {
     return this.jobTasksService.list(params);
   }
 
-  @Get(':id')
-  async get(@Param('id') id: string): Promise<JobTask> {
-    return this.jobTasksService.get(id);
+  @Get('exists')
+  async existsByTitle(@Query('title') title: string): Promise<boolean> {
+    return this.jobTasksService.hasByTitle(title);
   }
 
   @Get(':id/exists')
   async exists(@Param('id') id: string): Promise<boolean> {
     return this.jobTasksService.has(id);
+  }
+
+  @Get(':id')
+  async get(@Param('id') id: string): Promise<JobTask> {
+    return this.jobTasksService.get(id);
   }
 
   @Post()

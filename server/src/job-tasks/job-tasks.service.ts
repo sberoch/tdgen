@@ -44,6 +44,13 @@ export class JobTasksService {
     return !!jobTask;
   }
 
+  async hasByTitle(title: string): Promise<boolean> {
+    const jobTask = await this.prisma.jobTask.findUnique({
+      where: { title, deletedAt: null },
+    });
+    return !!jobTask;
+  }
+
   async create(data: CreateJobTaskDto): Promise<JobTask> {
     const { jobDescriptionId, tags, ...rest } = data;
     return this.prisma.jobTask.create({
