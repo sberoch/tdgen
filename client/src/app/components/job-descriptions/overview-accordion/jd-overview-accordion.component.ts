@@ -6,7 +6,14 @@ import {
   trigger,
 } from '@angular/animations';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ElementRef,
+  ViewChildren,
+  QueryList,
+  AfterViewChecked,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -23,6 +30,7 @@ import { JobDescriptionTitleDialogComponent } from '../job-description-title-dia
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
+  isNew?: boolean;
 }
 
 @Component({
@@ -55,10 +63,14 @@ interface ExpandableJobDescription extends JobDescription {
     ]),
   ],
 })
-export class JdOverviewAccordionComponent implements OnInit {
+export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   expandedItemId: number | null = null;
   tagInput: string = '';
   filter: JobDescriptionFilter = {};
+  newlyCreatedTitle: string | null = null;
+  shouldScrollToNew: boolean = false;
+
+  @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
 
   jobDescriptions: ExpandableJobDescription[] = [];
 
@@ -72,13 +84,56 @@ export class JdOverviewAccordionComponent implements OnInit {
     this.loadJobDescriptions();
   }
 
+  ngAfterViewChecked() {
+    if (this.shouldScrollToNew) {
+      this.scrollToNewItem();
+      this.shouldScrollToNew = false;
+    }
+  }
+
+  scrollToNewItem() {
+    const newItemIndex = this.jobDescriptions.findIndex((jd) => jd.isNew);
+
+    if (newItemIndex >= 0 && this.accordionItems.length > newItemIndex) {
+      const newItemElement =
+        this.accordionItems.toArray()[newItemIndex].nativeElement;
+      newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   loadJobDescriptions(): void {
     this.jobDescriptionsService.getJobDescriptions(this.filter).subscribe({
       next: (data) => {
         this.jobDescriptions = data.map((jd) => ({
           ...jd,
-          expanded: false,
+          expanded:
+            this.newlyCreatedTitle !== null &&
+            jd.title === this.newlyCreatedTitle,
+          isNew:
+            this.newlyCreatedTitle !== null &&
+            jd.title === this.newlyCreatedTitle,
         }));
+
+        // If there's a newly created item, flag for scrolling and remove the "new" status after 3 seconds
+        if (this.newlyCreatedTitle !== null) {
+          this.shouldScrollToNew = true;
+
+          // Auto-expand the new item
+          const newItem = this.jobDescriptions.find(
+            (jd) => jd.title === this.newlyCreatedTitle
+          );
+          if (newItem && newItem.id) {
+            this.expandedItemId = newItem.id;
+          }
+
+          setTimeout(() => {
+            this.newlyCreatedTitle = null;
+            this.jobDescriptions = this.jobDescriptions.map((jd) => ({
+              ...jd,
+              isNew: false,
+            }));
+          }, 3000);
+        }
       },
       error: (error) => {
         console.error('Error loading job descriptions:', error);
@@ -107,6 +162,7 @@ export class JdOverviewAccordionComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.titleService.updateTitle(result);
+        this.newlyCreatedTitle = result;
         this.loadJobDescriptions();
       }
     });
@@ -126,6 +182,7 @@ export class JdOverviewAccordionComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.newlyCreatedTitle = result;
         this.loadJobDescriptions();
       }
     });

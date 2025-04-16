@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-4 h-full">
+<div class="flex flex-col gap-4 h-full" style="--flash-color: #ffffe6">
   <div class="flex justify-between">
     <h1 class="text-2xl 3xl:text-3xl font-medium tracking-wide text-zinc-600">
       Arbeitsvorgänge
@@ -38,7 +38,7 @@
     <div class="w-full">
       <!-- Header row -->
       <div
-        class="flex bg-tertiary text-white font-medium text-sm 3xl:text-base"
+        class="flex bg-tertiary text-white font-medium text-sm 3xl:text-base sticky top-0 z-10"
       >
         <div class="px-4 py-2 flex-1 text-left">Titel</div>
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">erstellt am</div>
@@ -51,9 +51,17 @@
       <div *ngFor="let item of jobTasks; let i = index; trackBy: trackById">
         <!-- Accordion header row -->
         <div
+          #accordionItem
           class="flex items-center cursor-pointer transition-colors"
+          [ngClass]="{
+            'animate-flash': item.isNew
+          }"
           [style.background-color]="
-            i % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(229 231 235)'
+            item.isNew
+              ? ''
+              : i % 2 === 0
+              ? 'rgb(243 244 246)'
+              : 'rgb(229 231 235)'
           "
           [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
           (click)="toggleAccordion(item.id!)"

@@ -6,7 +6,15 @@ import {
   trigger,
 } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  ViewChildren,
+  QueryList,
+  AfterViewChecked,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +31,10 @@ import { JobTask } from '../../../types/job-tasks';
 import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
+
+interface ExpandableJobTask extends JobTask {
+  isNew?: boolean;
+}
 
 @Component({
   selector: 'app-jt-overview-accordion',
@@ -60,14 +72,18 @@ import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-t
     ]),
   ],
 })
-export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
+export class JtOverviewAccordionComponent
+  implements OnInit, OnDestroy, AfterViewChecked
+{
   expandedItemId: number | null = null;
   tagInput: string = '';
   htmlContent: string = '';
-  jobTasks: JobTask[] = [];
+  jobTasks: ExpandableJobTask[] = [];
   private subscription: Subscription = new Subscription();
   filter: JobTaskFilter = {};
   showDeleted: boolean = false;
+  newlyCreatedTitle: string | null = null;
+  shouldScrollToNew: boolean = false;
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -95,6 +111,8 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
     'EG 15',
   ];
 
+  @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
+
   constructor(
     private dialog: MatDialog,
     private jobTasksService: JobTasksService
@@ -102,6 +120,23 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadJobTasks();
+  }
+
+  ngAfterViewChecked() {
+    if (this.shouldScrollToNew) {
+      this.scrollToNewItem();
+      this.shouldScrollToNew = false;
+    }
+  }
+
+  scrollToNewItem() {
+    const newItemIndex = this.jobTasks.findIndex((jt) => jt.isNew);
+
+    if (newItemIndex >= 0 && this.accordionItems.length > newItemIndex) {
+      const newItemElement =
+        this.accordionItems.toArray()[newItemIndex].nativeElement;
+      newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   ngOnDestroy(): void {
@@ -117,7 +152,45 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
     this.subscription.add(
       this.jobTasksService.getJobTasks(this.filter).subscribe({
         next: (tasks) => {
-          this.jobTasks = tasks;
+          this.jobTasks = tasks.map((task) => ({
+            ...task,
+            isNew:
+              this.newlyCreatedTitle !== null &&
+              task.title === this.newlyCreatedTitle,
+          }));
+
+          // If there's a newly created item, flag for scrolling and auto-expand it
+          if (this.newlyCreatedTitle !== null) {
+            this.shouldScrollToNew = true;
+
+            // Auto-expand the new item
+            const newItem = this.jobTasks.find(
+              (jt) => jt.title === this.newlyCreatedTitle
+            );
+            if (newItem && newItem.id) {
+              this.expandedItemId = newItem.id;
+
+              // Load content for the expanded item
+              this.jobTasksService.getJobTaskById(newItem.id).subscribe({
+                next: (task) => {
+                  this.htmlContent = task.text || '';
+                },
+                error: (error) => {
+                  console.error('Error loading task content:', error);
+                  this.htmlContent = '';
+                },
+              });
+            }
+
+            // Remove the "new" flag after 3 seconds
+            setTimeout(() => {
+              this.newlyCreatedTitle = null;
+              this.jobTasks = this.jobTasks.map((jt) => ({
+                ...jt,
+                isNew: false,
+              }));
+            }, 3000);
+          }
         },
         error: (error) => {
           console.error('Error loading job tasks:', error);
@@ -150,6 +223,7 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.newlyCreatedTitle = result;
         this.loadJobTasks();
       }
     });
@@ -169,6 +243,7 @@ export class JtOverviewAccordionComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        this.newlyCreatedTitle = result;
         this.loadJobTasks();
       }
     });
