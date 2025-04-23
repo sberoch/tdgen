@@ -24,6 +24,8 @@ import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 import { truncateText } from '../../utils/card.utils';
+import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
+import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -42,6 +44,8 @@ const MAX_DISPLAY_CARDS = 10;
     MatMenuModule,
     MatDividerModule,
     CardTooltipDirective,
+    OverlayModalComponent,
+    JtOverviewAccordionComponent,
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {
@@ -55,6 +59,8 @@ export class CardBacklogColumnComponent implements OnInit {
   selectedCard: Card | null = null;
   currentIndex = 0;
   private _snackBar = inject(MatSnackBar);
+  isJobTaskModalOpen = false;
+  selectedCardToOpenModal: Card | null = null;
 
   constructor(
     private dialog: MatDialog,
@@ -185,5 +191,15 @@ export class CardBacklogColumnComponent implements OnInit {
 
   removeFromDisplay(index: number) {
     this.cardService.removeFromDisplay(index);
+  }
+
+  openDialogWithCard(card: Card) {
+    this.isJobTaskModalOpen = true;
+    this.selectedCardToOpenModal = card;
+  }
+
+  closeJobTaskModal() {
+    this.isJobTaskModalOpen = false;
+    this.selectedCardToOpenModal = null;
   }
 }

@@ -14,6 +14,9 @@ import {
   ViewChildren,
   QueryList,
   AfterViewChecked,
+  Input,
+  OnChanges,
+  SimpleChanges,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,6 +34,7 @@ import { JobTask } from '../../../types/job-tasks';
 import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
+import { Card } from '../../../utils/card.utils';
 
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
@@ -73,8 +77,10 @@ interface ExpandableJobTask extends JobTask {
   ],
 })
 export class JtOverviewAccordionComponent
-  implements OnInit, OnDestroy, AfterViewChecked
+  implements OnInit, OnDestroy, AfterViewChecked, OnChanges
 {
+  @Input() initialCard: Card | null = null;
+
   expandedItemId: number | null = null;
   tagInput: string = '';
   htmlContent: string = '';
@@ -143,6 +149,12 @@ export class JtOverviewAccordionComponent
     this.subscription.unsubscribe();
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialCard'] && changes['initialCard'].currentValue) {
+      this.loadJobTasks();
+    }
+  }
+
   loadJobTasks(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
@@ -155,23 +167,28 @@ export class JtOverviewAccordionComponent
           this.jobTasks = tasks.map((task) => ({
             ...task,
             isNew:
-              this.newlyCreatedTitle !== null &&
-              task.title === this.newlyCreatedTitle,
+              (this.newlyCreatedTitle !== null &&
+                task.title === this.newlyCreatedTitle) ||
+              (this.initialCard !== null &&
+                task.title === this.initialCard.title),
           }));
 
-          // If there's a newly created item, flag for scrolling and auto-expand it
-          if (this.newlyCreatedTitle !== null) {
+          // If there's a newly created item or initial card, flag for scrolling and auto-expand it
+          if (this.newlyCreatedTitle !== null || this.initialCard !== null) {
             this.shouldScrollToNew = true;
 
-            // Auto-expand the new item
-            const newItem = this.jobTasks.find(
-              (jt) => jt.title === this.newlyCreatedTitle
+            // Find the item to auto-expand
+            const targetTitle =
+              this.initialCard?.title || this.newlyCreatedTitle;
+            const targetItem = this.jobTasks.find(
+              (jt) => jt.title === targetTitle
             );
-            if (newItem && newItem.id) {
-              this.expandedItemId = newItem.id;
+
+            if (targetItem && targetItem.id) {
+              this.expandedItemId = targetItem.id;
 
               // Load content for the expanded item
-              this.jobTasksService.getJobTaskById(newItem.id).subscribe({
+              this.jobTasksService.getJobTaskById(targetItem.id).subscribe({
                 next: (task) => {
                   this.htmlContent = task.text || '';
                 },

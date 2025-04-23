@@ -44,9 +44,18 @@
             {{ card.classification }}
           </p>
         </div>
-        <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
-          {{ card.title }}
-        </p>
+        <div class="flex items-center justify-between">
+          <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
+            {{ card.title }}
+          </p>
+          <button
+            mat-icon-button
+            class="text-gray-500 hover:text-secondary"
+            (click)="openDialogWithCard(card)"
+          >
+            <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
+          </button>
+        </div>
         <p class="text-xs 2xl:text-sm mt-1">
           {{ truncate(card.text, 145) }}
         </p>
@@ -142,3 +151,9 @@
     Entfernen
   </button>
 </mat-menu>
+
+<app-overlay-modal [isOpen]="isJobTaskModalOpen" (close)="closeJobTaskModal()">
+  <app-jt-overview-accordion
+    [initialCard]="selectedCardToOpenModal"
+  ></app-jt-overview-accordion>
+</app-overlay-modal>
