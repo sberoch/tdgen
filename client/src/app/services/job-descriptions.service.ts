@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import {
   CreateJobDescription,
   JobDescription,
+  UpdateJobDescription,
 } from '../types/job-descriptions';
 
 export interface JobDescriptionFilter {
@@ -56,9 +57,9 @@ export class JobDescriptionsService {
 
   updateJobDescription(
     id: number,
-    jobDescription: Partial<JobDescription>
+    jobDescription: UpdateJobDescription
   ): Observable<JobDescription> {
-    return this.http.put<JobDescription>(
+    return this.http.patch<JobDescription>(
       `${this.apiUrl}/${id}`,
       jobDescription
     );

@@ -1,3 +1,4 @@
+import { Tag } from './tag';
 import { JobTask } from './job-tasks';
 
 export type JobDescription = {
@@ -5,7 +6,7 @@ export type JobDescription = {
   title: string;
   metadata: Record<string, any>;
   tasks: JobTask[];
-  tags: string[];
+  tags: Tag[];
   formFields: Record<string, string>;
   createdAt?: string;
   updatedAt?: string;
@@ -18,3 +19,5 @@ export type CreateJobDescription = {
   tags: string[];
   formFields: Record<string, string>;
 };
+
+export type UpdateJobDescription = Partial<CreateJobDescription>;

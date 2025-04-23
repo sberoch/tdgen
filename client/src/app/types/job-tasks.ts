@@ -1,11 +1,11 @@
 import { JobDescription } from './job-descriptions';
-
+import { Tag } from './tag';
 export type JobTask = {
   id: number;
   title: string;
   text: string;
   metadata: Record<string, any>;
-  tags: string[];
+  tags: Tag[];
   jobDescriptionId?: number;
   jobDescription?: JobDescription;
   createdAt?: string;
@@ -20,3 +20,5 @@ export type CreateJobTask = {
   tags: string[];
   jobDescriptionId?: number;
 };
+
+export type UpdateJobTask = Partial<CreateJobTask>;

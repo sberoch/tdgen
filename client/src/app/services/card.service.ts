@@ -30,7 +30,7 @@ export class CardService {
         title: task.title,
         text: task.text,
         percentage: 5,
-        tags: task.tags,
+        tags: task.tags.map((tag) => tag.name),
       }));
       this.cardsSubject.next(cards);
     });

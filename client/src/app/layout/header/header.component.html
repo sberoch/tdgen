@@ -47,12 +47,21 @@
 <app-overlay-modal
   [isOpen]="isJobDescriptionModalOpen"
   (close)="closeJobDescriptionModal()"
+  (contentClose)="jdAccordion.onOverlayModalClosed()"
 >
   <app-jd-overview-accordion
+    #jdAccordion
     (closeModal)="closeJobDescriptionModal()"
   ></app-jd-overview-accordion>
 </app-overlay-modal>
 
-<app-overlay-modal [isOpen]="isJobTaskModalOpen" (close)="closeJobTaskModal()">
-  <app-jt-overview-accordion></app-jt-overview-accordion>
+<app-overlay-modal
+  [isOpen]="isJobTaskModalOpen"
+  (close)="closeJobTaskModal()"
+  (contentClose)="jtAccordion.onOverlayModalClosed()"
+>
+  <app-jt-overview-accordion
+    #jtAccordion
+    (closeModal)="closeJobTaskModal()"
+  ></app-jt-overview-accordion>
 </app-overlay-modal>

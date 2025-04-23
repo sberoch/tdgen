@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { JobTask } from '../types/job-tasks';
+import { CreateJobTask, JobTask, UpdateJobTask } from '../types/job-tasks';
 import { tap } from 'rxjs/operators';
 
 export interface JobTaskFilter {
@@ -41,12 +41,12 @@ export class JobTasksService {
     return this.http.get<JobTask>(`${this.apiUrl}/${id}`);
   }
 
-  createJobTask(jobTask: Partial<JobTask>): Observable<JobTask> {
+  createJobTask(jobTask: CreateJobTask): Observable<JobTask> {
     return this.http.post<JobTask>(this.apiUrl, jobTask);
   }
 
-  updateJobTask(id: number, jobTask: Partial<JobTask>): Observable<JobTask> {
-    return this.http.put<JobTask>(`${this.apiUrl}/${id}`, jobTask);
+  updateJobTask(id: number, jobTask: UpdateJobTask): Observable<JobTask> {
+    return this.http.patch<JobTask>(`${this.apiUrl}/${id}`, jobTask);
   }
 
   deleteJobTask(id: number): Observable<void> {

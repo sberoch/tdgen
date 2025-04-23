@@ -29,6 +29,7 @@ import { JobDescription } from '../../../types/job-descriptions';
 import { truncateText } from '../../../utils/card.utils';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
+import { Tag } from '../../../types/tag';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
@@ -217,17 +218,32 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     const newTags = this.tagInput
       .split(',')
       .map((tag) => tag.trim())
-      .filter((tag) => tag);
+      .filter((tag) => tag)
+      .map((name) => ({ id: Math.random(), name }));
     if (!item.tags) {
       item.tags = [];
     }
     item.tags = [...new Set([...item.tags, ...newTags])];
     this.tagInput = '';
+    console.log(
+      'tags',
+      item.tags.map((tag) => tag.name)
+    );
+    this.jobDescriptionsService
+      .updateJobDescription(item.id, {
+        tags: item.tags.map((tag) => tag.name),
+      })
+      .subscribe();
   }
 
-  removeTag(item: JobDescription, tagToRemove: string): void {
+  removeTag(item: JobDescription, tagToRemove: Tag): void {
     if (!item.tags) return;
-    item.tags = item.tags.filter((tag) => tag !== tagToRemove);
+    item.tags = item.tags.filter((tag) => tag.name !== tagToRemove.name);
+    this.jobDescriptionsService
+      .updateJobDescription(item.id, {
+        tags: item.tags.map((tag) => tag.name),
+      })
+      .subscribe();
   }
 
   handleKeyPress(event: KeyboardEvent, item: JobDescription): void {
@@ -258,6 +274,36 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
     this.titleService.updateTitle(item.title);
+    this.onOverlayModalClosed();
+  }
+
+  onOverlayModalClosed(): void {
+    // Save any pending changes when the modal is closed
+    const expandedItem = this.jobDescriptions.find(
+      (jd) => jd.id === this.expandedItemId
+    );
+    if (expandedItem && expandedItem.id) {
+      this.addTags(expandedItem);
+
+      // Save the updated job description to the service
+      this.jobDescriptionsService
+        .updateJobDescription(expandedItem.id, {
+          title: expandedItem.title,
+          metadata: expandedItem.metadata,
+          formFields: expandedItem.formFields,
+        })
+        .subscribe({
+          next: () => {
+            console.log('Job description updated on modal close');
+          },
+          error: (error) => {
+            console.error(
+              'Error updating job description on modal close:',
+              error
+            );
+          },
+        });
+    }
     this.closeModal.emit();
   }
 }

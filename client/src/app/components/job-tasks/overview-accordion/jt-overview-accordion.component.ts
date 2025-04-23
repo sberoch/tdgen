@@ -17,6 +17,8 @@ import {
   Input,
   OnChanges,
   SimpleChanges,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -35,7 +37,7 @@ import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 import { Card } from '../../../utils/card.utils';
-
+import { Tag } from '../../../types/tag';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
 }
@@ -118,6 +120,7 @@ export class JtOverviewAccordionComponent
   ];
 
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
+  @Output() closeModal = new EventEmitter<void>();
 
   constructor(
     private dialog: MatDialog,
@@ -302,7 +305,8 @@ export class JtOverviewAccordionComponent
     const newTags = this.tagInput
       .split(',')
       .map((tag) => tag.trim())
-      .filter((tag) => tag);
+      .filter((tag) => tag)
+      .map((name) => ({ id: Math.random(), name }));
 
     if (!item.tags) {
       item.tags = [];
@@ -311,13 +315,21 @@ export class JtOverviewAccordionComponent
     item.tags = [...new Set([...item.tags, ...newTags])];
     this.tagInput = '';
 
-    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
+    this.jobTasksService
+      .updateJobTask(item.id!, {
+        tags: item.tags.map((tag) => tag.name),
+      })
+      .subscribe();
   }
 
-  removeTag(item: JobTask, tagToRemove: string): void {
+  removeTag(item: JobTask, tagToRemove: Tag): void {
     if (!item.tags) return;
-    item.tags = item.tags.filter((tag) => tag !== tagToRemove);
-    this.jobTasksService.updateJobTask(item.id!, item).subscribe();
+    item.tags = item.tags.filter((tag) => tag.name !== tagToRemove.name);
+    this.jobTasksService
+      .updateJobTask(item.id!, {
+        tags: item.tags.map((tag) => tag.name),
+      })
+      .subscribe();
   }
 
   handleKeyPress(event: KeyboardEvent, item: JobTask): void {
@@ -348,5 +360,23 @@ export class JtOverviewAccordionComponent
 
   trackById(index: number, item: JobTask): number {
     return item.id!;
+  }
+
+  onOverlayModalClosed(): void {
+    // Save any pending changes when the modal is closed
+    const expandedItem = this.jobTasks.find(
+      (jt) => jt.id === this.expandedItemId
+    );
+    if (expandedItem && expandedItem.id) {
+      this.addTags(expandedItem);
+      this.jobTasksService
+        .updateJobTask(expandedItem.id, {
+          title: expandedItem.title,
+          text: this.htmlContent,
+          metadata: expandedItem.metadata,
+        })
+        .subscribe();
+    }
+    this.closeModal.emit();
   }
 }
