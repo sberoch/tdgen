@@ -48,7 +48,9 @@
   [isOpen]="isJobDescriptionModalOpen"
   (close)="closeJobDescriptionModal()"
 >
-  <app-jd-overview-accordion></app-jd-overview-accordion>
+  <app-jd-overview-accordion
+    (closeModal)="closeJobDescriptionModal()"
+  ></app-jd-overview-accordion>
 </app-overlay-modal>
 
 <app-overlay-modal [isOpen]="isJobTaskModalOpen" (close)="closeJobTaskModal()">

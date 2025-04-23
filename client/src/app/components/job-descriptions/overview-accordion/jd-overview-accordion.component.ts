@@ -13,6 +13,8 @@ import {
   ViewChildren,
   QueryList,
   AfterViewChecked,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -71,6 +73,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   shouldScrollToNew: boolean = false;
 
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
+  @Output() closeModal = new EventEmitter<void>();
 
   jobDescriptions: ExpandableJobDescription[] = [];
 
@@ -251,5 +254,10 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         },
       },
     });
+  }
+
+  loadJobDescriptionIntoWorkplace(item: JobDescription): void {
+    this.titleService.updateTitle(item.title);
+    this.closeModal.emit();
   }
 }
