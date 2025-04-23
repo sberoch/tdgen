@@ -274,6 +274,20 @@ export class JtOverviewAccordionComponent
   }
 
   toggleAccordion(id: number): void {
+    // Save any pending changes when toggling accordion
+    if (this.expandedItemId) {
+      const expandedItem = this.jobTasks.find(
+        (jt) => jt.id === this.expandedItemId
+      );
+      if (expandedItem && expandedItem.id) {
+        this.jobTasksService
+          .updateJobTask(expandedItem.id, {
+            text: this.htmlContent,
+            metadata: expandedItem.metadata,
+          })
+          .subscribe();
+      }
+    }
     if (this.expandedItemId === id) {
       this.expandedItemId = null;
       this.htmlContent = '';
