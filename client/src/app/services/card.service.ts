@@ -25,8 +25,8 @@ export class CardService {
 
   private initializeCards() {
     this.http.get<JobTask[]>(this.apiUrl).subscribe((tasks) => {
-      const cards = tasks.map((task, index) => ({
-        classification: `EG ${(index % 15) + 1}`,
+      const cards = tasks.map((task) => ({
+        classification: task.metadata?.['paymentGroup'] || '',
         title: task.title,
         text: task.text,
         percentage: 5,

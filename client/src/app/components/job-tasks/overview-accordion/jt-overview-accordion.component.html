@@ -137,9 +137,17 @@
               </div>
               <select
                 class="text-zinc-600 text-sm border border-lightgray rounded-sm px-2 focus:outline-none focus:ring-2 focus:ring-black/80"
-                (change)="onEgSelected($any($event.target).value)"
+                (change)="onEgSelected($any($event.target).value, item)"
               >
-                <option *ngFor="let eg of EG_OPTIONS">{{ eg }}</option>
+                <option value="">Auswählen...</option>
+                <option
+                  *ngFor="let eg of EG_OPTIONS"
+                  [selected]="
+                    item.metadata && item.metadata['paymentGroup'] === eg
+                  "
+                >
+                  {{ eg }}
+                </option>
               </select>
             </div>
             <div

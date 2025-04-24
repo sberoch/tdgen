@@ -97,7 +97,9 @@ async function main() {
       data: Array.from({ length: 100 }, () => ({
         title: getRandomSentence(3, 10).slice(0, 100),
         text: getRandomSentence(50, 150).slice(0, 2000),
-        metadata: {},
+        metadata: {
+          paymentGroup: `EG ${Math.floor(Math.random() * 15) + 1}`,
+        },
         createdById: createdUser!.id,
       })),
     });

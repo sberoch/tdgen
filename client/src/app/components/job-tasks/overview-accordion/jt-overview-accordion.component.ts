@@ -229,8 +229,22 @@ export class JtOverviewAccordionComponent
     this.loadJobTasks();
   }
 
-  onEgSelected(selectedEg: string): void {
-    console.log('Selected:', selectedEg);
+  onEgSelected(selectedEg: string, item: JobTask): void {
+    if (!item.metadata) item.metadata = {};
+    item.metadata['paymentGroup'] = selectedEg;
+
+    this.jobTasksService
+      .updateJobTask(item.id!, {
+        metadata: item.metadata,
+      })
+      .subscribe({
+        next: () => {
+          console.log(`Payment group updated to ${selectedEg}`);
+        },
+        error: (error) => {
+          console.error('Error updating payment group:', error);
+        },
+      });
   }
 
   openCreateDialog() {
