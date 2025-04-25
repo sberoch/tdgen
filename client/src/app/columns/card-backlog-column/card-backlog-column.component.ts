@@ -70,7 +70,12 @@ export class CardBacklogColumnComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.currentTitle.subscribe((title) => {
-      if (title) this.currentTitle = title;
+      this.currentTitle = title;
+      if (title.length === 0) {
+        this.backlogCards = [...this.allBacklogCards];
+        this.displayCards = [];
+        this.cardService.initializeCards();
+      }
     });
 
     this.cardService.cards$.subscribe((cards) => {

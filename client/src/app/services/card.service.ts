@@ -23,7 +23,7 @@ export class CardService {
     this.initializeCards();
   }
 
-  private initializeCards() {
+  initializeCards() {
     this.http.get<JobTask[]>(this.apiUrl).subscribe((tasks) => {
       const cards = tasks.map((task) => ({
         classification: task.metadata?.['paymentGroup'] || '',
@@ -33,6 +33,7 @@ export class CardService {
         tags: task.tags.map((tag) => tag.name),
       }));
       this.cardsSubject.next(cards);
+      this.displayCardsSubject.next([]);
     });
   }
 

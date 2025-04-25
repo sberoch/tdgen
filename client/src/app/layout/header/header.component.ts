@@ -42,7 +42,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {
     this.titleService.currentTitle.subscribe((title) => {
-      if (title) this.currentTitle = title;
+      this.currentTitle = title;
     });
   }
 

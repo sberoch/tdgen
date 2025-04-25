@@ -7,6 +7,7 @@ import {
   MatDialogActions,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { TitleService } from '../../services/title.service';
 
 @Component({
   selector: 'app-close-description-dialog',
@@ -22,10 +23,12 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class CloseDescriptionDialogComponent {
   constructor(
-    private dialogRef: MatDialogRef<CloseDescriptionDialogComponent>
+    private dialogRef: MatDialogRef<CloseDescriptionDialogComponent>,
+    private titleService: TitleService
   ) {}
 
   onConfirm(): void {
+    this.titleService.updateTitle('');
     this.dialogRef.close(true);
   }
 
