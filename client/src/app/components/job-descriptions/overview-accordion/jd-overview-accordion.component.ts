@@ -155,6 +155,10 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     this.loadJobDescriptions();
   }
 
+  clearInput(inputElement: HTMLInputElement) {
+    inputElement.value = '';
+  }
+
   openCreateDialog() {
     const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
       width: '600px',

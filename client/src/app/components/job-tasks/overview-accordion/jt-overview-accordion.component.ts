@@ -229,6 +229,10 @@ export class JtOverviewAccordionComponent
     this.loadJobTasks();
   }
 
+  clearInput(inputElement: HTMLInputElement) {
+    inputElement.value = '';
+  }
+
   onEgSelected(selectedEg: string, item: JobTask): void {
     if (!item.metadata) item.metadata = {};
     item.metadata['paymentGroup'] = selectedEg;

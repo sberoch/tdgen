@@ -123,6 +123,11 @@ export class CardBacklogColumnComponent implements OnInit {
     });
   }
 
+  clearSearch(inputElement: HTMLInputElement) {
+    inputElement.value = '';
+    this.backlogCards = [...this.allBacklogCards];
+  }
+
   drop(event: CdkDragDrop<Card[]>) {
     if (event.previousContainer === event.container) {
       this.cardService.moveInDisplay(event.previousIndex, event.currentIndex);

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobDescription, Prisma } from '@prisma/client';
 import {
@@ -58,21 +62,26 @@ export class JobDescriptionsService {
 
   async create(data: CreateJobDescriptionDto): Promise<JobDescription> {
     const { tags, formFields, ...rest } = data;
-    return this.prisma.jobDescription.create({
-      data: {
-        ...rest,
-        tags: { create: tags?.map((tag) => ({ name: tag })) },
-        formFields: {
-          create: formFields
-            ? Object.entries(formFields).map(([key, value]) => ({
-                key,
-                value,
-              }))
-            : undefined,
+    try {
+      const jobDescription = await this.prisma.jobDescription.create({
+        data: {
+          ...rest,
+          tags: { create: tags?.map((tag) => ({ name: tag })) },
+          formFields: {
+            create: formFields
+              ? Object.entries(formFields).map(([key, value]) => ({
+                  key,
+                  value,
+                }))
+              : undefined,
+          },
+          createdBy: { connect: { userId: ADMIN_ID } },
         },
-        createdBy: { connect: { userId: ADMIN_ID } },
-      },
-    });
+      });
+      return jobDescription;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async set(

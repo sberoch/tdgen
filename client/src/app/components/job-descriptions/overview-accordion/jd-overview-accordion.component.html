@@ -12,13 +12,22 @@
   </div>
 
   <div class="flex items-center gap-2">
-    <input
-      type="text"
-      placeholder="Tätigkeitsdarstellungen filtern"
-      class="w-full border border-lightgray rounded-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm max-w-md"
-      (blur)="applyFilter({ search: $any($event.target).value })"
-      (keyup.enter)="applyFilter({ search: $any($event.target).value })"
-    />
+    <div class="relative w-full max-w-md">
+      <input
+        type="text"
+        placeholder="Tätigkeitsdarstellungen filtern"
+        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm"
+        (blur)="applyFilter({ search: $any($event.target).value })"
+        (keyup.enter)="applyFilter({ search: $any($event.target).value })"
+        #searchInput
+      />
+      <button
+        class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90"
+        (click)="clearFilter(); clearInput(searchInput)"
+      >
+        <mat-icon class="text-lg">backspace</mat-icon>
+      </button>
+    </div>
     <input
       type="checkbox"
       id="showDeleted"
@@ -128,13 +137,21 @@
           <div class="p-4 w-full">
             <div class="flex w-full justify-between">
               <div class="flex items-center gap-2 mb-4">
-                <input
-                  type="text"
-                  placeholder="Tag hinzufügen"
-                  [(ngModel)]="tagInput"
-                  (keyup.enter)="handleKeyPress($any($event), item)"
-                  class="border border-lightgray rounded-sm py-1 px-2 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm w-[400px]"
-                />
+                <div class="relative w-[400px]">
+                  <input
+                    type="text"
+                    placeholder="Tag hinzufügen"
+                    [(ngModel)]="tagInput"
+                    (keyup.enter)="handleKeyPress($any($event), item)"
+                    class="w-full border border-lightgray rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm"
+                  />
+                  <button
+                    class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90"
+                    (click)="tagInput = ''"
+                  >
+                    <mat-icon class="text-lg">backspace</mat-icon>
+                  </button>
+                </div>
                 <button
                   (click)="addTags(item)"
                   class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm"
