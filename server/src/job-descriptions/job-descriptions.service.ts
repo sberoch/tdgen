@@ -26,7 +26,11 @@ export class JobDescriptionsService {
       include: {
         tags: true,
         formFields: true,
-        tasks: true,
+        tasks: {
+          include: {
+            jobTask: true,
+          },
+        },
       },
     });
   }
@@ -35,9 +39,13 @@ export class JobDescriptionsService {
     const jobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: Number(id), deletedAt: null },
       include: {
-        tasks: true,
         tags: true,
         formFields: true,
+        tasks: {
+          include: {
+            jobTask: true,
+          },
+        },
       },
     });
     if (!jobDescription) {

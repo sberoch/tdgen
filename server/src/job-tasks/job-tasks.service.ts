@@ -21,7 +21,7 @@ export class JobTasksService {
       },
       include: {
         tags: true,
-        jobDescription: true,
+        jobDescriptions: true,
       },
     });
   }
@@ -30,7 +30,7 @@ export class JobTasksService {
     const jobTask = await this.prisma.jobTask.findUnique({
       where: { id: Number(id), deletedAt: null },
       include: {
-        jobDescription: true,
+        jobDescriptions: true,
         tags: true,
       },
     });
@@ -55,31 +55,32 @@ export class JobTasksService {
   }
 
   async create(data: CreateJobTaskDto): Promise<JobTask> {
-    const { jobDescriptionId, tags, ...rest } = data;
+    const { tags, ...rest } = data;
     return this.prisma.jobTask.create({
       data: {
         ...rest,
-        jobDescription: jobDescriptionId
-          ? { connect: { id: jobDescriptionId } }
-          : undefined,
-        tags: { create: tags.map((tag) => ({ name: tag })) },
+        tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
         createdBy: { connect: { userId: ADMIN_ID } },
+      },
+      include: {
+        tags: true,
       },
     });
   }
 
   async set(id: string, data: UpdateJobTaskDto): Promise<JobTask> {
     const jobTask = await this.get(id);
-    const { jobDescriptionId, tags, ...rest } = data;
+    const { tags, ...rest } = data;
     return this.prisma.jobTask.update({
       where: { id: jobTask.id },
       data: {
         ...rest,
-        jobDescription: jobDescriptionId
-          ? { connect: { id: jobDescriptionId } }
-          : undefined,
-        tags: { create: tags?.map((tag) => ({ name: tag })) },
+        tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
         updatedBy: { connect: { userId: ADMIN_ID } },
+      },
+      include: {
+        tags: true,
+        jobDescriptions: true,
       },
     });
   }

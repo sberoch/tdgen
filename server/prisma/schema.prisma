@@ -48,8 +48,7 @@ model JobTask {
   text String
   metadata Json
   tags      Tag[]
-  jobDescriptionId Int?
-  jobDescription JobDescription? @relation(fields: [jobDescriptionId], references: [id])
+  jobDescriptions JobDescriptionTask[]
   createdAt DateTime @default(now())
   createdBy User @relation("JobTaskCreator", fields: [createdById], references: [id])
   createdById Int 
@@ -65,7 +64,7 @@ model JobDescription {
   id        Int        @id @default(autoincrement())
   title     String @unique
   metadata Json
-  tasks     JobTask[]
+  tasks     JobDescriptionTask[]
   tags      Tag[]
   formFields JobDescriptionFormField[]
   createdAt DateTime @default(now())
@@ -85,4 +84,16 @@ model JobDescriptionFormField {
   value      String
   jobDescriptionId Int
   jobDescription JobDescription @relation(fields: [jobDescriptionId], references: [id])
+}
+
+model JobDescriptionTask {
+  id             Int           @id @default(autoincrement())
+  jobTask        JobTask       @relation(fields: [jobTaskId], references: [id])
+  jobTaskId      Int
+  jobDescription JobDescription @relation(fields: [jobDescriptionId], references: [id])
+  jobDescriptionId Int
+  order          Int
+  percentage     Float
+  
+  @@unique([jobTaskId, jobDescriptionId])
 }
