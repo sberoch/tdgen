@@ -1,11 +1,11 @@
 import { Tag } from './tag';
-import { JobTask } from './job-tasks';
+import { JobDescriptionTask } from './job-description-tasks';
 
 export type JobDescription = {
   id: number;
   title: string;
   metadata: Record<string, any>;
-  tasks: JobTask[];
+  tasks: JobDescriptionTask[];
   tags: Tag[];
   formFields: Record<string, string>;
   createdAt?: string;
