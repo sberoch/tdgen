@@ -5,14 +5,14 @@
     <button
       class="rounded-sm bg-white text-black/70 py-1 px-4 disabled:bg-[#ccc] disabled:cursor-not-allowed"
       (click)="onCloseDescriptionButtonClick()"
-      [disabled]="!currentTitle"
+      [disabled]="!isWorkspaceSet"
     >
       Tätigkeitsdarstellung schließen
     </button>
     <button
       class="rounded-sm bg-white text-black/70 py-1 px-4 disabled:bg-[#ccc] disabled:cursor-not-allowed"
       (click)="onButtonClick()"
-      [disabled]="!currentTitle"
+      [disabled]="!isWorkspaceSet"
     >
       Tätigkeitsdarstellung exportieren
     </button>

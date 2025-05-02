@@ -20,12 +20,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { CardService } from '../../services/card.service';
-import { TitleService } from '../../services/title.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 import { truncateText } from '../../utils/card.utils';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
+import { JobDescription } from '../../types/job-descriptions';
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -52,7 +53,7 @@ export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('displayScrollContainer', { static: false })
   private scrollContainer?: ElementRef<HTMLElement>;
 
-  currentTitle: string = '';
+  isWorkspaceSet = false;
   private allBacklogCards: Card[] = [];
   backlogCards: Card[] = [];
   displayCards: Card[] = [];
@@ -64,19 +65,21 @@ export class CardBacklogColumnComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private titleService: TitleService,
-    private cardService: CardService
+    private cardService: CardService,
+    private currentWorkspaceService: CurrentWorkspaceService
   ) {}
 
   ngOnInit() {
-    this.titleService.currentTitle.subscribe((title) => {
-      this.currentTitle = title;
-      if (title.length === 0) {
-        this.backlogCards = [...this.allBacklogCards];
-        this.displayCards = [];
-        this.cardService.initializeCards();
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        this.isWorkspaceSet = jobDescription !== null;
+        if (!jobDescription) {
+          this.backlogCards = [...this.allBacklogCards];
+          this.displayCards = [];
+          this.cardService.initializeCards();
+        }
       }
-    });
+    );
 
     this.cardService.cards$.subscribe((cards) => {
       this.allBacklogCards = cards;
@@ -180,9 +183,9 @@ export class CardBacklogColumnComponent implements OnInit {
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe((result: JobDescription) => {
       if (result) {
-        this.titleService.updateTitle(result);
+        this.currentWorkspaceService.setCurrentJobDescription(result);
       }
     });
   }

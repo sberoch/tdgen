@@ -78,21 +78,21 @@ export class JobDescriptionTitleDialogComponent {
 
       if (!exists) {
         if (!this.isEditing) {
-          await firstValueFrom(
+          const jobDescription = await firstValueFrom(
             this.http.post<CreateJobDescription>(
               `${environment.apiUrl}api/job-descriptions`,
               data
             )
           );
-          this.dialogRef.close(this.title.trim());
+          this.dialogRef.close(jobDescription);
         } else {
-          await firstValueFrom(
+          const jobDescription = await firstValueFrom(
             this.http.patch<JobDescription>(
               `${environment.apiUrl}api/job-descriptions/${this.data.id}`,
               data
             )
           );
-          this.dialogRef.close(this.title.trim());
+          this.dialogRef.close(jobDescription);
         }
       } else {
         this.errorMessage =

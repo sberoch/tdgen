@@ -1,19 +1,24 @@
 import { Component } from '@angular/core';
-import { TitleService } from '../../services/title.service';
 import { MatDialog } from '@angular/material/dialog';
 import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   standalone: true,
 })
 export class FooterComponent {
-  currentTitle: string = '';
+  isWorkspaceSet = false;
 
-  constructor(private titleService: TitleService, private dialog: MatDialog) {
-    this.titleService.currentTitle.subscribe((title) => {
-      this.currentTitle = title;
-    });
+  constructor(
+    private dialog: MatDialog,
+    private currentWorkspaceService: CurrentWorkspaceService
+  ) {
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        this.isWorkspaceSet = jobDescription !== null;
+      }
+    );
   }
 
   onButtonClick() {
@@ -27,7 +32,7 @@ export class FooterComponent {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        console.log('User confirmed closing the activity');
+        this.currentWorkspaceService.clearCurrentJobDescription();
       }
     });
   }

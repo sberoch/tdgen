@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
-import { TitleService } from '../../services/title.service';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
-import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
+import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
-import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
+import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 
 @Component({
   selector: 'app-header',
@@ -36,14 +36,16 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private titleService: TitleService,
-    private router: Router
+    private router: Router,
+    private currentWorkspaceService: CurrentWorkspaceService
   ) {}
 
   ngOnInit() {
-    this.titleService.currentTitle.subscribe((title) => {
-      this.currentTitle = title;
-    });
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        this.currentTitle = jobDescription?.title || '';
+      }
+    );
   }
 
   togglePanel() {
@@ -80,7 +82,7 @@ export class HeaderComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.titleService.updateTitle(result);
+        this.currentWorkspaceService.setCurrentJobDescription(result);
       }
     });
   }

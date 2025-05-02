@@ -25,7 +25,7 @@
       [cdkDropListData]="backlogCards"
       [cdkDropListConnectedTo]="[displayList]"
       (cdkDropListDropped)="drop($event)"
-      [cdkDropListDisabled]="currentTitle === ''"
+      [cdkDropListDisabled]="!isWorkspaceSet"
       cdkDropListSortingDisabled
     >
       @for (card of backlogCards; track card) {
@@ -33,7 +33,7 @@
         class="bg-white shadow-[1px_1px_6px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none"
         cdkDrag
         [cardTooltip]="card"
-        [style.cursor]="currentTitle === '' ? 'not-allowed' : 'move'"
+        [style.cursor]="isWorkspaceSet ? 'move' : 'not-allowed'"
       >
         <div
           class="bg-black/10 h-full w-full border-dotted border-2 border-black/30 min-h-[100px] transition-all duration-200"
@@ -121,7 +121,7 @@
       </div>
       } } @else {
       <div class="flex flex-col justify-center items-center relative">
-        @if (currentTitle) {
+        @if (isWorkspaceSet) {
         <p
           class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-40 absolute top-[0]"
         >

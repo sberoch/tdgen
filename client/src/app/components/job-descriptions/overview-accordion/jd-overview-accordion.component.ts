@@ -7,29 +7,29 @@ import {
 } from '@angular/animations';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
-  Component,
-  OnInit,
-  ElementRef,
-  ViewChildren,
-  QueryList,
   AfterViewChecked,
+  Component,
+  ElementRef,
   EventEmitter,
+  OnInit,
   Output,
+  QueryList,
+  ViewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import {
   JobDescriptionFilter,
   JobDescriptionsService,
 } from '../../../services/job-descriptions.service';
-import { TitleService } from '../../../services/title.service';
 import { JobDescription } from '../../../types/job-descriptions';
+import { Tag } from '../../../types/tag';
 import { truncateText } from '../../../utils/card.utils';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
-import { Tag } from '../../../types/tag';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
@@ -80,8 +80,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   constructor(
     private dialog: MatDialog,
-    private titleService: TitleService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private currentWorkspaceService: CurrentWorkspaceService
   ) {}
 
   ngOnInit(): void {
@@ -169,8 +169,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.titleService.updateTitle(result);
-        this.newlyCreatedTitle = result;
+        this.newlyCreatedTitle = result.title;
         this.loadJobDescriptions();
       }
     });
@@ -190,7 +189,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.newlyCreatedTitle = result;
+        this.newlyCreatedTitle = result.title;
         this.loadJobDescriptions();
       }
     });
@@ -277,7 +276,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
-    this.titleService.updateTitle(item.title);
+    this.currentWorkspaceService.setCurrentJobDescription(item);
     this.onOverlayModalClosed();
   }
 
