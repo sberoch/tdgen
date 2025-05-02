@@ -1,5 +1,8 @@
+import { JobTask } from '../types/job-tasks';
+
 export type Card = {
   classification: string;
+  jobTask: JobTask;
   title: string;
   text: string;
   percentage: number;

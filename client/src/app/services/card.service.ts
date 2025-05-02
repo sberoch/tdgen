@@ -3,9 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CurrentWorkspaceService } from './current-workspace.service';
 import { Card } from '../utils/card.utils';
 import { JobTask } from '../types/job-tasks';
-
+import { JobDescription } from '../types/job-descriptions';
+import { JobDescriptionTask } from '../types/job-description-tasks';
 @Injectable({
   providedIn: 'root',
 })
@@ -13,27 +15,47 @@ export class CardService {
   private cardsSubject = new BehaviorSubject<Card[]>([]);
   private displayCardsSubject = new BehaviorSubject<Card[]>([]);
   private selectedCardSubject = new BehaviorSubject<Card | null>(null);
-  private apiUrl = `${environment.apiUrl}api/job-tasks`;
+  private apiUrl = `${environment.apiUrl}api`;
+  currentJobDescription: JobDescription | null = null;
 
   cards$ = this.cardsSubject.asObservable();
   displayCards$ = this.displayCardsSubject.asObservable();
   selectedCard$ = this.selectedCardSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private currentWorkspaceService: CurrentWorkspaceService
+  ) {
     this.initializeCards();
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        this.currentJobDescription = jobDescription;
+
+        this.displayCardsSubject.next(
+          jobDescription?.tasks.map((jdTask) => ({
+            classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
+            jobTask: jdTask.jobTask,
+            title: jdTask.jobTask?.title || '',
+            text: jdTask.jobTask?.text || '',
+            percentage: jdTask.percentage || 5,
+            tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
+          })) || []
+        );
+      }
+    );
   }
 
   initializeCards() {
-    this.http.get<JobTask[]>(this.apiUrl).subscribe((tasks) => {
+    this.http.get<JobTask[]>(`${this.apiUrl}/job-tasks`).subscribe((tasks) => {
       const cards = tasks.map((task) => ({
         classification: task.metadata?.['paymentGroup'] || '',
+        jobTask: task,
         title: task.title,
         text: task.text,
         percentage: 5,
         tags: task.tags.map((tag) => tag.name),
       }));
       this.cardsSubject.next(cards);
-      this.displayCardsSubject.next([]);
     });
   }
 
@@ -135,45 +157,63 @@ export class CardService {
   }
 
   addToDisplay(card: Card, index: number) {
-    const currentDisplay = [...this.displayCardsSubject.value];
-    const isDuplicate = currentDisplay.some(
-      (existingCard) => existingCard.classification === card.classification
+    const isDuplicate = this.currentJobDescription?.tasks.some(
+      (existingCard) => existingCard.jobTask.id === card.jobTask.id
     );
 
     if (!isDuplicate) {
-      const currentBacklog = this.cardsSubject.value.filter(
-        (c) => c.classification !== card.classification
-      );
-      this.cardsSubject.next(currentBacklog);
+      // TODO: percentages in server
       const percentages = this.calculateAdjustedPercentages(
-        currentDisplay.length + 1,
-        currentDisplay.map((c) => c.percentage)
+        this.currentJobDescription?.tasks.length || 0,
+        this.currentJobDescription?.tasks.map((c) => c.percentage) || []
       );
-      currentDisplay.splice(index, 0, card);
-      currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
-      this.displayCardsSubject.next(currentDisplay);
+      this.http
+        .post<JobDescriptionTask>(`${this.apiUrl}/job-description-tasks`, {
+          jobDescriptionId: this.currentJobDescription?.id,
+          jobTaskId: card.jobTask.id,
+          percentage: card.percentage,
+          order: index,
+        })
+        .subscribe({
+          next: (jdTask) => {
+            const jobDescription = this.currentJobDescription!;
+            jobDescription.tasks.push(jdTask);
+            this.currentWorkspaceService.setCurrentJobDescription(
+              jobDescription
+            );
+          },
+          error: (error) => {
+            console.error('Error adding job description task:', error);
+          },
+        });
     }
     this.selectedCardSubject.next(card);
   }
 
   removeFromDisplay(index: number) {
-    const currentDisplay = [...this.displayCardsSubject.value];
+    // TODO: percentages in server
     const percentages = this.calculateAdjustedPercentages(
-      currentDisplay.length - 1,
-      currentDisplay.map((c) => c.percentage)
+      this.currentJobDescription?.tasks.length || 0,
+      this.currentJobDescription?.tasks.map((c) => c.percentage) || []
     );
-    const removedCard = currentDisplay.splice(index, 1)[0];
-    currentDisplay.forEach((c, i) => (c.percentage = percentages[i]));
-    this.displayCardsSubject.next(currentDisplay);
-
-    const currentBacklog = [...this.cardsSubject.value, removedCard];
-    currentBacklog.sort((a, b) => {
-      const numA = parseInt(a.classification.split(' ')[1], 10);
-      const numB = parseInt(b.classification.split(' ')[1], 10);
-      return numA - numB;
-    });
-    this.cardsSubject.next(currentBacklog);
-
+    const jdTaskToDelete = this.currentJobDescription?.tasks[index];
+    this.http
+      .delete<JobDescriptionTask>(
+        `${this.apiUrl}/job-description-tasks/${jdTaskToDelete?.id}`
+      )
+      .subscribe({
+        next: () => {
+          const jobDescription = this.currentJobDescription!;
+          const newJdTasks = jobDescription.tasks.filter(
+            (c) => c.jobTask.id !== jdTaskToDelete?.jobTask.id
+          );
+          jobDescription.tasks = newJdTasks;
+          this.currentWorkspaceService.setCurrentJobDescription(jobDescription);
+        },
+        error: (error) => {
+          console.error('Error deleting job description task:', error);
+        },
+      });
     this.selectedCardSubject.next(null);
   }
 

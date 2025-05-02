@@ -5,8 +5,8 @@ export type JobDescriptionTask = {
   id: number;
   jobTaskId: number;
   jobDescriptionId: number;
-  jobTask?: JobTask;
-  jobDescription?: JobDescription;
+  jobTask: JobTask;
+  jobDescription: JobDescription;
   order: number;
   percentage: number;
 };
