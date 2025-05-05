@@ -272,7 +272,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
-    this.currentWorkspaceService.setCurrentJobDescription(item);
+    this.currentWorkspaceService.triggerJobDescriptionFetch(item);
     this.onOverlayModalClosed();
   }
 

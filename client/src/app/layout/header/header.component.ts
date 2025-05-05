@@ -12,6 +12,7 @@ import { JdOverviewAccordionComponent } from '../../components/job-descriptions/
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
@@ -26,6 +27,7 @@ import { CurrentWorkspaceService } from '../../services/current-workspace.servic
     OverlayModalComponent,
     JdOverviewAccordionComponent,
     JtOverviewAccordionComponent,
+    CommonModule,
   ],
 })
 export class HeaderComponent implements OnInit {
@@ -33,7 +35,7 @@ export class HeaderComponent implements OnInit {
   isPanelOpen = false;
   isJobDescriptionModalOpen = false;
   isJobTaskModalOpen = false;
-
+  currentWeightedAverage = 0;
   constructor(
     private dialog: MatDialog,
     private router: Router,
@@ -44,6 +46,7 @@ export class HeaderComponent implements OnInit {
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {
         this.currentTitle = jobDescription?.title || '';
+        this.currentWeightedAverage = jobDescription?.weightedAverage || 0;
       }
     );
   }

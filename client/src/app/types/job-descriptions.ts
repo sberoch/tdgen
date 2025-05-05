@@ -4,6 +4,7 @@ import { JobDescriptionTask } from './job-description-tasks';
 export type JobDescription = {
   id: number;
   title: string;
+  weightedAverage: number;
   metadata: Record<string, any>;
   tasks: JobDescriptionTask[];
   tags: Tag[];
