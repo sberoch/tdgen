@@ -159,7 +159,9 @@
                   Hinzufügen
                 </button>
               </div>
-              <div class="text-zinc-600 text-sm">Entgeltgruppe Ø: 8,74</div>
+              <div class="text-zinc-600 text-sm">
+                Entgeltgruppe Ø: {{ item.weightedAverage.toFixed(2) }}
+              </div>
             </div>
             <div
               class="flex flex-wrap gap-2"

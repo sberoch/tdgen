@@ -20,7 +20,7 @@ export class JobDescriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(params?: JobDescriptionParams): Promise<JobDescription[]> {
-    return this.prisma.jobDescription.findMany({
+    const jobDescriptions = await this.prisma.jobDescription.findMany({
       where: this.buildWhereClause(params),
       orderBy: {
         title: 'asc',
@@ -35,6 +35,11 @@ export class JobDescriptionsService {
         },
       },
     });
+
+    return jobDescriptions.map((jobDescription) => ({
+      ...jobDescription,
+      weightedAverage: getWeightedPayGroupFromTasks(jobDescription.tasks),
+    }));
   }
 
   async get(id: string) {
