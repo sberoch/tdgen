@@ -3,14 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { JobDescription, Prisma } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateJobDescriptionDto,
   JobDescriptionParams,
+  UpdateJobDescriptionDto,
   UpdateJobDescriptionPercentagesDto,
 } from './job-descriptions.dto';
-import { UpdateJobDescriptionDto } from './job-descriptions.dto';
+import { getWeightedPayGroupFromTasks } from './job-descriptions.utils';
 
 const ADMIN_ID = '4016651';
 
@@ -52,7 +53,14 @@ export class JobDescriptionsService {
     if (!jobDescription) {
       throw new NotFoundException('Job description not found');
     }
-    return jobDescription;
+    try {
+      const weightedAverage = getWeightedPayGroupFromTasks(
+        jobDescription.tasks,
+      );
+      return { ...jobDescription, weightedAverage };
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async has(id: string): Promise<boolean> {
@@ -69,7 +77,7 @@ export class JobDescriptionsService {
     return !!jobDescription;
   }
 
-  async create(data: CreateJobDescriptionDto): Promise<JobDescription> {
+  async create(data: CreateJobDescriptionDto) {
     const { tags, formFields, ...rest } = data;
     try {
       const jobDescription = await this.prisma.jobDescription.create({
@@ -87,19 +95,16 @@ export class JobDescriptionsService {
           createdBy: { connect: { userId: ADMIN_ID } },
         },
       });
-      return jobDescription;
+      return { ...jobDescription, weightedAverage: 0 };
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
 
-  async set(
-    id: string,
-    data: UpdateJobDescriptionDto,
-  ): Promise<JobDescription> {
+  async set(id: string, data: UpdateJobDescriptionDto) {
     const jobDescription = await this.get(id);
     const { tags, formFields, ...rest } = data;
-    return this.prisma.jobDescription.update({
+    const updatedJobDescription = await this.prisma.jobDescription.update({
       where: { id: jobDescription.id },
       data: {
         ...rest,
@@ -115,12 +120,13 @@ export class JobDescriptionsService {
         updatedBy: { connect: { userId: ADMIN_ID } },
       },
     });
+    return {
+      ...updatedJobDescription,
+      weightedAverage: jobDescription.weightedAverage,
+    };
   }
 
-  async setPercentages(
-    id: string,
-    data: UpdateJobDescriptionPercentagesDto,
-  ): Promise<JobDescription> {
+  async setPercentages(id: string, data: UpdateJobDescriptionPercentagesDto) {
     const jobDescription = await this.get(id);
     const currentJDTasks = jobDescription.tasks;
     for (let i = 0; i < currentJDTasks.length; i++) {
@@ -136,7 +142,7 @@ export class JobDescriptionsService {
         data: { percentage },
       });
     }
-    return this.get(id);
+    return await this.get(id);
   }
 
   async delete(id: string): Promise<void> {

@@ -7,12 +7,16 @@ import {
   UpdateJobDescriptionTaskDto,
 } from './job-description-tasks.dto';
 import { calculateAdjustedPercentages } from './job-description-tasks.utils';
+import { JobDescriptionsService } from '../job-descriptions/job-descriptions.service';
 
 const NEW_TASK_ORDER = -1;
 
 @Injectable()
 export class JobDescriptionTasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jobDescriptionsService: JobDescriptionsService,
+  ) {}
 
   async list(params?: JobDescriptionTaskParams): Promise<JobDescriptionTask[]> {
     return this.prisma.jobDescriptionTask.findMany({
@@ -71,12 +75,9 @@ export class JobDescriptionTasksService {
       NEW_TASK_ORDER,
     );
 
-    const updatedJobDescription = await this.prisma.jobDescription.findUnique({
-      where: { id: data.jobDescriptionId },
-      include: {
-        tasks: { include: { jobTask: true } },
-      },
-    });
+    const updatedJobDescription = await this.jobDescriptionsService.get(
+      data.jobDescriptionId.toString(),
+    );
     return updatedJobDescription;
   }
 
@@ -117,12 +118,9 @@ export class JobDescriptionTasksService {
       );
     }
 
-    const updatedJobDescription = await this.prisma.jobDescription.findUnique({
-      where: { id: jobDescriptionTask.jobDescriptionId },
-      include: {
-        tasks: { include: { jobTask: true } },
-      },
-    });
+    const updatedJobDescription = await this.jobDescriptionsService.get(
+      jobDescriptionTask.jobDescriptionId.toString(),
+    );
     return updatedJobDescription;
   }
 
@@ -144,15 +142,9 @@ export class JobDescriptionTasksService {
     );
     await this.reorderTasksAfterDeletion(jobDescriptionId, order);
 
-    const updatedJobDescription = await this.prisma.jobDescription.findUnique({
-      where: { id: jobDescriptionId },
-      include: {
-        tasks: {
-          include: { jobTask: true },
-        },
-      },
-    });
-
+    const updatedJobDescription = await this.jobDescriptionsService.get(
+      jobDescriptionId.toString(),
+    );
     return updatedJobDescription;
   }
 
