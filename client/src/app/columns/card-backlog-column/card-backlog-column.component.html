@@ -150,7 +150,12 @@
     Ans Ende verschieben
   </button>
   <mat-divider></mat-divider>
-  <button mat-menu-item (click)="emitAlert()">Editieren</button>
+  <button
+    mat-menu-item
+    (click)="openDialogWithCard(displayCards[currentIndex])"
+  >
+    Editieren
+  </button>
   <mat-divider></mat-divider>
   <button
     mat-menu-item
