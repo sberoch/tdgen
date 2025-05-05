@@ -1,38 +1,36 @@
 <div class="flex justify-center items-center h-full py-2 pl-2 pr-3">
-  @if (sections.length === 0) {
-    <div class="w-full h-full bg-lightgray"></div>
+  @if (cards.length === 0) {
+  <div class="w-full h-full bg-lightgray"></div>
   } @else {
-    <div class="flex flex-col h-full w-full border border-gray">
-      @for (section of sections; track section; let last = $last) {
-        <div class="h-full relative" [style.height.%]="section.percentage">
-          <div
-            class="h-full flex flex-col items-center justify-center cursor-pointer relative border border-transparent"
-            [style.backgroundColor]="section.color"
-            (click)="selectCard(section.card)"
-            [class.!border-[#333]]="
-              section.card.classification === selectedCard?.classification
-            "
-          >
-            <p class="text-black/50 text-sm">
-              {{ section.card.classification }}
-            </p>
-            <p class="text-black/50 text-sm">
-              {{ section.percentage.toFixed(0) }}%
-            </p>
-          </div>
-          @if (!last) {
-            <div
-              class="absolute -bottom-[6.5px] left-0 right-0 flex items-center justify-center bg-inherit z-20"
-            >
-              <mat-icon
-                class="text-black/30 text-3xl cursor-grab"
-                (mousedown)="startDrag($event, $index)"
-                >drag_handle</mat-icon
-              >
-            </div>
-          }
-        </div>
+  <div class="flex flex-col h-full w-full border border-gray">
+    @for (card of cards; track card; let last = $last) {
+    <div class="h-full relative" [style.height.%]="card.percentage">
+      <div
+        class="h-full flex flex-col items-center justify-center cursor-pointer relative border border-transparent"
+        [style.backgroundColor]="getPastelColor($index)"
+        (click)="selectCard(card)"
+        [class.!border-[#333]]="
+          card.classification === selectedCard?.classification
+        "
+      >
+        <p class="text-black/50 text-sm">
+          {{ card.classification }}
+        </p>
+        <p class="text-black/50 text-sm">{{ card.percentage.toFixed(0) }}%</p>
+      </div>
+      @if (!last) {
+      <div
+        class="absolute -bottom-[6.5px] left-0 right-0 flex items-center justify-center bg-inherit z-20"
+      >
+        <mat-icon
+          class="text-black/30 text-3xl cursor-grab"
+          (mousedown)="startDrag($event, $index)"
+          >drag_handle</mat-icon
+        >
+      </div>
       }
     </div>
+    }
+  </div>
   }
 </div>

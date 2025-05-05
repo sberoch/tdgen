@@ -14,3 +14,10 @@ export type JobDescriptionParams = {
   includeDeleted?: boolean;
   search?: string;
 };
+
+export type UpdateJobDescriptionPercentagesDto = {
+  taskPercentages: {
+    taskId: number;
+    percentage: number;
+  }[];
+};

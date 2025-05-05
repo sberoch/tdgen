@@ -8,6 +8,7 @@ import { JobDescription, Prisma } from '@prisma/client';
 import {
   CreateJobDescriptionDto,
   JobDescriptionParams,
+  UpdateJobDescriptionPercentagesDto,
 } from './job-descriptions.dto';
 import { UpdateJobDescriptionDto } from './job-descriptions.dto';
 
@@ -35,7 +36,7 @@ export class JobDescriptionsService {
     });
   }
 
-  async get(id: string): Promise<JobDescription> {
+  async get(id: string) {
     const jobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: Number(id), deletedAt: null },
       include: {
@@ -114,6 +115,28 @@ export class JobDescriptionsService {
         updatedBy: { connect: { userId: ADMIN_ID } },
       },
     });
+  }
+
+  async setPercentages(
+    id: string,
+    data: UpdateJobDescriptionPercentagesDto,
+  ): Promise<JobDescription> {
+    const jobDescription = await this.get(id);
+    const currentJDTasks = jobDescription.tasks;
+    for (let i = 0; i < currentJDTasks.length; i++) {
+      const jobDescriptionTaskId = currentJDTasks[i].id;
+      const percentage = data.taskPercentages.find(
+        (task) => task.taskId === jobDescriptionTaskId,
+      )?.percentage;
+      if (!percentage) {
+        throw new BadRequestException('Percentage is required');
+      }
+      await this.prisma.jobDescriptionTask.update({
+        where: { id: jobDescriptionTaskId },
+        data: { percentage },
+      });
+    }
+    return this.get(id);
   }
 
   async delete(id: string): Promise<void> {

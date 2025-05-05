@@ -69,6 +69,15 @@ export class JobDescriptionsService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  updateJobDescriptionPercentages(
+    id: number,
+    taskPercentages: { taskId: number; percentage: number }[]
+  ): Observable<JobDescription> {
+    return this.http.patch<JobDescription>(`${this.apiUrl}/${id}/percentages`, {
+      taskPercentages,
+    });
+  }
+
   private buildWhereClause(filter?: JobDescriptionFilter): HttpParams {
     let params = new HttpParams();
 

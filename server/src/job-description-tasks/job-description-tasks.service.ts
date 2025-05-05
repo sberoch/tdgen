@@ -60,15 +60,15 @@ export class JobDescriptionTasksService {
       },
     });
 
+    await this.adjustTaskPercentages(
+      data.jobDescriptionId,
+      previousJobDescriptionTasksPercentages,
+    );
     await this.reorderTasksAfterChange(
       data.jobDescriptionId,
       newTask.id,
       data.order,
       NEW_TASK_ORDER,
-    );
-    await this.adjustTaskPercentages(
-      data.jobDescriptionId,
-      previousJobDescriptionTasksPercentages,
     );
 
     const updatedJobDescription = await this.prisma.jobDescription.findUnique({
@@ -84,15 +84,15 @@ export class JobDescriptionTasksService {
     const jobDescriptionTask = await this.get(id);
     const updateData: Prisma.JobDescriptionTaskUpdateInput = {};
     const isOrderChanged =
-      data.order && data.order !== jobDescriptionTask.order;
+      data.order !== undefined && data.order !== jobDescriptionTask.order;
     const oldOrder = jobDescriptionTask.order;
 
-    if (data.order) updateData.order = data.order;
-    if (data.percentage) updateData.percentage = data.percentage;
-    if (data.jobDescriptionId) {
+    if (data.order !== undefined) updateData.order = data.order;
+    if (data.percentage !== undefined) updateData.percentage = data.percentage;
+    if (data.jobDescriptionId !== undefined) {
       updateData.jobDescription = { connect: { id: data.jobDescriptionId } };
     }
-    if (data.jobTaskId) {
+    if (data.jobTaskId !== undefined) {
       updateData.jobTask = { connect: { id: data.jobTaskId } };
     }
 
@@ -138,11 +138,12 @@ export class JobDescriptionTasksService {
       where: { id: jobDescriptionTask.id },
     });
 
-    await this.reorderTasksAfterDeletion(jobDescriptionId, order);
     await this.adjustTaskPercentages(
       jobDescriptionId,
       previousJobDescriptionTasksPercentages,
     );
+    await this.reorderTasksAfterDeletion(jobDescriptionId, order);
+
     const updatedJobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: jobDescriptionId },
       include: {

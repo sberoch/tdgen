@@ -14,6 +14,7 @@ import {
   UpdateJobDescriptionDto,
   CreateJobDescriptionDto,
   JobDescriptionParams,
+  UpdateJobDescriptionPercentagesDto,
 } from './job-descriptions.dto';
 
 @Controller('job-descriptions')
@@ -53,6 +54,14 @@ export class JobDescriptionsController {
     @Body() data: UpdateJobDescriptionDto,
   ): Promise<JobDescription> {
     return this.jobDescriptionsService.set(id, data);
+  }
+
+  @Patch(':id/percentages')
+  async updatePercentages(
+    @Param('id') id: string,
+    @Body() data: UpdateJobDescriptionPercentagesDto,
+  ): Promise<JobDescription> {
+    return this.jobDescriptionsService.setPercentages(id, data);
   }
 
   @Delete(':id')

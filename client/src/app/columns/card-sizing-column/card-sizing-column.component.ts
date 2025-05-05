@@ -2,13 +2,9 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { CardService } from '../../services/card.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { MatIconModule } from '@angular/material/icon';
-
-interface Section {
-  card: Card;
-  percentage: number;
-  color: string;
-}
-
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
+import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { JobDescription } from '../../types/job-descriptions';
 @Component({
   selector: 'app-card-sizing-column',
   templateUrl: './card-sizing-column.component.html',
@@ -16,28 +12,40 @@ interface Section {
   imports: [MatIconModule],
 })
 export class CardSizingColumnComponent implements OnInit {
-  cards: Card[] = [];
   selectedCard: Card | null = null;
-  sections: Section[] = [];
+  cards: Card[] = [];
   isDragging = false;
   startY = 0;
   currentIndex = 0;
-  initialPercentages: [number, number] = [0, 0];
   private accumulatedDelta = 0;
-  private lastAppliedDirection: 'up' | 'down' | null = null;
+  private jobDescription: JobDescription | null = null;
 
-  constructor(private cardService: CardService) {}
+  constructor(
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private cardService: CardService,
+    private jobDescriptionsService: JobDescriptionsService
+  ) {}
 
   ngOnInit() {
-    this.cardService.displayCards$.subscribe((cards) => {
-      this.cards = cards;
-      this.sections = cards.map((card, index) => ({
-        card,
-        percentage: card.percentage,
-        color: getNextPastelColor(index),
-      }));
-    });
-
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        if (jobDescription) {
+          this.jobDescription = jobDescription;
+          this.cards =
+            jobDescription?.tasks
+              .map((task, index) => ({
+                classification: task.jobTask.metadata?.['paymentGroup'] || '',
+                jobTask: task.jobTask,
+                title: task.jobTask.title,
+                text: task.jobTask.text,
+                tags: task.jobTask.tags?.map((tag) => tag.name) || [],
+                percentage: task.percentage,
+                order: task.order,
+              }))
+              .sort((a, b) => a.order - b.order) || [];
+        }
+      }
+    );
     this.cardService.selectedCard$.subscribe((card) => {
       this.selectedCard = card;
     });
@@ -61,7 +69,6 @@ export class CardSizingColumnComponent implements OnInit {
     if (steps > 0) {
       this.adjustPercentages(currentDirection, steps * 5);
       this.accumulatedDelta = this.accumulatedDelta % pixelsPerStep;
-      this.lastAppliedDirection = currentDirection;
     }
   }
 
@@ -70,24 +77,22 @@ export class CardSizingColumnComponent implements OnInit {
     if (!this.isDragging) return;
     this.isDragging = false;
     this.accumulatedDelta = 0;
-    this.lastAppliedDirection = null;
+
+    // Save the updated percentages to the server
+    this.savePercentages();
   }
 
   startDrag(event: MouseEvent, index: number) {
     this.isDragging = true;
     this.startY = event.clientY;
     this.currentIndex = index;
-    this.initialPercentages = [
-      this.sections[index].percentage,
-      this.sections[index + 1].percentage,
-    ];
   }
 
   private adjustPercentages(direction: 'up' | 'down', change: number) {
     const upperIndex = this.currentIndex;
     const lowerIndex = this.currentIndex + 1;
 
-    const originalValues = this.sections.map((s) => s.percentage);
+    const originalValues = this.cards.map((c) => c.percentage);
 
     let upperChange = direction === 'up' ? change : -change;
     let lowerChange = -upperChange;
@@ -105,7 +110,6 @@ export class CardSizingColumnComponent implements OnInit {
     workingPercentages = this.normalizePercentages(workingPercentages);
 
     workingPercentages.forEach((percentage, index) => {
-      this.sections[index].percentage = percentage;
       this.cards[index].percentage = percentage;
     });
   }
@@ -139,7 +143,32 @@ export class CardSizingColumnComponent implements OnInit {
     return normalized;
   }
 
+  private savePercentages() {
+    if (!this.jobDescription) return;
+    const jobDescriptionTasks = this.jobDescription.tasks;
+
+    const taskPercentages = this.cards.map((card) => {
+      const jdt = jobDescriptionTasks.find(
+        (task) => task.jobTask.id === card.jobTask.id
+      );
+      return {
+        taskId: jdt!.id,
+        percentage: card.percentage,
+      };
+    });
+
+    this.jobDescriptionsService
+      .updateJobDescriptionPercentages(this.jobDescription.id, taskPercentages)
+      .subscribe({
+        error: (err) => console.error('Error updating percentages:', err),
+      });
+  }
+
   selectCard(card: Card) {
     this.cardService.selectCard(card);
+  }
+
+  getPastelColor(currentIndex: number): string {
+    return getNextPastelColor(currentIndex);
   }
 }
