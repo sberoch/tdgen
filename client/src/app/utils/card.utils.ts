@@ -6,6 +6,7 @@ export type Card = {
   title: string;
   text: string;
   percentage: number;
+  order: number;
   tags: string[];
 };
 

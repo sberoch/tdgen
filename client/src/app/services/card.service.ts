@@ -3,11 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CurrentWorkspaceService } from './current-workspace.service';
-import { Card } from '../utils/card.utils';
-import { JobTask } from '../types/job-tasks';
 import { JobDescription } from '../types/job-descriptions';
-import { JobDescriptionTask } from '../types/job-description-tasks';
+import { JobTask } from '../types/job-tasks';
+import { Card } from '../utils/card.utils';
+import { CurrentWorkspaceService } from './current-workspace.service';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,14 +32,17 @@ export class CardService {
         this.currentJobDescription = jobDescription;
 
         this.displayCardsSubject.next(
-          jobDescription?.tasks.map((jdTask) => ({
-            classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
-            jobTask: jdTask.jobTask,
-            title: jdTask.jobTask?.title || '',
-            text: jdTask.jobTask?.text || '',
-            percentage: jdTask.percentage || 5,
-            tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
-          })) || []
+          jobDescription?.tasks
+            .map((jdTask) => ({
+              classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
+              jobTask: jdTask.jobTask,
+              title: jdTask.jobTask?.title || '',
+              text: jdTask.jobTask?.text || '',
+              percentage: jdTask.percentage || 5,
+              order: jdTask.order || 0,
+              tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
+            }))
+            .sort((a, b) => a.order - b.order) || []
         );
       }
     );
@@ -53,6 +56,7 @@ export class CardService {
         title: task.title,
         text: task.text,
         percentage: 5,
+        order: 0,
         tags: task.tags.map((tag) => tag.name),
       }));
       this.cardsSubject.next(cards);
@@ -168,19 +172,15 @@ export class CardService {
         this.currentJobDescription?.tasks.map((c) => c.percentage) || []
       );
       this.http
-        .post<JobDescriptionTask>(`${this.apiUrl}/job-description-tasks`, {
+        .post<JobDescription>(`${this.apiUrl}/job-description-tasks`, {
           jobDescriptionId: this.currentJobDescription?.id,
           jobTaskId: card.jobTask.id,
           percentage: card.percentage,
           order: index,
         })
         .subscribe({
-          next: (jdTask) => {
-            const jobDescription = this.currentJobDescription!;
-            jobDescription.tasks.push(jdTask);
-            this.currentWorkspaceService.setCurrentJobDescription(
-              jobDescription
-            );
+          next: (jd) => {
+            this.currentWorkspaceService.setCurrentJobDescription(jd);
           },
           error: (error) => {
             console.error('Error adding job description task:', error);
@@ -198,17 +198,12 @@ export class CardService {
     );
     const jdTaskToDelete = this.currentJobDescription?.tasks[index];
     this.http
-      .delete<JobDescriptionTask>(
+      .delete<JobDescription>(
         `${this.apiUrl}/job-description-tasks/${jdTaskToDelete?.id}`
       )
       .subscribe({
-        next: () => {
-          const jobDescription = this.currentJobDescription!;
-          const newJdTasks = jobDescription.tasks.filter(
-            (c) => c.jobTask.id !== jdTaskToDelete?.jobTask.id
-          );
-          jobDescription.tasks = newJdTasks;
-          this.currentWorkspaceService.setCurrentJobDescription(jobDescription);
+        next: (jd) => {
+          this.currentWorkspaceService.setCurrentJobDescription(jd);
         },
         error: (error) => {
           console.error('Error deleting job description task:', error);
@@ -220,22 +215,92 @@ export class CardService {
   moveInDisplay(previousIndex: number, currentIndex: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     moveItemInArray(currentDisplay, previousIndex, currentIndex);
-    this.displayCardsSubject.next(currentDisplay);
+
+    const movedCard = currentDisplay[currentIndex];
+    const jdTask = this.currentJobDescription?.tasks.find(
+      (task) => task.jobTask.id === movedCard.jobTask.id
+    );
+
+    if (jdTask) {
+      this.http
+        .patch<JobDescription>(
+          `${this.apiUrl}/job-description-tasks/${jdTask.id}`,
+          {
+            order: currentIndex,
+          }
+        )
+        .subscribe({
+          next: (jd) => {
+            this.currentWorkspaceService.setCurrentJobDescription(jd);
+          },
+          error: (error) => {
+            console.error('Error updating task order:', error);
+          },
+        });
+    }
+
     this.selectedCardSubject.next(currentDisplay[currentIndex]);
   }
 
   moveCardToTop(index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
     moveItemInArray(currentDisplay, index, 0);
-    this.displayCardsSubject.next(currentDisplay);
+
+    const movedCard = currentDisplay[0];
+    const jdTask = this.currentJobDescription?.tasks.find(
+      (task) => task.jobTask.id === movedCard.jobTask.id
+    );
+
+    if (jdTask) {
+      this.http
+        .patch<JobDescription>(
+          `${this.apiUrl}/job-description-tasks/${jdTask.id}`,
+          {
+            order: 0,
+          }
+        )
+        .subscribe({
+          next: (jd) => {
+            this.currentWorkspaceService.setCurrentJobDescription(jd);
+          },
+          error: (error) => {
+            console.error('Error updating task order:', error);
+          },
+        });
+    }
+
     this.selectedCardSubject.next(currentDisplay[0]);
   }
 
   moveCardToBottom(index: number) {
     const currentDisplay = [...this.displayCardsSubject.value];
-    moveItemInArray(currentDisplay, index, currentDisplay.length - 1);
-    this.displayCardsSubject.next(currentDisplay);
-    this.selectedCardSubject.next(currentDisplay[currentDisplay.length - 1]);
+    const lastIndex = currentDisplay.length - 1;
+    moveItemInArray(currentDisplay, index, lastIndex);
+
+    const movedCard = currentDisplay[lastIndex];
+    const jdTask = this.currentJobDescription?.tasks.find(
+      (task) => task.jobTask.id === movedCard.jobTask.id
+    );
+
+    if (jdTask) {
+      this.http
+        .patch<JobDescription>(
+          `${this.apiUrl}/job-description-tasks/${jdTask.id}`,
+          {
+            order: lastIndex,
+          }
+        )
+        .subscribe({
+          next: (jd) => {
+            this.currentWorkspaceService.setCurrentJobDescription(jd);
+          },
+          error: (error) => {
+            console.error('Error updating task order:', error);
+          },
+        });
+    }
+
+    this.selectedCardSubject.next(currentDisplay[lastIndex]);
   }
 
   selectCard(card: Card) {

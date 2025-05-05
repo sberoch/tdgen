@@ -228,10 +228,6 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     }
     item.tags = [...new Set([...item.tags, ...newTags])];
     this.tagInput = '';
-    console.log(
-      'tags',
-      item.tags.map((tag) => tag.name)
-    );
     this.jobDescriptionsService
       .updateJobDescription(item.id, {
         tags: item.tags.map((tag) => tag.name),

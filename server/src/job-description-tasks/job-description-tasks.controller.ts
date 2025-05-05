@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { JobDescriptionTasksService } from './job-description-tasks.service';
@@ -36,7 +36,7 @@ export class JobDescriptionTasksController {
     return this.jobDescriptionTasksService.create(data);
   }
 
-  @Put(':id')
+  @Patch(':id')
   set(@Param('id') id: string, @Body() data: UpdateJobDescriptionTaskDto) {
     return this.jobDescriptionTasksService.set(id, data);
   }
