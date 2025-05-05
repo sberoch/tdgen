@@ -100,7 +100,12 @@
           *cdkDragPlaceholder
         ></div>
         <div class="flex justify-between">
-          <p class="font-bold text-xs 2xl:text-sm 3xl:text-base mt-1">
+          <p
+            class="font-bold text-xs 2xl:text-sm 3xl:text-base mt-1"
+            [class.line-through]="card.jobTask.deletedAt"
+            [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+            [class.italic]="card.jobTask.deletedAt"
+          >
             {{ $index + 1 }}. {{ card.title }}
           </p>
           <button
@@ -112,10 +117,20 @@
             <mat-icon>more_vert</mat-icon>
           </button>
         </div>
-        <p class="text-xs 2xl:text-sm 3xl:text-base mt-1">
+        <p
+          class="text-xs 2xl:text-sm 3xl:text-base mt-1"
+          [class.line-through]="card.jobTask.deletedAt"
+          [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+          [class.italic]="card.jobTask.deletedAt"
+        >
           {{ card.text }}
         </p>
-        <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
+        <p
+          class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1"
+          [class.line-through]="card.jobTask.deletedAt"
+          [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+          [class.italic]="card.jobTask.deletedAt"
+        >
           {{ card.classification }} | Tags: {{ card.tags.join(", ") }}
         </p>
       </div>
