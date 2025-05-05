@@ -6,6 +6,7 @@ import {
   JobDescriptionTaskParams,
   UpdateJobDescriptionTaskDto,
 } from './job-description-tasks.dto';
+import { calculateAdjustedPercentages } from './job-description-tasks.utils';
 
 const NEW_TASK_ORDER = -1;
 
@@ -41,6 +42,11 @@ export class JobDescriptionTasksService {
   }
 
   async create(data: CreateJobDescriptionTaskDto) {
+    const previousJobDescriptionTasks = await this.list({
+      jobDescriptionId: data.jobDescriptionId,
+    });
+    const previousJobDescriptionTasksPercentages =
+      previousJobDescriptionTasks.map((task) => task.percentage);
     const newTask = await this.prisma.jobDescriptionTask.create({
       data: {
         order: data.order,
@@ -60,6 +66,10 @@ export class JobDescriptionTasksService {
       data.order,
       NEW_TASK_ORDER,
     );
+    await this.adjustTaskPercentages(
+      data.jobDescriptionId,
+      previousJobDescriptionTasksPercentages,
+    );
 
     const updatedJobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: data.jobDescriptionId },
@@ -74,7 +84,7 @@ export class JobDescriptionTasksService {
     const jobDescriptionTask = await this.get(id);
     const updateData: Prisma.JobDescriptionTaskUpdateInput = {};
     const isOrderChanged =
-      data.order !== undefined && data.order !== jobDescriptionTask.order;
+      data.order && data.order !== jobDescriptionTask.order;
     const oldOrder = jobDescriptionTask.order;
 
     if (data.order) updateData.order = data.order;
@@ -118,12 +128,21 @@ export class JobDescriptionTasksService {
 
   async delete(id: string) {
     const jobDescriptionTask = await this.get(id);
+    const previousJobDescriptionTasks = await this.list({
+      jobDescriptionId: jobDescriptionTask.jobDescriptionId,
+    });
+    const previousJobDescriptionTasksPercentages =
+      previousJobDescriptionTasks.map((task) => task.percentage);
     const { jobDescriptionId, order } = jobDescriptionTask;
     await this.prisma.jobDescriptionTask.delete({
       where: { id: jobDescriptionTask.id },
     });
 
     await this.reorderTasksAfterDeletion(jobDescriptionId, order);
+    await this.adjustTaskPercentages(
+      jobDescriptionId,
+      previousJobDescriptionTasksPercentages,
+    );
     const updatedJobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: jobDescriptionId },
       include: {
@@ -217,6 +236,26 @@ export class JobDescriptionTasksService {
 
     // Execute all updates in a transaction
     await this.prisma.$transaction(updates);
+  }
+
+  // Helper method to adjust task percentages
+  private async adjustTaskPercentages(
+    jobDescriptionId: number,
+    previousJobDescriptionTasksPercentages: number[],
+  ): Promise<void> {
+    const jobDescriptionTasks = await this.list({
+      jobDescriptionId,
+    });
+    const percentages = calculateAdjustedPercentages(
+      jobDescriptionTasks.length,
+      previousJobDescriptionTasksPercentages,
+    );
+    for (let i = 0; i < jobDescriptionTasks.length; i++) {
+      await this.prisma.jobDescriptionTask.update({
+        where: { id: jobDescriptionTasks[i].id },
+        data: { percentage: percentages[i] },
+      });
+    }
   }
 
   private buildWhereClause(
