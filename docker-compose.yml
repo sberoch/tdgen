@@ -13,8 +13,5 @@ services:
     user: "1000:1000"
     restart: always
     command: >
-      sh -c "mkdir -p /storage && 
-             touch /storage/prod.db && 
-             npx prisma migrate deploy &&
-             npx prisma db seed &&
+      sh -c "npx prisma db seed &&
              npm run start:prod"
