@@ -170,6 +170,11 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.newlyCreatedTitle = result.title;
+        const currentJd =
+          this.currentWorkspaceService.getCurrentJobDescriptionValue();
+        if (currentJd && currentJd.id === result.id) {
+          this.currentWorkspaceService.setCurrentJobDescription(result);
+        }
         this.loadJobDescriptions();
       }
     });
@@ -190,6 +195,11 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.newlyCreatedTitle = result.title;
+        const currentJd =
+          this.currentWorkspaceService.getCurrentJobDescriptionValue();
+        if (currentJd && currentJd.id === result.id) {
+          this.currentWorkspaceService.setCurrentJobDescription(result);
+        }
         this.loadJobDescriptions();
       }
     });

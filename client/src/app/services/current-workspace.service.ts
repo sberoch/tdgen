@@ -30,6 +30,10 @@ export class CurrentWorkspaceService {
     this.currentJobDescriptionSubject.next(newCurrentJobDescription);
   }
 
+  getCurrentJobDescriptionValue(): JobDescription | null {
+    return this.currentJobDescriptionSubject.getValue();
+  }
+
   clearCurrentJobDescription() {
     this.currentJobDescriptionSubject.next(null);
   }
