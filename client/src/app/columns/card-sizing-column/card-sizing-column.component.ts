@@ -160,6 +160,9 @@ export class CardSizingColumnComponent implements OnInit {
     this.jobDescriptionsService
       .updateJobDescriptionPercentages(this.jobDescription.id, taskPercentages)
       .subscribe({
+        next: (jobDescription) => {
+          this.currentWorkspaceService.setCurrentJobDescription(jobDescription);
+        },
         error: (err) => console.error('Error updating percentages:', err),
       });
   }
