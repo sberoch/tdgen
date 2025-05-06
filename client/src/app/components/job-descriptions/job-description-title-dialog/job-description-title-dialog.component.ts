@@ -1,21 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
+  MAT_DIALOG_DATA,
   MatDialogModule,
   MatDialogRef,
-  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import {
-  CreateJobDescription,
-  JobDescription,
-} from '../../../types/job-descriptions';
+import { JobDescriptionsService } from '../../../services/job-descriptions.service';
+import { CreateJobDescription } from '../../../types/job-descriptions';
 
 export interface JobDescriptionTitleDialogData {
   title?: string;
@@ -44,7 +39,7 @@ export class JobDescriptionTitleDialogComponent {
 
   constructor(
     private dialogRef: MatDialogRef<JobDescriptionTitleDialogComponent>,
-    private http: HttpClient,
+    private jobDescriptionsService: JobDescriptionsService,
     @Inject(MAT_DIALOG_DATA) public data: JobDescriptionTitleDialogData
   ) {
     if (data) {
@@ -53,7 +48,7 @@ export class JobDescriptionTitleDialogComponent {
     }
   }
 
-  async onAccept() {
+  onAccept() {
     this.errorMessage = '';
     if (this.isEditing && this.title.trim() === this.data.title) {
       this.dialogRef.close(this.title.trim());
@@ -61,43 +56,35 @@ export class JobDescriptionTitleDialogComponent {
     }
 
     if (this.title.trim()) {
-      const exists = await firstValueFrom(
-        this.http.get<boolean>(
-          `${
-            environment.apiUrl
-          }api/job-descriptions/exists?title=${this.title.trim()}`
-        )
-      );
+      this.jobDescriptionsService
+        .existsByTitle(this.title.trim())
+        .subscribe((exists) => {
+          if (!exists) {
+            const jobData: CreateJobDescription = {
+              title: this.title.trim(),
+              metadata: {},
+              tags: [],
+              formFields: {},
+            };
 
-      const data: CreateJobDescription = {
-        title: this.title.trim(),
-        metadata: {},
-        tags: [],
-        formFields: {},
-      };
-
-      if (!exists) {
-        if (!this.isEditing) {
-          const jobDescription = await firstValueFrom(
-            this.http.post<CreateJobDescription>(
-              `${environment.apiUrl}api/job-descriptions`,
-              data
-            )
-          );
-          this.dialogRef.close(jobDescription);
-        } else {
-          const jobDescription = await firstValueFrom(
-            this.http.patch<JobDescription>(
-              `${environment.apiUrl}api/job-descriptions/${this.data.id}`,
-              data
-            )
-          );
-          this.dialogRef.close(jobDescription);
-        }
-      } else {
-        this.errorMessage =
-          'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
-      }
+            if (!this.isEditing) {
+              this.jobDescriptionsService
+                .createJobDescription(jobData)
+                .subscribe((jobDescription) => {
+                  this.dialogRef.close(jobDescription);
+                });
+            } else {
+              this.jobDescriptionsService
+                .updateJobDescription(this.data.id!, jobData)
+                .subscribe((jobDescription) => {
+                  this.dialogRef.close(jobDescription);
+                });
+            }
+          } else {
+            this.errorMessage =
+              'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
+          }
+        });
     } else {
       this.errorMessage = 'Der Titel darf nicht leer sein.';
     }

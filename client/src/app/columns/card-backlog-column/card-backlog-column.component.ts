@@ -27,7 +27,7 @@ import { OverlayModalComponent } from '../../components/overlay-modal/overlay-mo
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 import { JobDescription } from '../../types/job-descriptions';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
-
+import { JobDescriptionsService } from '../../services/job-descriptions.service';
 const MAX_DISPLAY_CARDS = 10;
 
 @Component({
@@ -66,7 +66,8 @@ export class CardBacklogColumnComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private cardService: CardService,
-    private currentWorkspaceService: CurrentWorkspaceService
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private jobDescriptionsService: JobDescriptionsService
   ) {}
 
   ngOnInit() {
@@ -186,6 +187,7 @@ export class CardBacklogColumnComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result: JobDescription) => {
       if (result) {
         this.currentWorkspaceService.setCurrentJobDescription(result);
+        this.jobDescriptionsService.getJobDescriptions().subscribe();
       }
     });
   }

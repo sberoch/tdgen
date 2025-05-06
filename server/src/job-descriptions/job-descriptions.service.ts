@@ -99,6 +99,13 @@ export class JobDescriptionsService {
           },
           createdBy: { connect: { userId: ADMIN_ID } },
         },
+        include: {
+          tasks: {
+            include: {
+              jobTask: true,
+            },
+          },
+        },
       });
       return { ...jobDescription, weightedAverage: 0 };
     } catch (error) {

@@ -49,6 +49,10 @@ export class JobDescriptionsService {
     return this.http.get<JobDescription>(`${this.apiUrl}/${id}`);
   }
 
+  existsByTitle(title: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/exists?title=${title}`);
+  }
+
   createJobDescription(
     jobDescription: CreateJobDescription
   ): Observable<JobDescription> {

@@ -13,6 +13,8 @@ import { JtOverviewAccordionComponent } from '../../components/job-tasks/overvie
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { CommonModule } from '@angular/common';
+import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { JobTasksService } from '../../services/job-tasks.service';
 
 @Component({
   selector: 'app-header',
@@ -39,7 +41,9 @@ export class HeaderComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private router: Router,
-    private currentWorkspaceService: CurrentWorkspaceService
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private jobDescriptionsService: JobDescriptionsService,
+    private jobTasksService: JobTasksService
   ) {}
 
   ngOnInit() {
@@ -61,6 +65,7 @@ export class HeaderComponent implements OnInit {
 
   openJobDescriptionModal() {
     this.isJobDescriptionModalOpen = true;
+    this.jobDescriptionsService.getJobDescriptions().subscribe();
   }
 
   closeJobDescriptionModal() {
@@ -69,6 +74,7 @@ export class HeaderComponent implements OnInit {
 
   openJobTaskModal() {
     this.isJobTaskModalOpen = true;
+    this.jobTasksService.getJobTasks().subscribe();
   }
 
   closeJobTaskModal() {
@@ -86,6 +92,7 @@ export class HeaderComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.currentWorkspaceService.setCurrentJobDescription(result);
+        this.jobDescriptionsService.getJobDescriptions().subscribe();
       }
     });
   }
