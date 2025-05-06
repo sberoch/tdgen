@@ -27,9 +27,9 @@ import {
 } from '../../../services/job-descriptions.service';
 import { JobDescription } from '../../../types/job-descriptions';
 import { Tag } from '../../../types/tag';
-import { truncateText } from '../../../utils/card.utils';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
+import { getTruncatedPlainText } from '../../../utils/card.utils';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
@@ -206,7 +206,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   truncate(text: string, maxLength: number): string {
-    return truncateText(text, maxLength);
+    return getTruncatedPlainText(text, maxLength);
   }
 
   toggleAccordion(id: number): void {

@@ -66,8 +66,7 @@ export class CardTooltipDirective implements OnDestroy {
     this.renderer.addClass(textElement, 'text-xs');
     this.renderer.addClass(textElement, '2xl:text-sm');
     this.renderer.addClass(textElement, 'mt-1');
-    const textContent = this.renderer.createText(this.card.text);
-    this.renderer.appendChild(textElement, textContent);
+    this.renderer.setProperty(textElement, 'innerHTML', this.card.text);
 
     // Create classification element
     const classElement = this.renderer.createElement('p');

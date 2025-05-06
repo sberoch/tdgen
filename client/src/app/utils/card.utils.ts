@@ -27,6 +27,24 @@ export const getNextPastelColor = (currentIndex: number): string => {
   return pastelColors[currentIndex % pastelColors.length];
 };
 
-export const truncateText = (text: string, maxLength: number): string => {
+export const getTruncatedPlainText = (
+  html: string,
+  maxLength: number
+): string => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const text = doc.body.textContent || '';
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+};
+
+export const truncateHtml = (html: string, maxLength: number): string => {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const textContent = doc.body.textContent || '';
+
+  if (textContent.length <= maxLength) {
+    return html; // Return original HTML if it's short enough
+  } else {
+    // Fallback to truncated plain text if HTML is too long to display fully
+    // This avoids breaking HTML structure with naive truncation.
+    return getTruncatedPlainText(html, maxLength);
+  }
 };

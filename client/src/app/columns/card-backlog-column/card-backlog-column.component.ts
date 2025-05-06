@@ -18,11 +18,12 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { CardService } from '../../services/card.service';
 import { Card, getNextPastelColor } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-import { truncateText } from '../../utils/card.utils';
+import { truncateHtml, getTruncatedPlainText } from '../../utils/card.utils';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 import { JobDescription } from '../../types/job-descriptions';
@@ -70,7 +71,8 @@ export class CardBacklogColumnComponent implements OnInit {
     private dialog: MatDialog,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -82,7 +84,6 @@ export class CardBacklogColumnComponent implements OnInit {
           if (this.backlogSearchInputRef) {
             this.backlogSearchInputRef.nativeElement.value = '';
           }
-          this.allBacklogCards.forEach((card) => {});
           this.cardService.initializeCards();
         }
       }
@@ -184,8 +185,13 @@ export class CardBacklogColumnComponent implements OnInit {
     return getNextPastelColor(currentIndex);
   }
 
-  truncate(text: string, maxLength: number): string {
-    return truncateText(text, maxLength);
+  getSafeHtml(html: string, maxLength: number): SafeHtml {
+    const truncatedContent = truncateHtml(html, maxLength);
+    return this.sanitizer.bypassSecurityTrustHtml(truncatedContent);
+  }
+
+  getTruncatedText(text: string, maxLength: number): string {
+    return getTruncatedPlainText(text, maxLength);
   }
 
   openCreateDialog() {

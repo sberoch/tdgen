@@ -24,7 +24,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { AngularEditorModule } from '@kolkov/angular-editor';
-import { truncateText } from '../../../utils/card.utils';
 import { AngularEditorConfig } from '@kolkov/angular-editor';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
@@ -36,10 +35,11 @@ import { JobTask } from '../../../types/job-tasks';
 import { Subscription } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
-import { Card } from '../../../utils/card.utils';
+import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
 import { Tag } from '../../../types/tag';
 import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
+import { JobDescription } from '../../../types/job-descriptions';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
 }
@@ -88,6 +88,7 @@ export class JtOverviewAccordionComponent
   expandedItemId: number | null = null;
   tagInput: string = '';
   htmlContent: string = '';
+  currentJobDescription: JobDescription | null = null;
   jobTasks: ExpandableJobTask[] = [];
   private subscription: Subscription = new Subscription();
   filter: JobTaskFilter = {};
@@ -133,6 +134,11 @@ export class JtOverviewAccordionComponent
 
   ngOnInit(): void {
     this.loadJobTasks();
+    this.currentWorkspaceService.currentJobDescription.subscribe(
+      (jobDescription) => {
+        this.currentJobDescription = jobDescription;
+      }
+    );
   }
 
   ngAfterViewChecked() {
@@ -247,8 +253,12 @@ export class JtOverviewAccordionComponent
       })
       .subscribe({
         next: () => {
-          console.log(`Payment group updated to ${selectedEg}`);
           this.cardService.initializeCards();
+          if (this.currentJobDescription) {
+            this.currentWorkspaceService.triggerJobDescriptionFetch(
+              this.currentJobDescription
+            );
+          }
         },
         error: (error) => {
           console.error('Error updating payment group:', error);
@@ -269,6 +279,11 @@ export class JtOverviewAccordionComponent
         this.newlyCreatedTitle = result;
         this.loadJobTasks();
         this.cardService.initializeCards();
+        if (this.currentJobDescription) {
+          this.currentWorkspaceService.triggerJobDescriptionFetch(
+            this.currentJobDescription
+          );
+        }
       }
     });
   }
@@ -290,12 +305,17 @@ export class JtOverviewAccordionComponent
         this.newlyCreatedTitle = result;
         this.loadJobTasks();
         this.cardService.initializeCards();
+        if (this.currentJobDescription) {
+          this.currentWorkspaceService.triggerJobDescriptionFetch(
+            this.currentJobDescription
+          );
+        }
       }
     });
   }
 
   truncate(text: string, maxLength: number): string {
-    return truncateText(text, maxLength);
+    return getTruncatedPlainText(text, maxLength);
   }
 
   toggleAccordion(id: number): void {
@@ -313,6 +333,11 @@ export class JtOverviewAccordionComponent
           .subscribe({
             next: () => {
               this.cardService.initializeCards();
+              if (this.currentJobDescription) {
+                this.currentWorkspaceService.triggerJobDescriptionFetch(
+                  this.currentJobDescription
+                );
+              }
             },
             error: (err) =>
               console.error(
@@ -370,6 +395,11 @@ export class JtOverviewAccordionComponent
       .subscribe({
         next: () => {
           this.cardService.initializeCards();
+          if (this.currentJobDescription) {
+            this.currentWorkspaceService.triggerJobDescriptionFetch(
+              this.currentJobDescription
+            );
+          }
         },
         error: (err) => console.error('Error updating tags:', err),
       });
@@ -385,6 +415,11 @@ export class JtOverviewAccordionComponent
       .subscribe({
         next: () => {
           this.cardService.initializeCards();
+          if (this.currentJobDescription) {
+            this.currentWorkspaceService.triggerJobDescriptionFetch(
+              this.currentJobDescription
+            );
+          }
         },
         error: (err) => console.error('Error removing tag:', err),
       });
@@ -406,6 +441,11 @@ export class JtOverviewAccordionComponent
             next: () => {
               console.log('Job task deleted successfully');
               this.loadJobTasks();
+              if (this.currentJobDescription) {
+                this.currentWorkspaceService.triggerJobDescriptionFetch(
+                  this.currentJobDescription
+                );
+              }
             },
             error: (error) => {
               console.error('Error deleting job task:', error);
@@ -435,6 +475,11 @@ export class JtOverviewAccordionComponent
               next: () => {
                 expandedItem.text = this.htmlContent;
                 this.cardService.initializeCards();
+                if (this.currentJobDescription) {
+                  this.currentWorkspaceService.triggerJobDescriptionFetch(
+                    this.currentJobDescription
+                  );
+                }
               },
               error: (err) =>
                 console.error('Error updating job task text on blur:', err),
@@ -463,6 +508,11 @@ export class JtOverviewAccordionComponent
               'Job task updated from onOverlayModalClosed, re-initializing cards.'
             );
             this.cardService.initializeCards();
+            if (this.currentJobDescription) {
+              this.currentWorkspaceService.triggerJobDescriptionFetch(
+                this.currentJobDescription
+              );
+            }
           },
           error: (err) =>
             console.error(
