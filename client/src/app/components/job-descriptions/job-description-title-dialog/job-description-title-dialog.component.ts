@@ -10,7 +10,6 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { JobDescriptionsService } from '../../../services/job-descriptions.service';
-import { CreateJobDescription } from '../../../types/job-descriptions';
 
 export interface JobDescriptionTitleDialogData {
   title?: string;
@@ -60,22 +59,22 @@ export class JobDescriptionTitleDialogComponent {
         .existsByTitle(this.title.trim())
         .subscribe((exists) => {
           if (!exists) {
-            const jobData: CreateJobDescription = {
-              title: this.title.trim(),
-              metadata: {},
-              tags: [],
-              formFields: {},
-            };
-
             if (!this.isEditing) {
               this.jobDescriptionsService
-                .createJobDescription(jobData)
+                .createJobDescription({
+                  title: this.title.trim(),
+                  metadata: {},
+                  tags: [],
+                  formFields: {},
+                })
                 .subscribe((jobDescription) => {
                   this.dialogRef.close(jobDescription);
                 });
             } else {
               this.jobDescriptionsService
-                .updateJobDescription(this.data.id!, jobData)
+                .updateJobDescription(this.data.id!, {
+                  title: this.title.trim(),
+                })
                 .subscribe((jobDescription) => {
                   this.dialogRef.close(jobDescription);
                 });

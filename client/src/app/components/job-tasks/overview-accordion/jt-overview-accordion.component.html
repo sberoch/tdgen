@@ -189,6 +189,7 @@
                 *ngIf="isExpanded(item.id!)"
                 [(ngModel)]="htmlContent"
                 [config]="editorConfig"
+                (blur)="onEditorBlur()"
               ></angular-editor>
             </div>
           </div>

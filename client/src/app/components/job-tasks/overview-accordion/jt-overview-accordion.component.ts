@@ -38,6 +38,8 @@ import { DatePipe } from '@angular/common';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 import { Card } from '../../../utils/card.utils';
 import { Tag } from '../../../types/tag';
+import { CardService } from '../../../services/card.service';
+import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
 }
@@ -124,7 +126,9 @@ export class JtOverviewAccordionComponent
 
   constructor(
     private dialog: MatDialog,
-    private jobTasksService: JobTasksService
+    private jobTasksService: JobTasksService,
+    private cardService: CardService,
+    private currentWorkspaceService: CurrentWorkspaceService
   ) {}
 
   ngOnInit(): void {
@@ -244,6 +248,7 @@ export class JtOverviewAccordionComponent
       .subscribe({
         next: () => {
           console.log(`Payment group updated to ${selectedEg}`);
+          this.cardService.initializeCards();
         },
         error: (error) => {
           console.error('Error updating payment group:', error);
@@ -263,6 +268,7 @@ export class JtOverviewAccordionComponent
       if (result) {
         this.newlyCreatedTitle = result;
         this.loadJobTasks();
+        this.cardService.initializeCards();
       }
     });
   }
@@ -283,6 +289,7 @@ export class JtOverviewAccordionComponent
       if (result) {
         this.newlyCreatedTitle = result;
         this.loadJobTasks();
+        this.cardService.initializeCards();
       }
     });
   }
@@ -303,7 +310,16 @@ export class JtOverviewAccordionComponent
             text: this.htmlContent,
             metadata: expandedItem.metadata,
           })
-          .subscribe();
+          .subscribe({
+            next: () => {
+              this.cardService.initializeCards();
+            },
+            error: (err) =>
+              console.error(
+                'Error updating job task from toggleAccordion:',
+                err
+              ),
+          });
       }
     }
     if (this.expandedItemId === id) {
@@ -351,7 +367,12 @@ export class JtOverviewAccordionComponent
       .updateJobTask(item.id!, {
         tags: item.tags.map((tag) => tag.name),
       })
-      .subscribe();
+      .subscribe({
+        next: () => {
+          this.cardService.initializeCards();
+        },
+        error: (err) => console.error('Error updating tags:', err),
+      });
   }
 
   removeTag(item: JobTask, tagToRemove: Tag): void {
@@ -361,7 +382,12 @@ export class JtOverviewAccordionComponent
       .updateJobTask(item.id!, {
         tags: item.tags.map((tag) => tag.name),
       })
-      .subscribe();
+      .subscribe({
+        next: () => {
+          this.cardService.initializeCards();
+        },
+        error: (err) => console.error('Error removing tag:', err),
+      });
   }
 
   handleKeyPress(event: KeyboardEvent, item: JobTask): void {
@@ -394,6 +420,30 @@ export class JtOverviewAccordionComponent
     return item.id!;
   }
 
+  onEditorBlur(): void {
+    if (this.expandedItemId) {
+      const expandedItem = this.jobTasks.find(
+        (jt) => jt.id === this.expandedItemId
+      );
+      if (expandedItem && expandedItem.id) {
+        if (expandedItem.text !== this.htmlContent) {
+          this.jobTasksService
+            .updateJobTask(expandedItem.id, {
+              text: this.htmlContent,
+            })
+            .subscribe({
+              next: () => {
+                expandedItem.text = this.htmlContent;
+                this.cardService.initializeCards();
+              },
+              error: (err) =>
+                console.error('Error updating job task text on blur:', err),
+            });
+        }
+      }
+    }
+  }
+
   onOverlayModalClosed(): void {
     // Save any pending changes when the modal is closed
     const expandedItem = this.jobTasks.find(
@@ -407,7 +457,19 @@ export class JtOverviewAccordionComponent
           text: this.htmlContent,
           metadata: expandedItem.metadata,
         })
-        .subscribe();
+        .subscribe({
+          next: () => {
+            console.log(
+              'Job task updated from onOverlayModalClosed, re-initializing cards.'
+            );
+            this.cardService.initializeCards();
+          },
+          error: (err) =>
+            console.error(
+              'Error updating job task from onOverlayModalClosed:',
+              err
+            ),
+        });
     }
     this.closeModal.emit();
   }

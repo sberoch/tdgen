@@ -52,6 +52,8 @@ const MAX_DISPLAY_CARDS = 10;
 export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('displayScrollContainer', { static: false })
   private scrollContainer?: ElementRef<HTMLElement>;
+  @ViewChild('backlogSearchInput')
+  backlogSearchInputRef!: ElementRef<HTMLInputElement>;
 
   isWorkspaceSet = false;
   private allBacklogCards: Card[] = [];
@@ -62,6 +64,7 @@ export class CardBacklogColumnComponent implements OnInit {
   private _snackBar = inject(MatSnackBar);
   isJobTaskModalOpen = false;
   selectedCardToOpenModal: Card | null = null;
+  private currentSearchTerm: string = '';
 
   constructor(
     private dialog: MatDialog,
@@ -75,8 +78,11 @@ export class CardBacklogColumnComponent implements OnInit {
       (jobDescription) => {
         this.isWorkspaceSet = jobDescription !== null;
         if (!jobDescription) {
-          this.backlogCards = [...this.allBacklogCards];
-          this.displayCards = [];
+          this.currentSearchTerm = '';
+          if (this.backlogSearchInputRef) {
+            this.backlogSearchInputRef.nativeElement.value = '';
+          }
+          this.allBacklogCards.forEach((card) => {});
           this.cardService.initializeCards();
         }
       }
@@ -84,7 +90,7 @@ export class CardBacklogColumnComponent implements OnInit {
 
     this.cardService.cards$.subscribe((cards) => {
       this.allBacklogCards = cards;
-      this.backlogCards = [...this.allBacklogCards];
+      this.applySearchFilter(this.currentSearchTerm);
     });
 
     this.cardService.displayCards$.subscribe((displayCards) => {
@@ -118,23 +124,29 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   onSearch(event: Event) {
-    const searchTerm = (event.target as HTMLInputElement).value;
-    if (!searchTerm.trim()) {
-      this.backlogCards = this.allBacklogCards;
+    this.currentSearchTerm = (event.target as HTMLInputElement).value;
+    this.applySearchFilter(this.currentSearchTerm);
+  }
+
+  private applySearchFilter(searchTerm: string): void {
+    const termToFilter = searchTerm.trim().toLowerCase();
+    if (!termToFilter) {
+      this.backlogCards = [...this.allBacklogCards];
       return;
     }
 
     this.backlogCards = this.allBacklogCards.filter((card) => {
       const tags = card.tags.join(' ');
       const text = `${tags} ${card.title} ${card.text}`.toLowerCase();
-      const keywords = searchTerm.toLowerCase().split(/\s+/);
+      const keywords = termToFilter.split(/\s+/);
       return keywords.every((keyword) => text.includes(keyword));
     });
   }
 
   clearSearch(inputElement: HTMLInputElement) {
     inputElement.value = '';
-    this.backlogCards = [...this.allBacklogCards];
+    this.currentSearchTerm = '';
+    this.applySearchFilter('');
   }
 
   drop(event: CdkDragDrop<Card[]>) {

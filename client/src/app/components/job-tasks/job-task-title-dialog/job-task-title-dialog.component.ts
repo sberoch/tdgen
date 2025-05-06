@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { Component, Inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,9 +9,7 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { firstValueFrom } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-import { JobTask, CreateJobTask } from '../../../types/job-tasks';
+import { JobTasksService } from '../../../services/job-tasks.service';
 
 export interface JobTaskTitleDialogData {
   title?: string;
@@ -41,7 +38,7 @@ export class JobTaskTitleDialogComponent {
 
   constructor(
     private dialogRef: MatDialogRef<JobTaskTitleDialogComponent>,
-    private http: HttpClient,
+    private jobTasksService: JobTasksService,
     @Inject(MAT_DIALOG_DATA) public data: JobTaskTitleDialogData
   ) {
     if (data) {
@@ -56,43 +53,53 @@ export class JobTaskTitleDialogComponent {
       this.dialogRef.close(this.title.trim());
       return;
     }
-
-    if (this.title.trim()) {
-      const exists = await firstValueFrom(
-        this.http.get<boolean>(
-          `${environment.apiUrl}api/job-tasks/exists?title=${this.title.trim()}`
-        )
-      );
-
-      const data: CreateJobTask = {
-        title: this.title.trim(),
-        metadata: {},
-        tags: [],
-        text: '',
-      };
-
-      if (!exists) {
-        if (!this.isEditing) {
-          await firstValueFrom(
-            this.http.post<CreateJobTask>(
-              `${environment.apiUrl}api/job-tasks`,
-              data
-            )
-          );
-          this.dialogRef.close(this.title.trim());
-        } else {
-          await firstValueFrom(
-            this.http.patch<JobTask>(
-              `${environment.apiUrl}api/job-tasks/${this.data.id}`,
-              data
-            )
-          );
-          this.dialogRef.close(this.title.trim());
-        }
-      } else {
-        this.errorMessage =
-          'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
-      }
+    const trimmedTitle = this.title.trim();
+    if (trimmedTitle) {
+      this.jobTasksService.existsByTitle(trimmedTitle).subscribe({
+        next: (exists) => {
+          if (exists) {
+            this.errorMessage =
+              'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
+          } else {
+            if (!this.isEditing) {
+              this.jobTasksService
+                .createJobTask({
+                  title: trimmedTitle,
+                  metadata: {},
+                  tags: [],
+                  text: '',
+                })
+                .subscribe({
+                  next: () => {
+                    this.dialogRef.close(trimmedTitle);
+                  },
+                  error: (err) => {
+                    this.errorMessage =
+                      'Fehler beim Erstellen der Aufgabe: ' + err.message;
+                  },
+                });
+            } else {
+              this.jobTasksService
+                .updateJobTask(this.data.id!, {
+                  title: trimmedTitle,
+                })
+                .subscribe({
+                  next: () => {
+                    this.dialogRef.close(trimmedTitle);
+                  },
+                  error: (err) => {
+                    this.errorMessage =
+                      'Fehler beim Aktualisieren der Aufgabe: ' + err.message;
+                  },
+                });
+            }
+          }
+        },
+        error: (err) => {
+          this.errorMessage =
+            'Fehler bei der Überprüfung des Titels: ' + err.message;
+        },
+      });
     } else {
       this.errorMessage = 'Der Titel darf nicht leer sein.';
     }

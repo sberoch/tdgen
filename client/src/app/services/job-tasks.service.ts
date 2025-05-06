@@ -53,6 +53,10 @@ export class JobTasksService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  existsByTitle(title: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/exists?title=${title}`);
+  }
+
   private buildWhereClause(filter?: JobTaskFilter): HttpParams {
     let params = new HttpParams();
 
