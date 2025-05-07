@@ -12,6 +12,4 @@ services:
       - ./storage:/storage
     user: "1000:1000"
     restart: always
-    command: >
-      sh -c "npx prisma db seed &&
-             npm run start:prod"
+    command: npm run start:prod
