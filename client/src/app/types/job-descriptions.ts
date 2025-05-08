@@ -1,6 +1,11 @@
 import { Tag } from './tag';
 import { JobDescriptionTask } from './job-description-tasks';
 
+export type JobDescriptionFormField = {
+  key: string;
+  value: string;
+};
+
 export type JobDescription = {
   id: number;
   title: string;
@@ -8,7 +13,7 @@ export type JobDescription = {
   metadata: Record<string, any>;
   tasks: JobDescriptionTask[];
   tags: Tag[];
-  formFields: Record<string, string>;
+  formFields: JobDescriptionFormField[];
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string;

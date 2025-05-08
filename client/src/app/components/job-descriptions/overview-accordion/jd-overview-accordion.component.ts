@@ -294,12 +294,10 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     if (expandedItem && expandedItem.id) {
       this.addTags(expandedItem);
 
-      // Save the updated job description to the service
       this.jobDescriptionsService
         .updateJobDescription(expandedItem.id, {
           title: expandedItem.title,
           metadata: expandedItem.metadata,
-          formFields: expandedItem.formFields,
         })
         .subscribe({
           next: () => {

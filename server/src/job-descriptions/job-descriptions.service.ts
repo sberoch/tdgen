@@ -105,6 +105,8 @@ export class JobDescriptionsService {
               jobTask: true,
             },
           },
+          formFields: true,
+          tags: true,
         },
       });
       return { ...jobDescription, weightedAverage: 0 };
@@ -116,25 +118,50 @@ export class JobDescriptionsService {
   async set(id: string, data: UpdateJobDescriptionDto) {
     const jobDescription = await this.get(id);
     const { tags, formFields, ...rest } = data;
-    const updatedJobDescription = await this.prisma.jobDescription.update({
-      where: { id: jobDescription.id },
-      data: {
-        ...rest,
-        tags: { create: tags?.map((tag) => ({ name: tag })) },
-        formFields: {
-          create: formFields
-            ? Object.entries(formFields).map(([key, value]) => ({
-                key,
-                value,
-              }))
-            : undefined,
-        },
-        updatedBy: { connect: { userId: ADMIN_ID } },
+
+    const updatedJobDescription = await this.prisma.$transaction(
+      async (prismaTx) => {
+        await prismaTx.jobDescriptionFormField.deleteMany({
+          where: { jobDescriptionId: jobDescription.id },
+        });
+
+        return prismaTx.jobDescription.update({
+          where: { id: jobDescription.id },
+          data: {
+            ...rest,
+            tags: tags
+              ? { deleteMany: {}, create: tags.map((tag) => ({ name: tag })) }
+              : undefined,
+            formFields: formFields
+              ? {
+                  create: Object.entries(formFields).map(([key, value]) => ({
+                    key,
+                    value,
+                  })),
+                }
+              : undefined,
+            updatedBy: { connect: { userId: ADMIN_ID } },
+          },
+          include: {
+            tasks: {
+              include: {
+                jobTask: true,
+              },
+            },
+            formFields: true,
+            tags: true,
+          },
+        });
       },
-    });
+    );
+
+    const finalWeightedAverage = getWeightedPayGroupFromTasks(
+      updatedJobDescription.tasks,
+    );
+
     return {
       ...updatedJobDescription,
-      weightedAverage: jobDescription.weightedAverage,
+      weightedAverage: finalWeightedAverage,
     };
   }
 

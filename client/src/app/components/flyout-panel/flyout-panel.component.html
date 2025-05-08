@@ -7,18 +7,77 @@
   (click)="onOverlayClick($event)"
 >
   <div
-    class="bg-white h-full w-1/3 min-w-[300px] shadow-lg flex flex-col transform transition-transform duration-300"
+    class="bg-white h-full w-1/3 min-w-[450px] shadow-lg flex flex-col transform transition-transform duration-300"
     [class.translate-x-full]="!isOpen"
     [class.translate-x-0]="isOpen"
   >
     <div
-      class="p-3 pb-2 border-b border-b-gray flex items-center justify-between"
+      class="p-3 pb-2 border-b border-b-gray flex items-center justify-between sticky top-0 bg-white z-10"
     >
       <button mat-icon-button (click)="onClose()" class="mb-1">
         <mat-icon>chevron_right</mat-icon>
       </button>
       <h2 class="text-lg font-medium text-center flex-grow">{{ title }}</h2>
       <div class="w-10"></div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="p-4 overflow-y-auto flex-grow">
+      <form #flyoutForm="ngForm">
+        <ng-container
+          *ngFor="let field of formFieldsDefinition; let first = first"
+        >
+          <div
+            *ngIf="field.headline"
+            class="mb-3"
+            [style.marginTop]="first ? '0' : '2rem'"
+          >
+            <h3 class="text-sm 2xl:text-base 3xl:text-lg font-semibold">
+              {{ field.headline }}
+            </h3>
+          </div>
+
+          <div
+            *ngIf="field.type === 'text' && field.name && field.label"
+            class="mb-4 mt-2"
+          >
+            <label
+              [for]="field.name"
+              class="block text-xs 2xl:text-sm 3xl:text-base font-medium mb-1"
+            >
+              {{ field.label }}
+            </label>
+            <textarea
+              *ngIf="(getMaxLength(field) || 0) > 200; else singleLineInput"
+              [id]="field.name"
+              [name]="field.name!"
+              [(ngModel)]="formData[field.name!]"
+              (blur)="saveForm()"
+              class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs 2xl:text-sm 3xl:text-base"
+              rows="4"
+              [maxLength]="getMaxLength(field) || undefined"
+            ></textarea>
+            <ng-template #singleLineInput>
+              <input
+                type="text"
+                [id]="field.name"
+                [name]="field.name!"
+                [(ngModel)]="formData[field.name!]"
+                (blur)="saveForm()"
+                class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs 2xl:text-sm 3xl:text-base"
+                [maxLength]="getMaxLength(field) || undefined"
+              />
+            </ng-template>
+            <div
+              *ngIf="getMaxLength(field) as maxLength"
+              class="text-[10px] 2xl:text-xs 3xl:text-sm mt-1 text-right text-black/50 italic"
+            >
+              {{ (formData[field.name!] || "").length }} /
+              {{ maxLength }} Zeichen
+            </div>
+          </div>
+        </ng-container>
+      </form>
     </div>
   </div>
 </div>
