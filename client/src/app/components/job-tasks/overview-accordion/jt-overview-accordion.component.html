@@ -16,7 +16,7 @@
       <input
         type="text"
         placeholder="Arbeitsvorgänge filtern"
-        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm"
+        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm placeholder:italic"
         (blur)="applyFilter({ search: $any($event.target).value })"
         (keyup.enter)="applyFilter({ search: $any($event.target).value })"
         #searchInput
@@ -86,7 +86,7 @@
               mat-icon-button
               class="text-gray-500 hover:text-secondary"
               [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
-              title="Bearbeiten"
+              title="Umbenennen"
               (click)="openEditDialog(item, $event)"
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
@@ -111,13 +111,16 @@
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32 flex justify-end"
           >
             <button
+              *ngIf="!item.deletedAt"
               mat-icon-button
-              class="text-gray-500 hover:text-red-500"
+              class="group"
               [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               title="Löschen"
               (click)="$event.stopPropagation(); deleteItem(item)"
             >
-              <mat-icon class="text-lg -translate-y-1">delete</mat-icon>
+              <mat-icon class="text-lg -translate-y-1 group-hover:text-red-500">
+                delete
+              </mat-icon>
             </button>
           </div>
         </div>

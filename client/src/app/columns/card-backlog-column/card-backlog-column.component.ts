@@ -29,6 +29,8 @@ import { JtOverviewAccordionComponent } from '../../components/job-tasks/overvie
 import { JobDescription } from '../../types/job-descriptions';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { CommonModule } from '@angular/common';
+
 const MAX_DISPLAY_CARDS = 10;
 
 @Component({
@@ -48,6 +50,7 @@ const MAX_DISPLAY_CARDS = 10;
     CardTooltipDirective,
     OverlayModalComponent,
     JtOverviewAccordionComponent,
+    CommonModule,
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {

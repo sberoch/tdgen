@@ -17,6 +17,7 @@ export class CardSizingColumnComponent implements OnInit {
   isDragging = false;
   startY = 0;
   currentIndex = 0;
+  isWorkspaceSet = false;
   private accumulatedDelta = 0;
   private jobDescription: JobDescription | null = null;
 
@@ -31,6 +32,7 @@ export class CardSizingColumnComponent implements OnInit {
       (jobDescription) => {
         if (jobDescription) {
           this.jobDescription = jobDescription;
+          this.isWorkspaceSet = true;
           this.cards =
             jobDescription?.tasks
               .map((task, index) => ({
@@ -43,6 +45,8 @@ export class CardSizingColumnComponent implements OnInit {
                 order: task.order,
               }))
               .sort((a, b) => a.order - b.order) || [];
+        } else {
+          this.isWorkspaceSet = false;
         }
       }
     );

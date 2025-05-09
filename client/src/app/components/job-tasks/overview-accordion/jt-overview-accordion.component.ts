@@ -100,8 +100,29 @@ export class JtOverviewAccordionComponent
     spellcheck: true,
     minHeight: '300px',
     toolbarHiddenButtons: [
-      ['subscript', 'superscript'],
-      ['insertImage', 'insertVideo'],
+      [
+        'undo',
+        'redo',
+        'subscript',
+        'superscript',
+        'indent',
+        'outdent',
+        'heading',
+        'fontName',
+      ],
+      [
+        'fontSize',
+        'textColor',
+        'backgroundColor',
+        'customClasses',
+        'link',
+        'unlink',
+        'insertImage',
+        'insertVideo',
+        'insertHorizontalRule',
+        'removeFormat',
+        'toggleEditorMode',
+      ],
     ],
   };
   EG_OPTIONS = [

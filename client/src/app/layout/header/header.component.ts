@@ -103,10 +103,6 @@ export class HeaderComponent implements OnInit {
     });
   }
 
-  onButtonClick() {
-    alert('TODO');
-  }
-
   logout() {
     // Here you would typically clear any authentication tokens or user data
     // For now, we'll just navigate to the login page
