@@ -50,7 +50,11 @@ export class JobDescriptionsService {
         formFields: true,
         tasks: {
           include: {
-            jobTask: true,
+            jobTask: {
+              include: {
+                tags: true,
+              },
+            },
           },
         },
       },

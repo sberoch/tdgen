@@ -402,11 +402,12 @@ export class JtOverviewAccordionComponent
       .filter((tag) => tag)
       .map((name) => ({ id: Math.random(), name }));
 
-    if (!item.tags) {
-      item.tags = [];
-    }
-
-    item.tags = [...new Set([...item.tags, ...newTags])];
+    if (!item.tags) item.tags = [];
+    const existingTagNames = new Set(item.tags.map((tag) => tag.name));
+    const uniqueNewTags = newTags.filter(
+      (newTag) => !existingTagNames.has(newTag.name)
+    );
+    item.tags = [...item.tags, ...uniqueNewTags];
     this.tagInput = '';
 
     this.jobTasksService

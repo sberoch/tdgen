@@ -75,7 +75,9 @@ export class JobTasksService {
       where: { id: jobTask.id },
       data: {
         ...rest,
-        tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
+        tags: tags
+          ? { deleteMany: {}, create: tags.map((tag) => ({ name: tag })) }
+          : undefined,
         updatedBy: { connect: { userId: USER_ID } },
       },
       include: {
