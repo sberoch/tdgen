@@ -13,7 +13,7 @@ import {
 } from './job-descriptions.dto';
 import { getWeightedPayGroupFromTasks } from './job-descriptions.utils';
 
-const ADMIN_ID = '4016651';
+const USER_ID = '4016651';
 
 @Injectable()
 export class JobDescriptionsService {
@@ -97,7 +97,7 @@ export class JobDescriptionsService {
                 }))
               : undefined,
           },
-          createdBy: { connect: { userId: ADMIN_ID } },
+          createdBy: { connect: { userId: USER_ID } },
         },
         include: {
           tasks: {
@@ -140,7 +140,7 @@ export class JobDescriptionsService {
                   })),
                 }
               : undefined,
-            updatedBy: { connect: { userId: ADMIN_ID } },
+            updatedBy: { connect: { userId: USER_ID } },
           },
           include: {
             tasks: {
@@ -190,7 +190,7 @@ export class JobDescriptionsService {
       where: { id: jobDescription.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { userId: ADMIN_ID } },
+        deletedBy: { connect: { userId: USER_ID } },
       },
     });
   }

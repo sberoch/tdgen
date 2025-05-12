@@ -7,7 +7,7 @@ import {
   JobTaskParams,
 } from './job-tasks.dto';
 
-const ADMIN_ID = '4016651';
+const USER_ID = '4016651';
 
 @Injectable()
 export class JobTasksService {
@@ -60,7 +60,7 @@ export class JobTasksService {
       data: {
         ...rest,
         tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
-        createdBy: { connect: { userId: ADMIN_ID } },
+        createdBy: { connect: { userId: USER_ID } },
       },
       include: {
         tags: true,
@@ -76,7 +76,7 @@ export class JobTasksService {
       data: {
         ...rest,
         tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
-        updatedBy: { connect: { userId: ADMIN_ID } },
+        updatedBy: { connect: { userId: USER_ID } },
       },
       include: {
         tags: true,
@@ -91,7 +91,7 @@ export class JobTasksService {
       where: { id: jobTask.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { userId: ADMIN_ID } },
+        deletedBy: { connect: { userId: USER_ID } },
       },
     });
   }
