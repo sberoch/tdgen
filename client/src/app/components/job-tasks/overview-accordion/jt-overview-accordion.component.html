@@ -16,7 +16,7 @@
       <input
         type="text"
         placeholder="Arbeitsvorgänge filtern"
-        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm placeholder:italic"
+        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-secondary text-sm placeholder:italic"
         (blur)="applyFilter({ search: $any($event.target).value })"
         (keyup.enter)="applyFilter({ search: $any($event.target).value })"
         #searchInput
@@ -139,7 +139,7 @@
                     placeholder="Tag hinzufügen"
                     [(ngModel)]="tagInput"
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-lightgray rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-2 focus:ring-black/80 text-sm"
+                    class="w-full border border-lightgray rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-2 focus:ring-secondary text-sm"
                   />
                   <button
                     class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90"
@@ -156,7 +156,7 @@
                 </button>
               </div>
               <select
-                class="text-zinc-600 text-sm border border-lightgray rounded-sm px-2 focus:outline-none focus:ring-2 focus:ring-black/80"
+                class="text-zinc-600 text-sm border border-lightgray rounded-sm px-2 focus:outline-none focus:ring-2 focus:ring-secondary"
                 (change)="onEgSelected($any($event.target).value, item)"
               >
                 <option value="">Auswählen...</option>

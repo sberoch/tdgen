@@ -53,7 +53,7 @@
               [name]="field.name!"
               [(ngModel)]="formData[field.name!]"
               (blur)="saveForm()"
-              class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs 2xl:text-sm 3xl:text-base"
+              class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary text-xs 2xl:text-sm 3xl:text-base"
               rows="4"
               [maxLength]="getMaxLength(field) || undefined"
             ></textarea>
@@ -64,7 +64,7 @@
                 [name]="field.name!"
                 [(ngModel)]="formData[field.name!]"
                 (blur)="saveForm()"
-                class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-xs 2xl:text-sm 3xl:text-base"
+                class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary text-xs 2xl:text-sm 3xl:text-base"
                 [maxLength]="getMaxLength(field) || undefined"
               />
             </ng-template>

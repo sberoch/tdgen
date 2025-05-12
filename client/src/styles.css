@@ -6,6 +6,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ae-focus-outline-color: #004371 auto 1px !important;
+}
+
 html {
   font-family: "Roboto", sans-serif;
 }
