@@ -36,6 +36,10 @@ export class JobDescriptionTitleDialogComponent {
   errorMessage: string = '';
   isEditing: boolean = false;
 
+  private readonly titleRegex = /^[A-Za-z0-9\-\s().,]{1,100}$/;
+  private readonly invalidInputMessage =
+    'Ungültige Eingabe: Erlaubt sind maximal 100 Zeichen, bestehend aus Groß- und Kleinbuchstaben, Zahlen, Leerzeichen, Bindestrich (-), Punkt (.), Komma (,) sowie runden Klammern ().';
+
   constructor(
     private dialogRef: MatDialogRef<JobDescriptionTitleDialogComponent>,
     private jobDescriptionsService: JobDescriptionsService,
@@ -49,20 +53,32 @@ export class JobDescriptionTitleDialogComponent {
 
   onAccept() {
     this.errorMessage = '';
-    if (this.isEditing && this.title.trim() === this.data.title) {
-      this.dialogRef.close(this.title.trim());
+    const trimmedTitle = this.title.trim();
+
+    if (!trimmedTitle) {
+      this.errorMessage = 'Der Titel darf nicht leer sein.';
       return;
     }
 
-    if (this.title.trim()) {
+    if (!this.titleRegex.test(trimmedTitle)) {
+      this.errorMessage = this.invalidInputMessage;
+      return;
+    }
+
+    if (this.isEditing && trimmedTitle === this.data.title) {
+      this.dialogRef.close(trimmedTitle);
+      return;
+    }
+
+    if (trimmedTitle) {
       this.jobDescriptionsService
-        .existsByTitle(this.title.trim())
+        .existsByTitle(trimmedTitle)
         .subscribe((exists) => {
           if (!exists) {
             if (!this.isEditing) {
               this.jobDescriptionsService
                 .createJobDescription({
-                  title: this.title.trim(),
+                  title: trimmedTitle,
                   metadata: {},
                   tags: [],
                   formFields: {},
@@ -73,7 +89,7 @@ export class JobDescriptionTitleDialogComponent {
             } else {
               this.jobDescriptionsService
                 .updateJobDescription(this.data.id!, {
-                  title: this.title.trim(),
+                  title: trimmedTitle,
                 })
                 .subscribe((jobDescription) => {
                   this.dialogRef.close(jobDescription);
@@ -84,8 +100,6 @@ export class JobDescriptionTitleDialogComponent {
               'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
           }
         });
-    } else {
-      this.errorMessage = 'Der Titel darf nicht leer sein.';
     }
   }
 }

@@ -36,6 +36,10 @@ export class JobTaskTitleDialogComponent {
   errorMessage: string = '';
   isEditing: boolean = false;
 
+  private readonly titleRegex = /^[A-Za-z0-9\-\s().,]{1,100}$/;
+  private readonly invalidInputMessage =
+    'Ungültige Eingabe: Erlaubt sind maximal 100 Zeichen, bestehend aus Groß- und Kleinbuchstaben, Zahlen, Leerzeichen, Bindestrich (-), Punkt (.), Komma (,) sowie runden Klammern ().';
+
   constructor(
     private dialogRef: MatDialogRef<JobTaskTitleDialogComponent>,
     private jobTasksService: JobTasksService,
@@ -49,59 +53,67 @@ export class JobTaskTitleDialogComponent {
 
   async onAccept() {
     this.errorMessage = '';
-    if (this.isEditing && this.title.trim() === this.data.title) {
-      this.dialogRef.close(this.title.trim());
+    const trimmedTitle = this.title.trim();
+
+    if (!trimmedTitle) {
+      this.errorMessage = 'Der Titel darf nicht leer sein.';
       return;
     }
-    const trimmedTitle = this.title.trim();
-    if (trimmedTitle) {
-      this.jobTasksService.existsByTitle(trimmedTitle).subscribe({
-        next: (exists) => {
-          if (exists) {
-            this.errorMessage =
-              'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
-          } else {
-            if (!this.isEditing) {
-              this.jobTasksService
-                .createJobTask({
-                  title: trimmedTitle,
-                  metadata: {},
-                  tags: [],
-                  text: '',
-                })
-                .subscribe({
-                  next: () => {
-                    this.dialogRef.close(trimmedTitle);
-                  },
-                  error: (err) => {
-                    this.errorMessage =
-                      'Fehler beim Erstellen der Aufgabe: ' + err.message;
-                  },
-                });
-            } else {
-              this.jobTasksService
-                .updateJobTask(this.data.id!, {
-                  title: trimmedTitle,
-                })
-                .subscribe({
-                  next: () => {
-                    this.dialogRef.close(trimmedTitle);
-                  },
-                  error: (err) => {
-                    this.errorMessage =
-                      'Fehler beim Aktualisieren der Aufgabe: ' + err.message;
-                  },
-                });
-            }
-          }
-        },
-        error: (err) => {
-          this.errorMessage =
-            'Fehler bei der Überprüfung des Titels: ' + err.message;
-        },
-      });
-    } else {
-      this.errorMessage = 'Der Titel darf nicht leer sein.';
+
+    if (!this.titleRegex.test(trimmedTitle)) {
+      this.errorMessage = this.invalidInputMessage;
+      return;
     }
+
+    if (this.isEditing && trimmedTitle === this.data.title) {
+      this.dialogRef.close(trimmedTitle);
+      return;
+    }
+
+    this.jobTasksService.existsByTitle(trimmedTitle).subscribe({
+      next: (exists) => {
+        if (exists) {
+          this.errorMessage =
+            'Dieser Titel existiert bereits. Bitte wählen sie einen anderen Titel.';
+        } else {
+          if (!this.isEditing) {
+            this.jobTasksService
+              .createJobTask({
+                title: trimmedTitle,
+                metadata: {},
+                tags: [],
+                text: '',
+              })
+              .subscribe({
+                next: () => {
+                  this.dialogRef.close(trimmedTitle);
+                },
+                error: (err) => {
+                  this.errorMessage =
+                    'Fehler beim Erstellen der Aufgabe: ' + err.message;
+                },
+              });
+          } else {
+            this.jobTasksService
+              .updateJobTask(this.data.id!, {
+                title: trimmedTitle,
+              })
+              .subscribe({
+                next: () => {
+                  this.dialogRef.close(trimmedTitle);
+                },
+                error: (err) => {
+                  this.errorMessage =
+                    'Fehler beim Aktualisieren der Aufgabe: ' + err.message;
+                },
+              });
+          }
+        }
+      },
+      error: (err) => {
+        this.errorMessage =
+          'Fehler bei der Überprüfung des Titels: ' + err.message;
+      },
+    });
   }
 }
