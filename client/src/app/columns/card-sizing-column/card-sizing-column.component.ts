@@ -1,15 +1,17 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CardService } from '../../services/card.service';
-import { Card, getNextPastelColor } from '../../utils/card.utils';
+import { Card } from '../../utils/card.utils';
 import { MatIconModule } from '@angular/material/icon';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { JobDescription } from '../../types/job-descriptions';
+import { PastelColorPipe } from '../../pipes/get-pastel-color-pipe';
+
 @Component({
   selector: 'app-card-sizing-column',
   templateUrl: './card-sizing-column.component.html',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, PastelColorPipe],
 })
 export class CardSizingColumnComponent implements OnInit {
   selectedCard: Card | null = null;
@@ -173,9 +175,5 @@ export class CardSizingColumnComponent implements OnInit {
 
   selectCard(card: Card) {
     this.cardService.selectCard(card);
-  }
-
-  getPastelColor(currentIndex: number): string {
-    return getNextPastelColor(currentIndex);
   }
 }

@@ -36,15 +36,25 @@ export const getTruncatedPlainText = (
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-export const truncateHtml = (html: string, maxLength: number): string => {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const textContent = doc.body.textContent || '';
+export const getSmartTruncatedHtmlPreview = (
+  html: string,
+  maxLength: number
+): string => {
+  if (!html) return '';
+
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  const textContent = tempDiv.textContent || tempDiv.innerText || '';
 
   if (textContent.length <= maxLength) {
-    return html; // Return original HTML if it's short enough
+    return html;
   } else {
-    // Fallback to truncated plain text if HTML is too long to display fully
-    // This avoids breaking HTML structure with naive truncation.
-    return getTruncatedPlainText(html, maxLength);
+    const truncatedText = textContent.substring(0, maxLength) + '...';
+    return truncatedText
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
+      .replace(/'/g, "'");
   }
 };

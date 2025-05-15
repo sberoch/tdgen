@@ -48,7 +48,7 @@
           </p>
           <p
             class="text-xs 2xl:text-sm 3xl:text-base"
-            [innerHTML]="getSafeHtml(card.text, 75)"
+            [innerHTML]="card.text | truncateSafeHtml : 75"
           ></p>
           <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
             {{ card.classification }}
@@ -59,7 +59,7 @@
         </p>
         <p
           class="text-xs 2xl:text-sm mt-1"
-          [innerHTML]="getSafeHtml(card.text, 145)"
+          [innerHTML]="card.text | truncateSafeHtml : 145"
         ></p>
         <div class="flex items-center justify-between">
           <p class="text-xs 2xl:text-sm text-black/50 mt-1">
@@ -93,7 +93,7 @@
         class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent"
         [class.!border-[#333]]="card === selectedCard"
         cdkDrag
-        [style.backgroundColor]="getPastelColor($index)"
+        [style.backgroundColor]="$index | pastelColor"
         (click)="selectCard(card)"
         [attr.data-classification]="card.classification"
       >
@@ -124,7 +124,7 @@
           [class.line-through]="card.jobTask.deletedAt"
           [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
           [class.italic]="card.jobTask.deletedAt"
-          [innerHTML]="getSafeHtml(card.text, 9999)"
+          [innerHTML]="card.text | truncateSafeHtml : 9999"
         ></p>
         <p
           class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1"

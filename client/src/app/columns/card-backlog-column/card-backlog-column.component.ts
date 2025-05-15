@@ -5,6 +5,7 @@ import {
   CdkDragPreview,
   CdkDropList,
 } from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
 import {
   Component,
   ElementRef,
@@ -18,18 +19,17 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
-import { CardService } from '../../services/card.service';
-import { Card, getNextPastelColor } from '../../utils/card.utils';
-import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-import { truncateHtml, getTruncatedPlainText } from '../../utils/card.utils';
-import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
-import { JobDescription } from '../../types/job-descriptions';
+import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
+import { PastelColorPipe } from '../../pipes/get-pastel-color-pipe';
+import { TruncateSafeHtmlPipe } from '../../pipes/truncate-safe-html-pipe';
+import { CardService } from '../../services/card.service';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
-import { CommonModule } from '@angular/common';
+import { JobDescription } from '../../types/job-descriptions';
+import { Card, getTruncatedPlainText } from '../../utils/card.utils';
+import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -51,6 +51,8 @@ const MAX_DISPLAY_CARDS = 10;
     OverlayModalComponent,
     JtOverviewAccordionComponent,
     CommonModule,
+    TruncateSafeHtmlPipe,
+    PastelColorPipe,
   ],
 })
 export class CardBacklogColumnComponent implements OnInit {
@@ -74,8 +76,7 @@ export class CardBacklogColumnComponent implements OnInit {
     private dialog: MatDialog,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService,
-    private sanitizer: DomSanitizer
+    private jobDescriptionsService: JobDescriptionsService
   ) {}
 
   ngOnInit() {
@@ -182,15 +183,6 @@ export class CardBacklogColumnComponent implements OnInit {
 
   moveCardToBottom(index: number) {
     this.cardService.moveCardToBottom(index);
-  }
-
-  getPastelColor(currentIndex: number): string {
-    return getNextPastelColor(currentIndex);
-  }
-
-  getSafeHtml(html: string, maxLength: number): SafeHtml {
-    const truncatedContent = truncateHtml(html, maxLength);
-    return this.sanitizer.bypassSecurityTrustHtml(truncatedContent);
   }
 
   getTruncatedText(text: string, maxLength: number): string {

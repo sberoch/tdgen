@@ -7,7 +7,7 @@
     <div class="h-full relative" [style.height.%]="card.percentage">
       <div
         class="h-full flex flex-col items-center justify-center cursor-pointer relative border border-transparent"
-        [style.backgroundColor]="getPastelColor($index)"
+        [style.backgroundColor]="$index | pastelColor"
         (click)="selectCard(card)"
         [class.!border-[#333]]="
           card.classification === selectedCard?.classification
