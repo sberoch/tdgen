@@ -109,6 +109,8 @@ export class CardService {
     moveItemInArray(currentDisplay, previousIndex, currentIndex);
 
     const movedCard = currentDisplay[currentIndex];
+    if (!movedCard) return;
+
     const jdTask = this.currentJobDescription?.tasks.find(
       (task) => task.jobTask.id === movedCard.jobTask.id
     );
@@ -139,6 +141,8 @@ export class CardService {
     moveItemInArray(currentDisplay, index, 0);
 
     const movedCard = currentDisplay[0];
+    if (!movedCard) return;
+
     const jdTask = this.currentJobDescription?.tasks.find(
       (task) => task.jobTask.id === movedCard.jobTask.id
     );
@@ -170,6 +174,8 @@ export class CardService {
     moveItemInArray(currentDisplay, index, lastIndex);
 
     const movedCard = currentDisplay[lastIndex];
+    if (!movedCard) return;
+
     const jdTask = this.currentJobDescription?.tasks.find(
       (task) => task.jobTask.id === movedCard.jobTask.id
     );

@@ -22,27 +22,45 @@ export class JobDescriptionTasksController {
   ) {}
 
   @Get()
-  list(@Query() params: JobDescriptionTaskParams) {
-    return this.jobDescriptionTasksService.list(params);
+  async list(@Query() params: JobDescriptionTaskParams) {
+    console.time('list');
+    const result = await this.jobDescriptionTasksService.list(params);
+    console.timeEnd('list');
+    return result;
   }
 
   @Get(':id')
-  get(@Param('id') id: string) {
-    return this.jobDescriptionTasksService.get(id);
+  async get(@Param('id') id: string) {
+    console.time('get');
+    const result = await this.jobDescriptionTasksService.get(id);
+    console.timeEnd('get');
+    return result;
   }
 
   @Post()
-  create(@Body() data: CreateJobDescriptionTaskDto) {
-    return this.jobDescriptionTasksService.create(data);
+  async create(@Body() data: CreateJobDescriptionTaskDto) {
+    console.time('create');
+    const result = await this.jobDescriptionTasksService.create(data);
+    console.timeEnd('create');
+    return result;
   }
 
   @Patch(':id')
-  set(@Param('id') id: string, @Body() data: UpdateJobDescriptionTaskDto) {
-    return this.jobDescriptionTasksService.set(id, data);
+  async set(
+    @Param('id') id: string,
+    @Body() data: UpdateJobDescriptionTaskDto,
+  ) {
+    console.time('set');
+    const result = await this.jobDescriptionTasksService.set(id, data);
+    console.timeEnd('set');
+    return result;
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.jobDescriptionTasksService.delete(id);
+  async delete(@Param('id') id: string) {
+    console.time('delete');
+    const result = await this.jobDescriptionTasksService.delete(id);
+    console.timeEnd('delete');
+    return result;
   }
 }

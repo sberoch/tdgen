@@ -7,6 +7,8 @@ import {
 } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
@@ -30,6 +32,8 @@ import { JobDescriptionsService } from '../../services/job-descriptions.service'
 import { JobDescription } from '../../types/job-descriptions';
 import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { Subject, takeUntil } from 'rxjs';
 
 const MAX_DISPLAY_CARDS = 10;
 
@@ -53,7 +57,9 @@ const MAX_DISPLAY_CARDS = 10;
     CommonModule,
     TruncateSafeHtmlPipe,
     PastelColorPipe,
+    ScrollingModule,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('displayScrollContainer', { static: false })
@@ -71,18 +77,25 @@ export class CardBacklogColumnComponent implements OnInit {
   isJobTaskModalOpen = false;
   selectedCardToOpenModal: Card | null = null;
   private currentSearchTerm: string = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private dialog: MatDialog,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.currentWorkspaceService.currentJobDescription.subscribe(
-      (jobDescription) => {
-        this.isWorkspaceSet = jobDescription !== null;
+    this.currentWorkspaceService.currentJobDescription
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((jobDescription) => {
+        const newWorkspaceSet = jobDescription !== null;
+        if (newWorkspaceSet !== this.isWorkspaceSet) {
+          this.isWorkspaceSet = newWorkspaceSet;
+          this.cdr.markForCheck();
+        }
         if (!jobDescription) {
           this.currentSearchTerm = '';
           if (this.backlogSearchInputRef) {
@@ -90,22 +103,40 @@ export class CardBacklogColumnComponent implements OnInit {
           }
           this.cardService.initializeCards();
         }
-      }
-    );
+      });
 
-    this.cardService.cards$.subscribe((cards) => {
-      this.allBacklogCards = cards;
-      this.applySearchFilter(this.currentSearchTerm);
-    });
+    this.cardService.cards$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((cards) => {
+        this.allBacklogCards = cards;
+        this.applySearchFilter(this.currentSearchTerm);
+      });
 
-    this.cardService.displayCards$.subscribe((displayCards) => {
-      this.displayCards = displayCards;
-    });
+    this.cardService.displayCards$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((displayCards) => {
+        this.displayCards = displayCards;
+        this.cdr.markForCheck();
+      });
 
-    this.cardService.selectedCard$.subscribe((card) => {
-      this.selectedCard = card;
-      setTimeout(() => this.scrollToSelectedCard(), 50);
-    });
+    this.cardService.selectedCard$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((card) => {
+        this.selectedCard = card;
+        setTimeout(() => {
+          this.scrollToSelectedCard();
+          this.cdr.markForCheck();
+        }, 50);
+      });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  trackCardById(index: number, card: Card): string {
+    return card.jobTask.id.toString();
   }
 
   private scrollToSelectedCard() {
@@ -146,6 +177,8 @@ export class CardBacklogColumnComponent implements OnInit {
       const keywords = termToFilter.split(/\s+/);
       return keywords.every((keyword) => text.includes(keyword));
     });
+
+    this.cdr.markForCheck();
   }
 
   clearSearch(inputElement: HTMLInputElement) {
@@ -213,10 +246,6 @@ export class CardBacklogColumnComponent implements OnInit {
     this.cardService.selectCard(card);
   }
 
-  emitAlert() {
-    alert('TODO');
-  }
-
   removeFromDisplay(index: number) {
     this.cardService.removeFromDisplay(index);
   }
@@ -224,10 +253,12 @@ export class CardBacklogColumnComponent implements OnInit {
   openDialogWithCard(card: Card) {
     this.isJobTaskModalOpen = true;
     this.selectedCardToOpenModal = card;
+    this.cdr.markForCheck();
   }
 
   closeJobTaskModal() {
     this.isJobTaskModalOpen = false;
     this.selectedCardToOpenModal = null;
+    this.cdr.markForCheck();
   }
 }

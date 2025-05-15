@@ -36,10 +36,13 @@ export class JobDescriptionsService {
       },
     });
 
-    return jobDescriptions.map((jobDescription) => ({
-      ...jobDescription,
-      weightedAverage: getWeightedPayGroupFromTasks(jobDescription.tasks),
-    }));
+    return jobDescriptions.map((jobDescription) => {
+      const { tasks, ...rest } = jobDescription;
+      return {
+        ...rest,
+        weightedAverage: getWeightedPayGroupFromTasks(tasks),
+      };
+    });
   }
 
   async get(id: string) {

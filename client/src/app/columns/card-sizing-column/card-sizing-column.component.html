@@ -3,7 +3,7 @@
   <div class="w-full h-full bg-lightgray"></div>
   } @else {
   <div class="flex flex-col h-full w-full border border-gray">
-    @for (card of cards; track card; let last = $last) {
+    @for (card of cards; track card.jobTask.id; let last = $last) {
     <div class="h-full relative" [style.height.%]="card.percentage">
       <div
         class="h-full flex flex-col items-center justify-center cursor-pointer relative border border-transparent"
