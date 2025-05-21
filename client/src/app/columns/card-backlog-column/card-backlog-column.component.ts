@@ -203,6 +203,12 @@ export class CardBacklogColumnComponent implements OnInit {
     } else {
       if (event.previousContainer.id === 'backlog') {
         if (this.displayCards.length < MAX_DISPLAY_CARDS) {
+          console.log(
+            'addToDisplay',
+            event.previousContainer.data[event.previousIndex],
+            event.previousIndex,
+            event.currentIndex
+          );
           this.cardService.addToDisplay(
             event.previousContainer.data[event.previousIndex],
             event.currentIndex

@@ -5,6 +5,8 @@ import {
   Input,
   OnDestroy,
   Renderer2,
+  OnInit,
+  NgZone,
 } from '@angular/core';
 import { Card } from '../card.utils';
 
@@ -12,36 +14,133 @@ import { Card } from '../card.utils';
   selector: '[cardTooltip]',
   standalone: true,
 })
-export class CardTooltipDirective implements OnDestroy {
+export class CardTooltipDirective implements OnInit, OnDestroy {
   @Input('cardTooltip') card!: Card;
   private tooltipElement: HTMLElement | null = null;
   private showTimeout: any = null;
+  private documentClickListener: Function | null = null;
+  private documentScrollListener: Function | null = null;
+  private windowResizeListener: Function | null = null;
+  private visibilityChangeListener: Function | null = null;
+  private maxDisplayTimeout: any = null;
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private el: ElementRef,
+    private renderer: Renderer2,
+    private ngZone: NgZone
+  ) {}
+
+  ngOnInit(): void {
+    // Listen for visibility changes to cleanup tooltips when tab is switched
+    this.ngZone.runOutsideAngular(() => {
+      this.visibilityChangeListener = this.renderer.listen(
+        document,
+        'visibilitychange',
+        () => {
+          if (document.visibilityState === 'hidden') {
+            this.ngZone.run(() => this.removeTooltip());
+          }
+        }
+      );
+    });
+  }
 
   ngOnDestroy(): void {
-    this.clearTimeout();
+    this.clearAllTimeouts();
     this.removeTooltip();
+    this.removeGlobalListeners();
   }
 
   @HostListener('mouseenter')
   onMouseEnter(): void {
-    this.clearTimeout();
+    this.clearAllTimeouts();
     this.showTimeout = setTimeout(() => {
       this.createTooltip();
+      this.setupGlobalListeners();
+
+      // Auto-dismiss tooltip after 10 seconds to prevent stuck tooltips
+      this.maxDisplayTimeout = setTimeout(() => {
+        this.removeTooltip();
+      }, 10000);
     }, 300);
   }
 
   @HostListener('mouseleave')
   onMouseLeave(): void {
-    this.clearTimeout();
-    this.removeTooltip();
+    this.clearAllTimeouts();
+    // Slight delay on removal to allow clicking tooltip content if needed
+    setTimeout(() => {
+      this.removeTooltip();
+    }, 100);
   }
 
-  private clearTimeout(): void {
+  private clearAllTimeouts(): void {
     if (this.showTimeout) {
       clearTimeout(this.showTimeout);
       this.showTimeout = null;
+    }
+    if (this.maxDisplayTimeout) {
+      clearTimeout(this.maxDisplayTimeout);
+      this.maxDisplayTimeout = null;
+    }
+  }
+
+  private setupGlobalListeners(): void {
+    if (!this.tooltipElement) return;
+
+    this.ngZone.runOutsideAngular(() => {
+      // Close tooltip when clicking anywhere else
+      this.documentClickListener = this.renderer.listen(
+        document,
+        'click',
+        (event: MouseEvent) => {
+          if (
+            this.tooltipElement &&
+            !this.tooltipElement.contains(event.target as Node) &&
+            !this.el.nativeElement.contains(event.target as Node)
+          ) {
+            this.ngZone.run(() => this.removeTooltip());
+          }
+        }
+      );
+
+      // Close tooltip on scroll
+      this.documentScrollListener = this.renderer.listen(
+        document,
+        'scroll',
+        () => this.ngZone.run(() => this.removeTooltip()),
+        { capture: true, passive: true }
+      );
+
+      // Reposition or close on resize
+      this.windowResizeListener = this.renderer.listen(
+        window,
+        'resize',
+        () => this.ngZone.run(() => this.removeTooltip()),
+        { passive: true }
+      );
+    });
+  }
+
+  private removeGlobalListeners(): void {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+      this.documentClickListener = null;
+    }
+
+    if (this.documentScrollListener) {
+      this.documentScrollListener();
+      this.documentScrollListener = null;
+    }
+
+    if (this.windowResizeListener) {
+      this.windowResizeListener();
+      this.windowResizeListener = null;
+    }
+
+    if (this.visibilityChangeListener) {
+      this.visibilityChangeListener();
+      this.visibilityChangeListener = null;
     }
   }
 
@@ -128,6 +227,7 @@ export class CardTooltipDirective implements OnDestroy {
         this.renderer.removeChild(parent, this.tooltipElement);
       }
       this.tooltipElement = null;
+      this.removeGlobalListeners();
     }
   }
 }
