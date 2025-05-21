@@ -21,6 +21,7 @@ export class CardService {
   cards$ = this.cardsSubject.asObservable();
   displayCards$ = this.displayCardsSubject.asObservable();
   selectedCard$ = this.selectedCardSubject.asObservable();
+  allBacklogCards: Card[] = [];
 
   constructor(
     private http: HttpClient,
@@ -30,6 +31,15 @@ export class CardService {
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {
         this.currentJobDescription = jobDescription;
+
+        this.cardsSubject.next(
+          this.allBacklogCards.filter(
+            (card) =>
+              !jobDescription?.tasks.some(
+                (jdTask) => jdTask.jobTask.id === card.jobTask.id
+              )
+          )
+        );
 
         this.displayCardsSubject.next(
           jobDescription?.tasks
@@ -43,15 +53,6 @@ export class CardService {
               tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
             }))
             .sort((a, b) => a.order - b.order) || []
-        );
-
-        this.cardsSubject.next(
-          this.cardsSubject.value.filter(
-            (card) =>
-              !jobDescription?.tasks.some(
-                (jdTask) => jdTask.jobTask.id === card.jobTask.id
-              )
-          )
         );
       }
     );
@@ -69,10 +70,12 @@ export class CardService {
         tags: task.tags.map((tag) => tag.name),
       }));
       this.cardsSubject.next(cards);
+      this.allBacklogCards = cards;
     });
   }
 
-  addToDisplay(card: Card, index: number) {
+  addToDisplay(card?: Card, index?: number) {
+    if (!card) return;
     const isDuplicate = this.currentJobDescription?.tasks.some(
       (existingCard) => existingCard.jobTask.id === card.jobTask.id
     );
@@ -96,8 +99,11 @@ export class CardService {
     this.selectedCardSubject.next(card);
   }
 
-  removeFromDisplay(index: number) {
-    const jdTaskToDelete = this.currentJobDescription?.tasks[index];
+  removeFromDisplay(card?: Card) {
+    if (!card) return;
+    const jdTaskToDelete = this.currentJobDescription?.tasks.find(
+      (task) => task.jobTask.id === card.jobTask.id
+    );
     this.http
       .delete<JobDescription>(
         `${this.apiUrl}/job-description-tasks/${jdTaskToDelete?.id}`

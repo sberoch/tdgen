@@ -3,6 +3,7 @@ import {
   CdkDragDrop,
   CdkDragPlaceholder,
   CdkDragPreview,
+  CdkDragStart,
   CdkDropList,
 } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
@@ -76,6 +77,7 @@ export class CardBacklogColumnComponent implements OnInit {
   private _snackBar = inject(MatSnackBar);
   isJobTaskModalOpen = false;
   selectedCardToOpenModal: Card | null = null;
+  private currentDraggingCard: Card | undefined;
   private currentSearchTerm: string = '';
   private destroy$ = new Subject<void>();
 
@@ -110,6 +112,7 @@ export class CardBacklogColumnComponent implements OnInit {
       .subscribe((cards) => {
         this.allBacklogCards = cards;
         this.applySearchFilter(this.currentSearchTerm);
+        this.cdr.markForCheck();
       });
 
     this.cardService.displayCards$
@@ -122,7 +125,7 @@ export class CardBacklogColumnComponent implements OnInit {
         this.allBacklogCards = this.allBacklogCards.filter(
           (card) => !displayCardIds.has(card.jobTask.id)
         );
-        this.applySearchFilter('');
+        this.applySearchFilter(this.currentSearchTerm);
         this.cdr.markForCheck();
       });
 
@@ -142,7 +145,7 @@ export class CardBacklogColumnComponent implements OnInit {
     this.destroy$.complete();
   }
 
-  trackCardById(index: number, card: Card): string {
+  trackCardById(_index: number, card: Card): string {
     return card.jobTask.id.toString();
   }
 
@@ -194,6 +197,10 @@ export class CardBacklogColumnComponent implements OnInit {
     this.applySearchFilter('');
   }
 
+  onDragStarted(_event: CdkDragStart, card: Card) {
+    this.currentDraggingCard = card;
+  }
+
   drop(event: CdkDragDrop<Card[]>) {
     if (
       event.previousContainer.id === event.container.id &&
@@ -203,14 +210,8 @@ export class CardBacklogColumnComponent implements OnInit {
     } else {
       if (event.previousContainer.id === 'backlog') {
         if (this.displayCards.length < MAX_DISPLAY_CARDS) {
-          console.log(
-            'addToDisplay',
-            event.previousContainer.data[event.previousIndex],
-            event.previousIndex,
-            event.currentIndex
-          );
           this.cardService.addToDisplay(
-            event.previousContainer.data[event.previousIndex],
+            this.currentDraggingCard,
             event.currentIndex
           );
         } else {
@@ -221,9 +222,10 @@ export class CardBacklogColumnComponent implements OnInit {
         }
       }
       if (event.previousContainer.id === 'display') {
-        this.cardService.removeFromDisplay(event.previousIndex);
+        this.cardService.removeFromDisplay(this.currentDraggingCard);
       }
     }
+    this.currentDraggingCard = undefined;
   }
 
   moveCardToTop(index: number) {
@@ -262,8 +264,8 @@ export class CardBacklogColumnComponent implements OnInit {
     this.cardService.selectCard(card);
   }
 
-  removeFromDisplay(index: number) {
-    this.cardService.removeFromDisplay(index);
+  removeFromDisplay(card: Card) {
+    this.cardService.removeFromDisplay(card);
   }
 
   openDialogWithCard(card: Card) {

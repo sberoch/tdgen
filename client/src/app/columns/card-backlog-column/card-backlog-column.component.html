@@ -34,6 +34,7 @@
         *cdkVirtualFor="let card of backlogCards; trackBy: trackCardById"
         class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none m-2"
         cdkDrag
+        (cdkDragStarted)="onDragStarted($event, card)"
         [style.cursor]="isWorkspaceSet ? 'move' : 'not-allowed'"
         [cardTooltip]="card"
       >
@@ -95,6 +96,7 @@
         class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent"
         [class.!border-[#333]]="card === selectedCard"
         cdkDrag
+        (cdkDragStarted)="onDragStarted($event, card)"
         [style.backgroundColor]="$index | pastelColor"
         (click)="selectCard(card)"
         [attr.data-classification]="card.classification"
@@ -182,7 +184,7 @@
   <mat-divider></mat-divider>
   <button
     mat-menu-item
-    (click)="removeFromDisplay(currentIndex)"
+    (click)="removeFromDisplay(displayCards[currentIndex])"
     class="!text-red-500"
   >
     Entfernen
