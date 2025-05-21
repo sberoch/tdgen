@@ -31,6 +31,21 @@
     Neue Tätigkeitsdarstellung
   </button>
   <mat-divider></mat-divider>
+  <button
+    mat-menu-item
+    (click)="openCloseDescriptionDialog()"
+    [disabled]="!isWorkspaceSet"
+  >
+    Tätigkeitsdarstellung schließen
+  </button>
+  <button
+    mat-menu-item
+    (click)="exportDescription()"
+    [disabled]="!isWorkspaceSet"
+  >
+    Tätigkeitsdarstellung exportieren
+  </button>
+  <mat-divider></mat-divider>
   <button mat-menu-item (click)="openJobDescriptionModal()">
     Tätigkeitsdarstellungen verwalten
   </button>

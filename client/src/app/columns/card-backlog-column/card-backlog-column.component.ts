@@ -116,6 +116,13 @@ export class CardBacklogColumnComponent implements OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((displayCards) => {
         this.displayCards = displayCards;
+        const displayCardIds = new Set(
+          this.displayCards.map((dc) => dc.jobTask.id)
+        );
+        this.allBacklogCards = this.allBacklogCards.filter(
+          (card) => !displayCardIds.has(card.jobTask.id)
+        );
+        this.applySearchFilter('');
         this.cdr.markForCheck();
       });
 
@@ -188,7 +195,10 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<Card[]>) {
-    if (event.previousContainer === event.container) {
+    if (
+      event.previousContainer.id === event.container.id &&
+      event.previousContainer.id === 'display'
+    ) {
       this.cardService.moveInDisplay(event.previousIndex, event.currentIndex);
     } else {
       if (event.previousContainer.id === 'backlog') {

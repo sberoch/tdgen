@@ -44,6 +44,15 @@ export class CardService {
             }))
             .sort((a, b) => a.order - b.order) || []
         );
+
+        this.cardsSubject.next(
+          this.cardsSubject.value.filter(
+            (card) =>
+              !jobDescription?.tasks.some(
+                (jdTask) => jdTask.jobTask.id === card.jobTask.id
+              )
+          )
+        );
       }
     );
   }

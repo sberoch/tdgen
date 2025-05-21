@@ -15,6 +15,7 @@ import { CurrentWorkspaceService } from '../../services/current-workspace.servic
 import { CommonModule } from '@angular/common';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { JobTasksService } from '../../services/job-tasks.service';
+import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
 
 @Component({
   selector: 'app-header',
@@ -38,6 +39,8 @@ export class HeaderComponent implements OnInit {
   isJobDescriptionModalOpen = false;
   isJobTaskModalOpen = false;
   currentWeightedAverage = 0;
+  isWorkspaceSet: boolean = false;
+
   constructor(
     private dialog: MatDialog,
     private router: Router,
@@ -51,6 +54,7 @@ export class HeaderComponent implements OnInit {
       (jobDescription) => {
         this.currentTitle = jobDescription?.title || '';
         this.currentWeightedAverage = jobDescription?.weightedAverage || 0;
+        this.isWorkspaceSet = jobDescription !== null;
       }
     );
   }
@@ -95,6 +99,23 @@ export class HeaderComponent implements OnInit {
         this.jobDescriptionsService.getJobDescriptions().subscribe();
       }
     });
+  }
+
+  openCloseDescriptionDialog() {
+    const dialogRef = this.dialog.open(CloseDescriptionDialogComponent, {
+      width: '400px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        this.currentWorkspaceService.clearCurrentJobDescription();
+      }
+    });
+  }
+
+  exportDescription() {
+    // Placeholder for export functionality
+    alert('TODO: Export Description');
   }
 
   openAboutDialog() {
