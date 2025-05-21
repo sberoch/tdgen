@@ -5,41 +5,44 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ElementRef,
-  ViewChildren,
-  QueryList,
   AfterViewChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
-  SimpleChanges,
-  EventEmitter,
+  OnDestroy,
+  OnInit,
   Output,
+  QueryList,
+  SimpleChanges,
+  ViewChildren,
+  ChangeDetectorRef,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { AngularEditorModule } from '@kolkov/angular-editor';
-import { AngularEditorConfig } from '@kolkov/angular-editor';
-import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import {
-  JobTasksService,
-  JobTaskFilter,
-} from '../../../services/job-tasks.service';
-import { JobTask } from '../../../types/job-tasks';
+  AngularEditorConfig,
+  AngularEditorModule,
+} from '@kolkov/angular-editor';
 import { Subscription } from 'rxjs';
-import { DatePipe } from '@angular/common';
-import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
-import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
-import { Tag } from '../../../types/tag';
 import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
+import {
+  JobTaskFilter,
+  JobTasksService,
+} from '../../../services/job-tasks.service';
 import { JobDescription } from '../../../types/job-descriptions';
+import { JobTask, CreateJobTask } from '../../../types/job-tasks';
+import { Tag } from '../../../types/tag';
+import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
+import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
 }
@@ -79,6 +82,7 @@ interface ExpandableJobTask extends JobTask {
       transition('collapsed <=> expanded', [animate('200ms ease-in-out')]),
     ]),
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JtOverviewAccordionComponent
   implements OnInit, OnDestroy, AfterViewChecked, OnChanges
@@ -150,7 +154,8 @@ export class JtOverviewAccordionComponent
     private dialog: MatDialog,
     private jobTasksService: JobTasksService,
     private cardService: CardService,
-    private currentWorkspaceService: CurrentWorkspaceService
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -236,12 +241,19 @@ export class JtOverviewAccordionComponent
             // Remove the "new" flag after 3 seconds
             setTimeout(() => {
               this.newlyCreatedTitle = null;
-              this.jobTasks = this.jobTasks.map((jt) => ({
-                ...jt,
-                isNew: false,
-              }));
+              let changed = false;
+              this.jobTasks.forEach((jt) => {
+                if (jt.isNew) {
+                  jt.isNew = false;
+                  changed = true;
+                }
+              });
+              if (changed) {
+                this.cdr.markForCheck();
+              }
             }, 3000);
           }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Error loading job tasks:', error);
@@ -273,13 +285,8 @@ export class JtOverviewAccordionComponent
         metadata: item.metadata,
       })
       .subscribe({
-        next: () => {
-          this.cardService.initializeCards();
-          if (this.currentJobDescription) {
-            this.currentWorkspaceService.triggerJobDescriptionFetch(
-              this.currentJobDescription
-            );
-          }
+        next: (updatedTaskFromServer) => {
+          this._handleSuccessfulUpdate({ updatedTaskFromServer });
         },
         error: (error) => {
           console.error('Error updating payment group:', error);
@@ -340,46 +347,67 @@ export class JtOverviewAccordionComponent
   }
 
   toggleAccordion(id: number): void {
-    // Save any pending changes when toggling accordion
-    if (this.expandedItemId) {
-      const expandedItem = this.jobTasks.find(
-        (jt) => jt.id === this.expandedItemId
+    const previousExpandedItemId = this.expandedItemId;
+
+    // Save pending changes for the item being collapsed
+    if (previousExpandedItemId) {
+      const previouslyExpandedItem = this.jobTasks.find(
+        (jt) => jt.id === previousExpandedItemId
       );
-      if (expandedItem && expandedItem.id) {
-        this.jobTasksService
-          .updateJobTask(expandedItem.id, {
-            text: this.htmlContent,
-            metadata: expandedItem.metadata,
-          })
-          .subscribe({
-            next: () => {
-              this.cardService.initializeCards();
-              if (this.currentJobDescription) {
-                this.currentWorkspaceService.triggerJobDescriptionFetch(
-                  this.currentJobDescription
-                );
-              }
-            },
-            error: (err) =>
-              console.error(
-                'Error updating job task from toggleAccordion:',
-                err
-              ),
-          });
+      if (previouslyExpandedItem && previouslyExpandedItem.id) {
+        const payloadToSave: Partial<JobTask> = {};
+        if (previouslyExpandedItem.text !== this.htmlContent) {
+          payloadToSave.text = this.htmlContent;
+        }
+        // Include metadata if it can be changed directly in the editor view and needs saving.
+        // For now, assuming only text changes via htmlContent directly.
+        // payloadToSave.metadata = previouslyExpandedItem.metadata;
+
+        if (Object.keys(payloadToSave).length > 0) {
+          this.jobTasksService
+            .updateJobTask(
+              previouslyExpandedItem.id!,
+              payloadToSave as Partial<CreateJobTask>
+            )
+            .subscribe({
+              next: (taskFromServer) => {
+                // Update local item that was just collapsed
+                this._handleSuccessfulUpdate({
+                  updatedTaskFromServer: taskFromServer,
+                });
+              },
+              error: (err) =>
+                console.error(
+                  'Error updating job task from toggleAccordion:',
+                  err
+                ),
+            });
+        }
       }
     }
+
+    // Toggle expansion state
     if (this.expandedItemId === id) {
       this.expandedItemId = null;
-      this.htmlContent = '';
+      this.htmlContent = ''; // Clear content when collapsing
+      this.cdr.markForCheck();
     } else {
       this.expandedItemId = id;
+      this.htmlContent = ''; // Clear previous content before loading new
       this.jobTasksService.getJobTaskById(id).subscribe({
         next: (task) => {
           this.htmlContent = task.text || '';
+          // Optionally update the local task item if getJobTaskById returns more details
+          const currentItem = this.jobTasks.find((jt) => jt.id === id);
+          if (currentItem) {
+            currentItem.text = task.text; // Ensure local copy is also up-to-date
+          }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Error loading task content:', error);
           this.htmlContent = '';
+          this.cdr.markForCheck();
         },
       });
     }
@@ -396,54 +424,75 @@ export class JtOverviewAccordionComponent
   addTags(item: JobTask): void {
     if (!this.tagInput.trim()) return;
 
-    const newTags = this.tagInput
+    const newTagNames = this.tagInput
       .split(',')
       .map((tag) => tag.trim())
-      .filter((tag) => tag)
-      .map((name) => ({ id: Math.random(), name }));
+      .filter((tag) => tag);
 
-    if (!item.tags) item.tags = [];
-    const existingTagNames = new Set(item.tags.map((tag) => tag.name));
-    const uniqueNewTags = newTags.filter(
-      (newTag) => !existingTagNames.has(newTag.name)
+    // Avoid adding duplicates based on current local tags
+    const existingTagNamesSet = new Set(
+      item.tags?.map((tag) => tag.name) || []
     );
-    item.tags = [...item.tags, ...uniqueNewTags];
-    this.tagInput = '';
+    const uniqueNewTagNames = newTagNames.filter(
+      (name) => !existingTagNamesSet.has(name)
+    );
+
+    if (uniqueNewTagNames.length === 0) {
+      this.tagInput = ''; // Clear input even if no new tags were added
+      return;
+    }
+
+    // Optimistically update local tags for UI responsiveness
+    const currentTags = item.tags ? [...item.tags] : [];
+    uniqueNewTagNames.forEach((name) =>
+      currentTags.push({ id: Math.random(), name } as Tag)
+    ); // Add with temp id
+    item.tags = currentTags;
+
+    const tagNamesToSave = item.tags.map((tag) => tag.name);
+    this.tagInput = ''; // Clear input after processing
 
     this.jobTasksService
       .updateJobTask(item.id!, {
-        tags: item.tags.map((tag) => tag.name),
+        tags: tagNamesToSave,
       })
       .subscribe({
-        next: () => {
-          this.cardService.initializeCards();
-          if (this.currentJobDescription) {
-            this.currentWorkspaceService.triggerJobDescriptionFetch(
-              this.currentJobDescription
-            );
-          }
+        next: (updatedTaskFromServer) => {
+          // reloadTasks true because tags can affect filtering/grouping elsewhere
+          this._handleSuccessfulUpdate({
+            updatedTaskFromServer,
+            reloadTasks: true,
+          });
         },
-        error: (err) => console.error('Error updating tags:', err),
+        error: (err) => {
+          console.error('Error updating tags:', err);
+          // Potentially revert optimistic update here
+          // For now, error is logged.
+        },
       });
   }
 
   removeTag(item: JobTask, tagToRemove: Tag): void {
     if (!item.tags) return;
     item.tags = item.tags.filter((tag) => tag.name !== tagToRemove.name);
+
+    // Optimistically updated locally, now save to backend
     this.jobTasksService
       .updateJobTask(item.id!, {
         tags: item.tags.map((tag) => tag.name),
       })
       .subscribe({
-        next: () => {
-          this.cardService.initializeCards();
-          if (this.currentJobDescription) {
-            this.currentWorkspaceService.triggerJobDescriptionFetch(
-              this.currentJobDescription
-            );
-          }
+        next: (updatedTaskFromServer) => {
+          // reloadTasks true because tags can affect filtering/grouping elsewhere
+          this._handleSuccessfulUpdate({
+            updatedTaskFromServer,
+            reloadTasks: true,
+          });
         },
-        error: (err) => console.error('Error removing tag:', err),
+        error: (err) => {
+          console.error('Error removing tag:', err);
+          // Potentially revert optimistic update here
+        },
       });
   }
 
@@ -462,12 +511,7 @@ export class JtOverviewAccordionComponent
           this.jobTasksService.deleteJobTask(item.id!).subscribe({
             next: () => {
               console.log('Job task deleted successfully');
-              this.loadJobTasks();
-              if (this.currentJobDescription) {
-                this.currentWorkspaceService.triggerJobDescriptionFetch(
-                  this.currentJobDescription
-                );
-              }
+              this._handleSuccessfulUpdate({ reloadTasks: true });
             },
             error: (error) => {
               console.error('Error deleting job task:', error);
@@ -494,14 +538,8 @@ export class JtOverviewAccordionComponent
               text: this.htmlContent,
             })
             .subscribe({
-              next: () => {
-                expandedItem.text = this.htmlContent;
-                this.cardService.initializeCards();
-                if (this.currentJobDescription) {
-                  this.currentWorkspaceService.triggerJobDescriptionFetch(
-                    this.currentJobDescription
-                  );
-                }
+              next: (updatedTaskFromServer) => {
+                this._handleSuccessfulUpdate({ updatedTaskFromServer });
               },
               error: (err) =>
                 console.error('Error updating job task text on blur:', err),
@@ -512,37 +550,108 @@ export class JtOverviewAccordionComponent
   }
 
   onOverlayModalClosed(): void {
-    // Save any pending changes when the modal is closed
     const expandedItem = this.jobTasks.find(
       (jt) => jt.id === this.expandedItemId
     );
+
     if (expandedItem && expandedItem.id) {
-      this.addTags(expandedItem);
-      this.jobTasksService
-        .updateJobTask(expandedItem.id, {
-          title: expandedItem.title,
-          text: this.htmlContent,
-          metadata: expandedItem.metadata,
-        })
-        .subscribe({
-          next: () => {
-            console.log(
-              'Job task updated from onOverlayModalClosed, re-initializing cards.'
-            );
-            this.cardService.initializeCards();
-            if (this.currentJobDescription) {
-              this.currentWorkspaceService.triggerJobDescriptionFetch(
-                this.currentJobDescription
-              );
-            }
-          },
-          error: (err) =>
-            console.error(
-              'Error updating job task from onOverlayModalClosed:',
-              err
-            ),
-        });
+      const payload: Partial<CreateJobTask> = {};
+      let needsSave = false;
+
+      // 1. Process any pending tagInput
+      if (this.tagInput.trim()) {
+        const newTagNames = this.tagInput
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter((tag) => tag);
+
+        const currentTags = expandedItem.tags ? [...expandedItem.tags] : [];
+        const existingTagNamesSet = new Set(currentTags.map((t) => t.name));
+        const uniqueNewTags = newTagNames.filter(
+          (name) => !existingTagNamesSet.has(name)
+        );
+
+        if (uniqueNewTags.length > 0) {
+          uniqueNewTags.forEach((name) =>
+            currentTags.push({ id: Math.random(), name } as Tag)
+          );
+          expandedItem.tags = currentTags; // Update local item's tags
+          payload.tags = expandedItem.tags.map((t) => t.name); // This is now string[]
+          needsSave = true;
+        }
+        this.tagInput = ''; // Clear input
+      }
+
+      // 2. Check if htmlContent (editor text) has changed
+      if (expandedItem.text !== this.htmlContent) {
+        payload.text = this.htmlContent;
+        needsSave = true;
+      }
+
+      // 3. Handle metadata if necessary, ensuring correct type for CreateJobTask
+      // Example: if expandedItem.metadata could be assigned and is compatible or mapped
+      // if (expandedItem.metadata /* && check if changed or always send */) {
+      //   payload.metadata = mapMetadataToCreateCompatibleType(expandedItem.metadata);
+      //   needsSave = true;
+      // }
+
+      if (needsSave) {
+        this.jobTasksService
+          .updateJobTask(expandedItem.id!, payload)
+          .subscribe({
+            next: (taskFromServer) => {
+              // If tags were part of payload, taskFromServer should have them.
+              // If only text was, then taskFromServer updates text.
+              // reloadTasks might be needed if tags changed here and they affect global state/filters.
+              // For now, assume onOverlayModalClosed primarily finalizes editor state.
+              this._handleSuccessfulUpdate({
+                updatedTaskFromServer: taskFromServer,
+                reloadTasks: !!payload.tags,
+              });
+            },
+            error: (err) =>
+              console.error(
+                'Error updating job task from onOverlayModalClosed:',
+                err
+              ),
+          });
+      }
     }
     this.closeModal.emit();
+  }
+
+  private _handleSuccessfulUpdate(
+    options: { reloadTasks?: boolean; updatedTaskFromServer?: JobTask } = {}
+  ): void {
+    if (options.updatedTaskFromServer) {
+      const localTask = this.jobTasks.find(
+        (jt) => jt.id === options.updatedTaskFromServer!.id
+      );
+      if (localTask) {
+        // Preserve 'isNew' if it was set locally and not part of server response,
+        // though loadJobTasks usually recalculates it.
+        const isNewState = localTask.isNew;
+        Object.assign(localTask, options.updatedTaskFromServer);
+        if (
+          isNewState !== undefined &&
+          (options.updatedTaskFromServer as ExpandableJobTask).isNew ===
+            undefined
+        ) {
+          localTask.isNew = isNewState;
+        }
+      }
+    }
+
+    if (options.reloadTasks) {
+      this.loadJobTasks();
+    }
+
+    this.cardService.initializeCards();
+    if (this.currentJobDescription) {
+      this.currentWorkspaceService.triggerJobDescriptionFetch(
+        this.currentJobDescription
+      );
+    }
+    this.cdr.markForCheck();
   }
 }

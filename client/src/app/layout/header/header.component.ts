@@ -78,7 +78,6 @@ export class HeaderComponent implements OnInit {
 
   openJobTaskModal() {
     this.isJobTaskModalOpen = true;
-    this.jobTasksService.getJobTasks().subscribe();
   }
 
   closeJobTaskModal() {

@@ -23,25 +23,19 @@ export class JobDescriptionTasksController {
 
   @Get()
   async list(@Query() params: JobDescriptionTaskParams) {
-    console.time('list');
     const result = await this.jobDescriptionTasksService.list(params);
-    console.timeEnd('list');
     return result;
   }
 
   @Get(':id')
   async get(@Param('id') id: string) {
-    console.time('get');
     const result = await this.jobDescriptionTasksService.get(id);
-    console.timeEnd('get');
     return result;
   }
 
   @Post()
   async create(@Body() data: CreateJobDescriptionTaskDto) {
-    console.time('create');
     const result = await this.jobDescriptionTasksService.create(data);
-    console.timeEnd('create');
     return result;
   }
 
@@ -50,17 +44,13 @@ export class JobDescriptionTasksController {
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionTaskDto,
   ) {
-    console.time('set');
     const result = await this.jobDescriptionTasksService.set(id, data);
-    console.timeEnd('set');
     return result;
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string) {
-    console.time('delete');
     const result = await this.jobDescriptionTasksService.delete(id);
-    console.timeEnd('delete');
     return result;
   }
 }
