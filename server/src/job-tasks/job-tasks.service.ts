@@ -119,6 +119,11 @@ export class JobTasksService {
           },
         },
         {
+          text: {
+            contains: params.search,
+          },
+        },
+        {
           tags: {
             some: {
               name: {
