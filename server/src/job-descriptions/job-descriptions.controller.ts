@@ -15,6 +15,7 @@ import {
   CreateJobDescriptionDto,
   JobDescriptionParams,
   UpdateJobDescriptionPercentagesDto,
+  JobDescriptionsListResponse,
 } from './job-descriptions.dto';
 
 @Controller('job-descriptions')
@@ -24,7 +25,9 @@ export class JobDescriptionsController {
   ) {}
 
   @Get()
-  async list(@Query() params: JobDescriptionParams): Promise<JobDescription[]> {
+  async list(
+    @Query() params: JobDescriptionParams,
+  ): Promise<JobDescriptionsListResponse> {
     return this.jobDescriptionsService.list(params);
   }
 

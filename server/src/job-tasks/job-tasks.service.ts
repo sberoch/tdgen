@@ -5,6 +5,7 @@ import {
   CreateJobTaskDto,
   UpdateJobTaskDto,
   JobTaskParams,
+  JobTasksListResponse,
 } from './job-tasks.dto';
 
 const USER_ID = '4016651';
@@ -13,17 +14,24 @@ const USER_ID = '4016651';
 export class JobTasksService {
   constructor(private prisma: PrismaService) {}
 
-  async list(params?: JobTaskParams): Promise<JobTask[]> {
-    return this.prisma.jobTask.findMany({
-      where: this.buildWhereClause(params),
-      orderBy: {
-        title: 'asc',
-      },
-      include: {
-        tags: true,
-        jobDescriptions: true,
-      },
-    });
+  async list(params?: JobTaskParams): Promise<JobTasksListResponse> {
+    const whereClause = this.buildWhereClause(params);
+
+    const [tasks, totalCount] = await Promise.all([
+      this.prisma.jobTask.findMany({
+        where: whereClause,
+        orderBy: {
+          title: 'asc',
+        },
+        include: {
+          tags: true,
+          jobDescriptions: true,
+        },
+      }),
+      this.prisma.jobTask.count(),
+    ]);
+
+    return { tasks, totalCount };
   }
 
   async get(id: string): Promise<JobTask> {

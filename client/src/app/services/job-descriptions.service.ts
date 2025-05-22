@@ -1,10 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   CreateJobDescription,
   JobDescription,
+  JobDescriptionsListResponse,
   UpdateJobDescription,
 } from '../types/job-descriptions';
 
@@ -29,20 +30,25 @@ export class JobDescriptionsService {
     this.loadJobDescriptions();
   }
 
-  private loadJobDescriptions(filter?: JobDescriptionFilter) {
+  private loadJobDescriptions(
+    filter?: JobDescriptionFilter
+  ): Observable<JobDescriptionsListResponse> {
     let params = this.buildWhereClause(filter);
-    this.http
-      .get<JobDescription[]>(this.apiUrl, { params })
-      .subscribe((jobDescriptions) => {
-        this.jobDescriptionsSubject.next(jobDescriptions);
-      });
+    return this.http
+      .get<JobDescriptionsListResponse>(this.apiUrl, { params })
+      .pipe(
+        tap((jobDescriptionsListResponse) => {
+          this.jobDescriptionsSubject.next(
+            jobDescriptionsListResponse.jobDescriptions
+          );
+        })
+      );
   }
 
   getJobDescriptions(
     filter?: JobDescriptionFilter
-  ): Observable<JobDescription[]> {
-    this.loadJobDescriptions(filter);
-    return this.jobDescriptions$;
+  ): Observable<JobDescriptionsListResponse> {
+    return this.loadJobDescriptions(filter);
   }
 
   getJobDescriptionById(id: number): Observable<JobDescription> {

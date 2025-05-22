@@ -13,6 +13,7 @@ import {
   CreateJobTaskDto,
   UpdateJobTaskDto,
   JobTaskParams,
+  JobTasksListResponse,
 } from './job-tasks.dto';
 import { JobTasksService } from './job-tasks.service';
 
@@ -21,7 +22,7 @@ export class JobTasksController {
   constructor(private readonly jobTasksService: JobTasksService) {}
 
   @Get()
-  async list(@Query() params: JobTaskParams): Promise<JobTask[]> {
+  async list(@Query() params: JobTaskParams): Promise<JobTasksListResponse> {
     return this.jobTasksService.list(params);
   }
 

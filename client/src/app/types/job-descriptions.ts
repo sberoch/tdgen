@@ -27,3 +27,8 @@ export type CreateJobDescription = {
 };
 
 export type UpdateJobDescription = Partial<CreateJobDescription>;
+
+export type JobDescriptionsListResponse = {
+  jobDescriptions: JobDescription[];
+  totalCount: number;
+};

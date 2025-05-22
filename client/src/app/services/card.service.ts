@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { JobDescription } from '../types/job-descriptions';
-import { JobTask } from '../types/job-tasks';
+import { JobTask, JobTasksListResponse } from '../types/job-tasks';
 import { Card } from '../utils/card.utils';
 import { CurrentWorkspaceService } from './current-workspace.service';
 
@@ -59,19 +59,21 @@ export class CardService {
   }
 
   initializeCards() {
-    this.http.get<JobTask[]>(`${this.apiUrl}/job-tasks`).subscribe((tasks) => {
-      const cards = tasks.map((task) => ({
-        classification: task.metadata?.['paymentGroup'] || '',
-        jobTask: task,
-        title: task.title,
-        text: task.text,
-        percentage: 5,
-        order: 0,
-        tags: task.tags.map((tag) => tag.name),
-      }));
-      this.cardsSubject.next(cards);
-      this.allBacklogCards = cards;
-    });
+    this.http
+      .get<JobTasksListResponse>(`${this.apiUrl}/job-tasks`)
+      .subscribe((jobTasksListResponse) => {
+        const cards = jobTasksListResponse.tasks.map((task) => ({
+          classification: task.metadata?.['paymentGroup'] || '',
+          jobTask: task,
+          title: task.title,
+          text: task.text,
+          percentage: 5,
+          order: 0,
+          tags: task.tags.map((tag) => tag.name),
+        }));
+        this.cardsSubject.next(cards);
+        this.allBacklogCards = cards;
+      });
   }
 
   addToDisplay(card?: Card, index?: number) {

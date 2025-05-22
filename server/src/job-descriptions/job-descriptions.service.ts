@@ -3,13 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { JobDescription, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateJobDescriptionDto,
   JobDescriptionParams,
   UpdateJobDescriptionDto,
   UpdateJobDescriptionPercentagesDto,
+  JobDescriptionsListResponse,
 } from './job-descriptions.dto';
 import { getWeightedPayGroupFromTasks } from './job-descriptions.utils';
 
@@ -19,30 +20,40 @@ const USER_ID = '4016651';
 export class JobDescriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params?: JobDescriptionParams): Promise<JobDescription[]> {
-    const jobDescriptions = await this.prisma.jobDescription.findMany({
-      where: this.buildWhereClause(params),
-      orderBy: {
-        title: 'asc',
-      },
-      include: {
-        tags: true,
-        formFields: true,
-        tasks: {
-          include: {
-            jobTask: true,
+  async list(
+    params?: JobDescriptionParams,
+  ): Promise<JobDescriptionsListResponse> {
+    const whereClause = this.buildWhereClause(params);
+    const [jobDescriptions, totalCount] = await Promise.all([
+      this.prisma.jobDescription.findMany({
+        where: whereClause,
+        orderBy: {
+          title: 'asc',
+        },
+        include: {
+          tags: true,
+          formFields: true,
+          tasks: {
+            include: {
+              jobTask: true,
+            },
           },
         },
-      },
-    });
+      }),
+      this.prisma.jobDescription.count(),
+    ]);
 
-    return jobDescriptions.map((jobDescription) => {
-      const { tasks, ...rest } = jobDescription;
-      return {
-        ...rest,
-        weightedAverage: getWeightedPayGroupFromTasks(tasks),
-      };
-    });
+    const jobDescriptionsWithWeightedAverage = jobDescriptions.map(
+      (jobDescription) => {
+        const { tasks, ...rest } = jobDescription;
+        return {
+          ...rest,
+          weightedAverage: getWeightedPayGroupFromTasks(tasks),
+        };
+      },
+    );
+
+    return { jobDescriptions: jobDescriptionsWithWeightedAverage, totalCount };
   }
 
   async get(id: string) {

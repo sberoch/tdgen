@@ -1,3 +1,5 @@
+import { JobDescription } from '@prisma/client';
+
 export type CreateJobDescriptionDto = {
   title: string;
   metadata: Record<string, any>;
@@ -20,4 +22,11 @@ export type UpdateJobDescriptionPercentagesDto = {
     taskId: number;
     percentage: number;
   }[];
+};
+
+export type JobDescriptionsListResponse = {
+  jobDescriptions: (Omit<JobDescription, 'tasks'> & {
+    weightedAverage: number;
+  })[];
+  totalCount: number;
 };

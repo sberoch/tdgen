@@ -72,7 +72,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   filter: JobDescriptionFilter = {};
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
-
+  totalJobDescriptionsCount: number = 0;
+  filteredJobDescriptionsCount: number = 0;
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
   @Output() closeModal = new EventEmitter<void>();
 
@@ -108,7 +109,9 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   loadJobDescriptions(): void {
     this.jobDescriptionsService.getJobDescriptions(this.filter).subscribe({
       next: (data) => {
-        this.jobDescriptions = data.map((jd) => ({
+        this.totalJobDescriptionsCount = data.totalCount;
+        this.filteredJobDescriptionsCount = data.jobDescriptions.length;
+        this.jobDescriptions = data.jobDescriptions.map((jd) => ({
           ...jd,
           expanded:
             this.newlyCreatedTitle !== null &&

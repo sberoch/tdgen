@@ -21,3 +21,8 @@ export type CreateJobTask = {
 };
 
 export type UpdateJobTask = Partial<CreateJobTask>;
+
+export type JobTasksListResponse = {
+  tasks: JobTask[];
+  totalCount: number;
+};

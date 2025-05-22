@@ -1,3 +1,5 @@
+import { JobTask } from '@prisma/client';
+
 export type CreateJobTaskDto = {
   title: string;
   text: string;
@@ -12,4 +14,9 @@ export type JobTaskParams = {
   tags?: string[];
   includeDeleted?: boolean;
   search?: string;
+};
+
+export type JobTasksListResponse = {
+  tasks: JobTask[];
+  totalCount: number;
 };

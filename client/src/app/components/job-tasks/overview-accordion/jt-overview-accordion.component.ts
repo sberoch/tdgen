@@ -99,6 +99,8 @@ export class JtOverviewAccordionComponent
   showDeleted: boolean = false;
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
+  totalJobTasksCount: number = 0;
+  filteredJobTasksCount: number = 0;
   editorConfig: AngularEditorConfig = {
     editable: true,
     spellcheck: true,
@@ -202,8 +204,10 @@ export class JtOverviewAccordionComponent
 
     this.subscription.add(
       this.jobTasksService.getJobTasks(this.filter).subscribe({
-        next: (tasks) => {
-          this.jobTasks = tasks.map((task) => ({
+        next: (jobTasksListResponse) => {
+          this.totalJobTasksCount = jobTasksListResponse.totalCount;
+          this.filteredJobTasksCount = jobTasksListResponse.tasks.length;
+          this.jobTasks = jobTasksListResponse.tasks.map((task) => ({
             ...task,
             isNew:
               (this.newlyCreatedTitle !== null &&
