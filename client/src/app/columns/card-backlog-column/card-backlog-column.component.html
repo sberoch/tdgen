@@ -178,6 +178,7 @@
   <button
     mat-menu-item
     (click)="openDialogWithCard(displayCards[currentIndex])"
+    [disabled]="shouldDisableEditButton(displayCards[currentIndex])"
   >
     Editieren
   </button>

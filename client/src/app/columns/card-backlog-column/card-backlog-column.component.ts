@@ -279,4 +279,9 @@ export class CardBacklogColumnComponent implements OnInit {
     this.selectedCardToOpenModal = null;
     this.cdr.markForCheck();
   }
+
+  shouldDisableEditButton(card: Card): boolean {
+    if (!card) return false;
+    return card.jobTask.deletedAt !== null;
+  }
 }
