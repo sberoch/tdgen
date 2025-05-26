@@ -1,5 +1,8 @@
 <div class="flex w-full h-full">
-  <div class="flex flex-col bg-gray shadow-md h-full w-[22%]">
+  <div
+    class="flex flex-col bg-gray shadow-md h-full"
+    [style.width.%]="leftWidth"
+  >
     <div class="p-2 bg-black/10">
       <div class="relative w-full">
         <input
@@ -79,7 +82,15 @@
       </div>
     </cdk-virtual-scroll-viewport>
   </div>
-  <div class="flex flex-col h-full w-[78%]">
+
+  <!-- Resizable divider -->
+  <div
+    class="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize h-full transition-colors duration-200 flex-shrink-0"
+    [class.bg-gray-500]="resizing"
+    (mousedown)="startResizing($event)"
+  ></div>
+
+  <div class="flex flex-col h-full" [style.width.%]="100 - leftWidth">
     <div
       class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden min-h-[200px] h-full p-2"
       cdkDropList

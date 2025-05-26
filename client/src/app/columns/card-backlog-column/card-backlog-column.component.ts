@@ -12,6 +12,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   inject,
   OnInit,
   ViewChild,
@@ -37,6 +38,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Subject, takeUntil } from 'rxjs';
 
 const MAX_DISPLAY_CARDS = 10;
+const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
 
 @Component({
   selector: 'app-card-backlog-column',
@@ -80,6 +82,8 @@ export class CardBacklogColumnComponent implements OnInit {
   private currentDraggingCard: Card | undefined;
   private currentSearchTerm: string = '';
   private destroy$ = new Subject<void>();
+  leftWidth = this.loadColumnWidth();
+  resizing = false;
 
   constructor(
     private dialog: MatDialog,
@@ -283,5 +287,47 @@ export class CardBacklogColumnComponent implements OnInit {
   shouldDisableEditButton(card: Card): boolean {
     if (!card) return false;
     return card.jobTask.deletedAt !== null;
+  }
+
+  startResizing(event: MouseEvent) {
+    this.resizing = true;
+    event.preventDefault();
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (this.resizing) {
+      const containerWidth = window.innerWidth;
+      const minWidth = 15;
+      const maxWidth = 35;
+      const newLeftWidth = (event.clientX / containerWidth) * 100;
+      this.leftWidth = Math.min(Math.max(newLeftWidth, minWidth), maxWidth);
+      this.saveColumnWidth(this.leftWidth);
+      this.cdr.markForCheck();
+    }
+  }
+
+  @HostListener('window:mouseup')
+  stopResizing() {
+    if (this.resizing) {
+      this.resizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  }
+
+  private loadColumnWidth(): number {
+    const storedWidth = localStorage.getItem(COLUMN_WIDTH_STORAGE_KEY);
+    if (storedWidth) {
+      const parsedWidth = parseFloat(storedWidth);
+      return Math.min(Math.max(parsedWidth, 15), 35);
+    }
+    return 22;
+  }
+
+  private saveColumnWidth(width: number): void {
+    localStorage.setItem(COLUMN_WIDTH_STORAGE_KEY, width.toString());
   }
 }

@@ -43,13 +43,6 @@
     </label>
   </div>
 
-  <div class="mb-1">
-    <span class="text-xs text-black/40 italic">
-      Anzahl der Einträge: {{ filteredJobTasksCount }} (von insgesamt
-      {{ totalJobTasksCount }})
-    </span>
-  </div>
-
   <div class="overflow-y-scroll mt-2 flex-grow border-y border-y-tertiary">
     <div class="w-full">
       <!-- Header row -->
@@ -209,5 +202,11 @@
         </div>
       </div>
     </div>
+  </div>
+  <div class="w-full flex justify-center">
+    <span class="text-xs text-black/40 italic">
+      Anzahl der Einträge: {{ filteredJobTasksCount }} (von insgesamt
+      {{ totalJobTasksCount }})
+    </span>
   </div>
 </div>

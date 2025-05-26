@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -6,16 +7,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
+import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
-import { CommonModule } from '@angular/common';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
-import { JobTasksService } from '../../services/job-tasks.service';
-import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
+import { JobDescription } from '../../types/job-descriptions';
 
 @Component({
   selector: 'app-header',
@@ -34,27 +34,26 @@ import { CloseDescriptionDialogComponent } from '../../components/close-descript
   ],
 })
 export class HeaderComponent implements OnInit {
-  currentTitle: string = '';
+  jobDescription: JobDescription | null = null;
+  tags: string[] = [];
   isPanelOpen = false;
   isJobDescriptionModalOpen = false;
   isJobTaskModalOpen = false;
-  currentWeightedAverage = 0;
   isWorkspaceSet: boolean = false;
 
   constructor(
     private dialog: MatDialog,
     private router: Router,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService,
-    private jobTasksService: JobTasksService
+    private jobDescriptionsService: JobDescriptionsService
   ) {}
 
   ngOnInit() {
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {
-        this.currentTitle = jobDescription?.title || '';
-        this.currentWeightedAverage = jobDescription?.weightedAverage || 0;
+        this.jobDescription = jobDescription;
         this.isWorkspaceSet = jobDescription !== null;
+        this.tags = jobDescription?.tags.map((tag) => tag.name) || [];
       }
     );
   }
@@ -113,7 +112,17 @@ export class HeaderComponent implements OnInit {
   }
 
   exportDescription() {
-    // Placeholder for export functionality
+    if (
+      this.jobDescription?.tasks?.some(
+        (task) => task.jobTask.deletedAt !== undefined
+      )
+    ) {
+      alert(
+        "Bitte entfernen Sie vor dem Exportieren zunächst die nicht mehr existierenden Arbeitsvorgänge (Eintrag 'Entfernen' im Dreipunkt-Menu)."
+      );
+      return;
+    }
+
     alert('TODO: Export Description');
   }
 

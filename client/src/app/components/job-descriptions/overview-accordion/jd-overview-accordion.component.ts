@@ -11,9 +11,11 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Input,
   OnInit,
   Output,
   QueryList,
+  SimpleChanges,
   ViewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -67,6 +69,8 @@ interface ExpandableJobDescription extends JobDescription {
   ],
 })
 export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
+  @Input() initialJobDescription: JobDescription | null = null;
+
   expandedItemId: number | null = null;
   tagInput: string = '';
   filter: JobDescriptionFilter = {};
@@ -87,6 +91,15 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   ngOnInit(): void {
     this.loadJobDescriptions();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (
+      changes['initialJobDescription'] &&
+      changes['initialJobDescription'].currentValue
+    ) {
+      this.loadJobDescriptions();
+    }
   }
 
   ngAfterViewChecked() {
@@ -117,17 +130,24 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             this.newlyCreatedTitle !== null &&
             jd.title === this.newlyCreatedTitle,
           isNew:
-            this.newlyCreatedTitle !== null &&
-            jd.title === this.newlyCreatedTitle,
+            (this.newlyCreatedTitle !== null &&
+              jd.title === this.newlyCreatedTitle) ||
+            (this.initialJobDescription !== null &&
+              jd.title === this.initialJobDescription.title),
         }));
 
         // If there's a newly created item, flag for scrolling and remove the "new" status after 3 seconds
-        if (this.newlyCreatedTitle !== null) {
+        if (
+          this.newlyCreatedTitle !== null ||
+          this.initialJobDescription !== null
+        ) {
           this.shouldScrollToNew = true;
 
           // Auto-expand the new item
+          const targetTitle =
+            this.initialJobDescription?.title || this.newlyCreatedTitle;
           const newItem = this.jobDescriptions.find(
-            (jd) => jd.title === this.newlyCreatedTitle
+            (jd) => jd.title === targetTitle
           );
           if (newItem && newItem.id) {
             this.expandedItemId = newItem.id;
