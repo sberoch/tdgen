@@ -16,6 +16,7 @@ import { OverlayModalComponent } from '../../components/overlay-modal/overlay-mo
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { JobDescription } from '../../types/job-descriptions';
+import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
 
 @Component({
   selector: 'app-header',
@@ -30,6 +31,7 @@ import { JobDescription } from '../../types/job-descriptions';
     OverlayModalComponent,
     JdOverviewAccordionComponent,
     JtOverviewAccordionComponent,
+    ExportDialogComponent,
     CommonModule,
   ],
 })
@@ -39,6 +41,7 @@ export class HeaderComponent implements OnInit {
   isPanelOpen = false;
   isJobDescriptionModalOpen = false;
   isJobTaskModalOpen = false;
+  isExportModalOpen = false;
   isWorkspaceSet: boolean = false;
 
   constructor(
@@ -83,6 +86,14 @@ export class HeaderComponent implements OnInit {
     this.isJobTaskModalOpen = false;
   }
 
+  openExportModal() {
+    this.isExportModalOpen = true;
+  }
+
+  closeExportModal() {
+    this.isExportModalOpen = false;
+  }
+
   openCreateDialog() {
     const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
       width: '600px',
@@ -112,9 +123,12 @@ export class HeaderComponent implements OnInit {
   }
 
   exportDescription() {
+    console.log({ jobDescription: this.jobDescription });
     if (
       this.jobDescription?.tasks?.some(
-        (task) => task.jobTask.deletedAt !== undefined
+        (task) =>
+          task.jobTask.deletedAt !== undefined &&
+          task.jobTask.deletedAt !== null
       )
     ) {
       alert(
@@ -122,8 +136,7 @@ export class HeaderComponent implements OnInit {
       );
       return;
     }
-
-    alert('TODO: Export Description');
+    this.openExportModal();
   }
 
   openAboutDialog() {
