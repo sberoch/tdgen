@@ -16,7 +16,7 @@
       <input
         type="text"
         placeholder="Arbeitsvorgänge filtern"
-        class="w-full border border-lightgray rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-2 focus:ring-secondary text-sm placeholder:italic"
+        class="w-full border border-[#e2e8f0] rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic"
         (input)="applyFilter({ search: $any($event.target).value })"
         #searchInput
       />
@@ -30,7 +30,7 @@
     <input
       type="checkbox"
       id="showDeleted"
-      class="!ml-8 h-4 w-4 rounded border-lightgray text-secondary focus:ring-secondary/50"
+      class="!ml-8 h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary"
       [checked]="showDeleted"
       (change)="
         showDeleted = $any($event.target).checked;
@@ -139,7 +139,7 @@
                     [disabled]="!!item.deletedAt"
                     [(ngModel)]="tagInput"
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-lightgray rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-2 focus:ring-secondary text-sm disabled:opacity-50"
+                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm disabled:opacity-50"
                   />
                   <button
                     [disabled]="!!item.deletedAt"
@@ -159,7 +159,7 @@
               </div>
               <select
                 [disabled]="!!item.deletedAt"
-                class="text-zinc-600 text-sm border border-lightgray rounded-sm px-2 focus:outline-none focus:ring-2 focus:ring-secondary disabled:opacity-50"
+                class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary disabled:opacity-50"
                 (change)="onEgSelected($any($event.target).value, item)"
               >
                 <option value="">Auswählen...</option>
@@ -192,7 +192,7 @@
             </div>
             <div class="mt-2">
               <h3
-                class="text-xs 2xl:text-sm 3xl:text-base font-semibold mb-1"
+                class="text-sm 2xl:text-base 3xl:text-lg font-semibold mb-2"
                 [class.opacity-50]="!!item.deletedAt"
               >
                 Beschreibung des Arbeitsvorganges
