@@ -17,6 +17,7 @@ import {
   QueryList,
   SimpleChanges,
   ViewChildren,
+  ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -79,6 +80,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   totalJobDescriptionsCount: number = 0;
   filteredJobDescriptionsCount: number = 0;
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
+  @ViewChild('searchInput') searchInput!: ElementRef;
   @Output() closeModal = new EventEmitter<void>();
 
   jobDescriptions: ExpandableJobDescription[] = [];
@@ -311,6 +313,21 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
     this.currentWorkspaceService.triggerJobDescriptionFetch(item);
     this.onOverlayModalClosed();
+  }
+
+  resetSearchInput(): void {
+    this.filter = {};
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
+  }
+
+  resetFiltersAndInput(): void {
+    this.filter = {};
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
+    this.loadJobDescriptions();
   }
 
   onOverlayModalClosed(): void {

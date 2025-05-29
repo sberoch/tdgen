@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
@@ -45,6 +45,8 @@ export class HeaderComponent implements OnInit {
   isJobTaskModalOpen = false;
   isExportModalOpen = false;
   isWorkspaceSet: boolean = false;
+  @ViewChild('jdAccordion') jdOverviewAccordion!: JdOverviewAccordionComponent;
+  @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
 
   constructor(
     private dialog: MatDialog,
@@ -74,6 +76,11 @@ export class HeaderComponent implements OnInit {
   openJobDescriptionModal() {
     this.isJobDescriptionModalOpen = true;
     this.jobDescriptionsService.getJobDescriptions().subscribe();
+    setTimeout(() => {
+      if (this.jdOverviewAccordion) {
+        this.jdOverviewAccordion.resetFiltersAndInput();
+      }
+    }, 0);
   }
 
   closeJobDescriptionModal() {
@@ -82,6 +89,11 @@ export class HeaderComponent implements OnInit {
 
   openJobTaskModal() {
     this.isJobTaskModalOpen = true;
+    setTimeout(() => {
+      if (this.jtOverviewAccordion) {
+        this.jtOverviewAccordion.resetFiltersAndInput();
+      }
+    }, 0);
   }
 
   closeJobTaskModal() {

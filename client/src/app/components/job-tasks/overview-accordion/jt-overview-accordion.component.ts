@@ -20,6 +20,7 @@ import {
   QueryList,
   SimpleChanges,
   ViewChildren,
+  ViewChild,
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -154,6 +155,7 @@ export class JtOverviewAccordionComponent
   ];
 
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
+  @ViewChild('searchInput') searchInput!: ElementRef;
   @Output() closeModal = new EventEmitter<void>();
 
   constructor(
@@ -562,6 +564,22 @@ export class JtOverviewAccordionComponent
         }
       }
     }
+  }
+
+  resetSearchInput(): void {
+    this.filter = {};
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
+  }
+
+  resetFiltersAndInput(): void {
+    this.filter = {};
+    this.showDeleted = false;
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
+    this.loadJobTasks();
   }
 
   onOverlayModalClosed(): void {
