@@ -534,6 +534,13 @@ export class JtOverviewAccordionComponent
     return item.id!;
   }
 
+  getEditorConfig(item: JobTask): AngularEditorConfig {
+    return {
+      ...this.editorConfig,
+      editable: !item.deletedAt,
+    };
+  }
+
   onEditorBlur(): void {
     if (this.expandedItemId) {
       const expandedItem = this.jobTasks.find(

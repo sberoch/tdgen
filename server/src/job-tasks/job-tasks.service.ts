@@ -36,7 +36,7 @@ export class JobTasksService {
 
   async get(id: string): Promise<JobTask> {
     const jobTask = await this.prisma.jobTask.findUnique({
-      where: { id: Number(id), deletedAt: null },
+      where: { id: Number(id) },
       include: {
         jobDescriptions: true,
         tags: true,
