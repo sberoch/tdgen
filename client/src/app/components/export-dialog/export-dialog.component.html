@@ -10,11 +10,11 @@
     </button>
   </div>
 
-  <!-- Form Content -->
-  <form [formGroup]="exportForm" class="flex flex-col gap-6">
-    <!-- First Row: Dienststelle, Ort, Datum -->
+  <form
+    [formGroup]="exportForm"
+    class="flex flex-col gap-12 overflow-y-scroll max-h-[70vh]"
+  >
     <div class="flex flex-row gap-4">
-      <!-- Dienststelle -->
       <div class="flex flex-col w-1/2">
         <input
           type="text"
@@ -36,7 +36,6 @@
         </div>
       </div>
 
-      <!-- Ort -->
       <div class="flex flex-col w-1/3">
         <input
           type="text"
@@ -60,7 +59,6 @@
 
       <p>,</p>
 
-      <!-- Datum -->
       <div class="flex flex-col flex-grow">
         <input
           type="date"
@@ -79,9 +77,316 @@
         </div>
       </div>
     </div>
+
+    <div class="grid grid-cols-2 gap-6">
+      <div class="flex flex-col gap-2">
+        <h4 class="text-lg font-bold">Anlass</h4>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="einstellung" class="w-4 h-4" />
+            <label for="einstellung">Einstellung</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="verstellung" class="w-4 h-4" />
+            <label for="verstellung">Verstellung</label>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="umsetzung" class="w-4 h-4" />
+            <label for="umsetzung">Umsetzung</label>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="aufgabenaderung" class="w-4 h-4" />
+          <label for="aufgabenaderung">
+            Aufgabenaderung einschl. Aufgabenzuwachs und -wegfall
+          </label>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="sonstiges" class="w-4 h-4" />
+          <label for="sonstiges">Sonstiges:</label>
+          <input
+            type="text"
+            name="sonstiges-input"
+            formControlName="sonstiges-input"
+            class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full"
+          />
+        </div>
+        <div class="flex items-center gap-2">
+          <label>mit Wirkung vom</label>
+          <input
+            type="date"
+            name="effectiveDate"
+            formControlName="effectiveDate"
+            placeholder="Datum*"
+            [class]="
+              'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+              (hasFieldError('effectiveDate')
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-[#e2e8f0] focus:border-secondary')
+            "
+          />
+          <div
+            *ngIf="hasFieldError('effectiveDate')"
+            class="text-red-500 text-sm mt-1"
+          >
+            {{ getFieldErrorMessage("effectiveDate") }}
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-14">
+          <h4 class="text-lg font-bold">
+            Organisatorische Eingliederung des Arbeitsplatzes
+          </h4>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col">
+            <input
+              type="text"
+              name="beschaftigungsdienststelle"
+              formControlName="beschaftigungsdienststelle"
+              placeholder="Beschäftigungsdienststelle*"
+              [class]="
+                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                (hasFieldError('beschaftigungsdienststelle')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+            <div
+              *ngIf="hasFieldError('beschaftigungsdienststelle')"
+              class="text-red-500 text-sm mt-1"
+            >
+              {{ getFieldErrorMessage("beschaftigungsdienststelle") }}
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <input
+              type="text"
+              name="organisationseinheit"
+              formControlName="organisationseinheit"
+              placeholder="Organisationseinheit*"
+              [class]="
+                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                (hasFieldError('organisationseinheit')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+            <div
+              *ngIf="hasFieldError('organisationseinheit')"
+              class="text-red-500 text-sm mt-1"
+            >
+              {{ getFieldErrorMessage("organisationseinheit") }}
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <input
+              type="text"
+              name="dienstpostennr"
+              formControlName="dienstpostennr"
+              placeholder="Dienstpostennr./Stellenschlüssel"
+              class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+            />
+          </div>
+
+          <div class="flex flex-col">
+            <input
+              type="text"
+              name="funktion"
+              formControlName="funktion"
+              placeholder="Funktion*"
+              [class]="
+                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                (hasFieldError('funktion')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+            <div
+              *ngIf="hasFieldError('funktion')"
+              class="text-red-500 text-sm mt-1"
+            >
+              {{ getFieldErrorMessage("funktion") }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-row gap-2">
+          <h4 class="text-lg font-bold">Arbeitsplatzhaber/-in</h4>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-col">
+            <input
+              type="text"
+              name="employeeName"
+              formControlName="employeeName"
+              placeholder="Name, Vorname*"
+              [class]="
+                'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                (hasFieldError('employeeName')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+            <div
+              *ngIf="hasFieldError('employeeName')"
+              class="text-red-500 text-sm mt-1"
+            >
+              {{ getFieldErrorMessage("employeeName") }}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label>
+              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am:
+            </label>
+            <input
+              type="date"
+              name="workplaceStartDate"
+              formControlName="workplaceStartDate"
+              placeholder="Datum*"
+              [class]="
+                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                (hasFieldError('workplaceStartDate')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+            <div
+              *ngIf="hasFieldError('workplaceStartDate')"
+              class="text-red-500 text-sm mt-1"
+            >
+              {{ getFieldErrorMessage("workplaceStartDate") }}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label>Schwerbehindert oder gleichgestellt:</label>
+            <div class="flex gap-4">
+              <div class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="disabled-yes"
+                  name="disabled"
+                  value="yes"
+                  formControlName="disabled"
+                  class="w-4 h-4"
+                />
+                <label for="disabled-yes">ja</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="disabled-no"
+                  name="disabled"
+                  value="no"
+                  formControlName="disabled"
+                  class="w-4 h-4"
+                />
+                <label for="disabled-no">nein</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 mt-7">
+            <h4 class="text-lg font-bold">Beschäftigungsumfang</h4>
+            <div class="flex gap-4">
+              <div class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="fulltime"
+                  name="employmentScope"
+                  value="fulltime"
+                  formControlName="employmentScope"
+                  class="w-4 h-4"
+                />
+                <label for="fulltime">Vollzeit</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="radio"
+                  id="parttime"
+                  name="employmentScope"
+                  value="parttime"
+                  formControlName="employmentScope"
+                  class="w-4 h-4"
+                />
+                <label for="parttime">Teilzeit mit</label>
+                <input
+                  name="parttimeHours"
+                  formControlName="parttimeHours"
+                  placeholder="Stunden"
+                  class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20"
+                />
+                <label>Stunden</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-2 mt-6">
+            <h4 class="text-lg font-bold">Bezugszeitraum</h4>
+            <div class="flex flex-col gap-3">
+              <div class="grid grid-cols-2 gap-8">
+                <div class="flex w-full justify-between items-center gap-2">
+                  <input
+                    type="date"
+                    name="periodStart"
+                    formControlName="periodStart"
+                    placeholder="Datum von"
+                    [class]="
+                      'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                      (hasFieldError('periodStart')
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-[#e2e8f0] focus:border-secondary')
+                    "
+                  />
+                  <div
+                    *ngIf="hasFieldError('periodStart')"
+                    class="text-red-500 text-sm mt-1"
+                  >
+                    {{ getFieldErrorMessage("periodStart") }}
+                  </div>
+                  <input
+                    type="radio"
+                    id="period-until"
+                    name="periodType"
+                    value="until"
+                    formControlName="periodType"
+                    class="w-4 h-4"
+                  />
+                </div>
+
+                <div class="flex w-full justify-between items-center gap-2">
+                  <input
+                    type="date"
+                    name="periodEnd"
+                    formControlName="periodEnd"
+                    placeholder="Datum bis"
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="period-today"
+                      name="periodType"
+                      value="today"
+                      formControlName="periodType"
+                      class="w-4 h-4"
+                    />
+                    <label for="period-today">oder „heute"</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </form>
 
-  <div class="flex justify-end gap-2">
+  <div class="flex justify-end gap-2 mt-6">
     <button
       (click)="close()"
       class="px-4 py-2 text-secondary hover:text-secondary/80"

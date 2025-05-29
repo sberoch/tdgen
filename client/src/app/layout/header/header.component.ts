@@ -17,6 +17,7 @@ import { CurrentWorkspaceService } from '../../services/current-workspace.servic
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { JobDescription } from '../../types/job-descriptions';
 import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
+import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
 
 @Component({
   selector: 'app-header',
@@ -33,6 +34,7 @@ import { ExportDialogComponent } from '../../components/export-dialog/export-dia
     JtOverviewAccordionComponent,
     ExportDialogComponent,
     CommonModule,
+    TextTooltipDirective,
   ],
 })
 export class HeaderComponent implements OnInit {
@@ -149,5 +151,17 @@ export class HeaderComponent implements OnInit {
     // Here you would typically clear any authentication tokens or user data
     // For now, we'll just navigate to the login page
     this.router.navigate(['/login']);
+  }
+
+  get displayedTags(): string[] {
+    return this.tags.slice(0, 5);
+  }
+
+  get hasMoreTags(): boolean {
+    return this.tags.length > 5;
+  }
+
+  get allTagsText(): string {
+    return this.tags.join(', ');
   }
 }

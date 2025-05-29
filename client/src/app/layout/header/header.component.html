@@ -15,22 +15,31 @@
           <p class="text-sm text-zinc-600">
             (Ø {{ jobDescription.weightedAverage.toFixed(2) }})
           </p>
+          <button
+            mat-icon-button
+            class="text-gray-500 hover:text-secondary w-4 h-4"
+            (click)="openJobDescriptionModal()"
+          >
+            <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
+          </button>
         </div>
         <div class="text-xs text-zinc-500">
           <ng-container *ngIf="tags && tags.length > 0; else noTags">
-            Tags: {{ tags.join(", ") }}
+            <span>Tags: </span>
+            <span *ngIf="!hasMoreTags" class="inline">{{
+              displayedTags.join(", ")
+            }}</span>
+            <span
+              *ngIf="hasMoreTags"
+              class="inline"
+              [textTooltip]="allTagsText"
+              tooltipTitle="Tags"
+              >{{ displayedTags.join(", ") }}...</span
+            >
           </ng-container>
           <ng-template #noTags> Tags: <i>keine</i> </ng-template>
         </div>
       </div>
-      <button
-        *ngIf="jobDescription"
-        mat-icon-button
-        class="text-gray-500 hover:text-secondary"
-        (click)="openJobDescriptionModal()"
-      >
-        <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
-      </button>
     </div>
     <button
       mat-icon-button
