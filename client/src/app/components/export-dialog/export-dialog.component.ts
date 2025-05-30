@@ -27,6 +27,15 @@ export class ExportDialogComponent {
 
   exportForm: FormGroup;
 
+  // Track which date inputs are focused to switch between text and date types
+  dateInputTypes: { [key: string]: string } = {
+    date: 'text',
+    effectiveDate: 'text',
+    workplaceStartDate: 'text',
+    periodStart: 'text',
+    periodEnd: 'text',
+  };
+
   constructor(private fb: FormBuilder) {
     this.exportForm = this.fb.group({
       department: ['', Validators.required],
@@ -72,5 +81,31 @@ export class ExportDialogComponent {
       }
     }
     return '';
+  }
+
+  // Get the input type for date fields (text to show placeholder, date when focused)
+  getInputType(fieldName: string): string {
+    return this.dateInputTypes[fieldName] || 'text';
+  }
+
+  // Handle focus on date inputs - switch to date type to show date picker
+  onDateFocus(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fieldName = input.name;
+    if (fieldName && this.dateInputTypes.hasOwnProperty(fieldName)) {
+      this.dateInputTypes[fieldName] = 'date';
+    }
+  }
+
+  // Handle blur on date inputs - switch back to text if empty to show placeholder
+  onDateBlur(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fieldName = input.name;
+    if (fieldName && this.dateInputTypes.hasOwnProperty(fieldName)) {
+      // If the field is empty, switch back to text to show placeholder
+      if (!input.value) {
+        this.dateInputTypes[fieldName] = 'text';
+      }
+    }
   }
 }

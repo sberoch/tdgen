@@ -12,7 +12,7 @@
 
   <form
     [formGroup]="exportForm"
-    class="flex flex-col gap-12 overflow-y-scroll max-h-[70vh] mt-6"
+    class="flex flex-col gap-12 overflow-y-auto max-h-[70vh] mt-6"
   >
     <div class="flex flex-row gap-16">
       <div class="flex flex-col w-1/2">
@@ -37,7 +37,7 @@
       </div>
 
       <div class="flex flex-row w-1/2 gap-2">
-        <div class="flex flex-col w-1/3">
+        <div class="flex flex-col w-2/3">
           <input
             type="text"
             name="location"
@@ -62,12 +62,14 @@
 
         <div class="flex flex-col flex-grow">
           <input
-            type="date"
+            [type]="getInputType('date')"
             name="date"
             formControlName="date"
             placeholder="Datum*"
+            (focus)="onDateFocus($event)"
+            (blur)="onDateBlur($event)"
             [class]="
-              'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
               (hasFieldError('date')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -116,12 +118,14 @@
         <div class="flex items-center gap-2">
           <label>mit Wirkung vom</label>
           <input
-            type="date"
+            [type]="getInputType('effectiveDate')"
             name="effectiveDate"
             formControlName="effectiveDate"
             placeholder="Datum*"
+            (focus)="onDateFocus($event)"
+            (blur)="onDateBlur($event)"
             [class]="
-              'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
               (hasFieldError('effectiveDate')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -245,12 +249,14 @@
               Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am:
             </label>
             <input
-              type="date"
+              [type]="getInputType('workplaceStartDate')"
               name="workplaceStartDate"
               formControlName="workplaceStartDate"
               placeholder="Datum*"
+              (focus)="onDateFocus($event)"
+              (blur)="onDateBlur($event)"
               [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('workplaceStartDate')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -332,12 +338,14 @@
               <div class="flex flex-row gap-2">
                 <div class="flex items-center gap-2">
                   <input
-                    type="date"
+                    [type]="getInputType('periodStart')"
                     name="periodStart"
                     formControlName="periodStart"
                     placeholder="Datum von"
+                    (focus)="onDateFocus($event)"
+                    (blur)="onDateBlur($event)"
                     [class]="
-                      'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                      'w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                       (hasFieldError('periodStart')
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-[#e2e8f0] focus:border-secondary')
@@ -361,11 +369,13 @@
 
                 <div class="flex w-full items-center gap-8">
                   <input
-                    type="date"
+                    [type]="getInputType('periodEnd')"
                     name="periodEnd"
                     formControlName="periodEnd"
                     placeholder="Datum bis"
-                    class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+                    (focus)="onDateFocus($event)"
+                    (blur)="onDateBlur($event)"
+                    class="w-52 px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
                   />
                   <div class="flex items-center gap-2">
                     <input
