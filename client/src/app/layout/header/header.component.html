@@ -113,10 +113,10 @@
   ></app-jt-overview-accordion>
 </app-overlay-modal>
 
-<app-overlay-modal
+<app-export-modal
   *ngIf="isExportModalOpen"
   [isOpen]="isExportModalOpen"
   (close)="closeExportModal()"
 >
   <app-export-dialog (closeModal)="closeExportModal()"></app-export-dialog>
-</app-overlay-modal>
+</app-export-modal>

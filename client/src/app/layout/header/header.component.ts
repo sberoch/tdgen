@@ -18,6 +18,7 @@ import { JobDescriptionsService } from '../../services/job-descriptions.service'
 import { JobDescription } from '../../types/job-descriptions';
 import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
 import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
+import { ExportModalComponent } from '../../components/export-dialog/modal/export-modal.component';
 
 @Component({
   selector: 'app-header',
@@ -33,6 +34,7 @@ import { TextTooltipDirective } from '../../utils/directives/text-tooltip.direct
     JdOverviewAccordionComponent,
     JtOverviewAccordionComponent,
     ExportDialogComponent,
+    ExportModalComponent,
     CommonModule,
     TextTooltipDirective,
   ],

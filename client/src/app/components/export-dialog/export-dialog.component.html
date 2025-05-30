@@ -1,10 +1,10 @@
 <div class="flex flex-col gap-4 h-full" style="--flash-color: #ffffe6">
   <div class="flex justify-between">
-    <h1 class="text-2xl 3xl:text-3xl font-medium tracking-wide text-zinc-600">
+    <h1 class="text-xl 3xl:text-2xl tracking-wide text-black">
       Tätigkeitsdarstellung exportieren
     </h1>
     <button
-      class="bg-secondary text-white px-4 py-2 rounded-md hover:bg-secondary/80"
+      class="bg-secondary text-white px-3 py-1 hover:bg-secondary/80 rounded-sm"
     >
       Felder zurücksetzen
     </button>
@@ -12,9 +12,9 @@
 
   <form
     [formGroup]="exportForm"
-    class="flex flex-col gap-12 overflow-y-scroll max-h-[70vh]"
+    class="flex flex-col gap-12 overflow-y-scroll max-h-[70vh] mt-6"
   >
-    <div class="flex flex-row gap-4">
+    <div class="flex flex-row gap-16">
       <div class="flex flex-col w-1/2">
         <input
           type="text"
@@ -22,7 +22,7 @@
           formControlName="department"
           placeholder="Dienststelle*"
           [class]="
-            'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+            'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
             (hasFieldError('department')
               ? 'border-red-500 focus:border-red-500'
               : 'border-[#e2e8f0] focus:border-secondary')
@@ -36,59 +36,61 @@
         </div>
       </div>
 
-      <div class="flex flex-col w-1/3">
-        <input
-          type="text"
-          name="location"
-          formControlName="location"
-          placeholder="Ort*"
-          [class]="
-            'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
-            (hasFieldError('location')
-              ? 'border-red-500 focus:border-red-500'
-              : 'border-[#e2e8f0] focus:border-secondary')
-          "
-        />
-        <div
-          *ngIf="hasFieldError('location')"
-          class="text-red-500 text-sm mt-1"
-        >
-          {{ getFieldErrorMessage("location") }}
+      <div class="flex flex-row w-1/2 gap-2">
+        <div class="flex flex-col w-1/3">
+          <input
+            type="text"
+            name="location"
+            formControlName="location"
+            placeholder="Ort*"
+            [class]="
+              'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              (hasFieldError('location')
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-[#e2e8f0] focus:border-secondary')
+            "
+          />
+          <div
+            *ngIf="hasFieldError('location')"
+            class="text-red-500 text-sm mt-1"
+          >
+            {{ getFieldErrorMessage("location") }}
+          </div>
         </div>
-      </div>
 
-      <p>,</p>
+        <p class="translate-y-2">,</p>
 
-      <div class="flex flex-col flex-grow">
-        <input
-          type="date"
-          name="date"
-          formControlName="date"
-          placeholder="Datum*"
-          [class]="
-            'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
-            (hasFieldError('date')
-              ? 'border-red-500 focus:border-red-500'
-              : 'border-[#e2e8f0] focus:border-secondary')
-          "
-        />
-        <div *ngIf="hasFieldError('date')" class="text-red-500 text-sm mt-1">
-          {{ getFieldErrorMessage("date") }}
+        <div class="flex flex-col flex-grow">
+          <input
+            type="date"
+            name="date"
+            formControlName="date"
+            placeholder="Datum*"
+            [class]="
+              'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              (hasFieldError('date')
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-[#e2e8f0] focus:border-secondary')
+            "
+          />
+          <div *ngIf="hasFieldError('date')" class="text-red-500 text-sm mt-1">
+            {{ getFieldErrorMessage("date") }}
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-2 gap-16">
       <div class="flex flex-col gap-2">
-        <h4 class="text-lg font-bold">Anlass</h4>
+        <h4 class="text-lg font-medium">Anlass</h4>
         <div class="grid grid-cols-3 gap-4">
           <div class="flex items-center gap-2">
             <input type="checkbox" id="einstellung" class="w-4 h-4" />
             <label for="einstellung">Einstellung</label>
           </div>
           <div class="flex items-center gap-2">
-            <input type="checkbox" id="verstellung" class="w-4 h-4" />
-            <label for="verstellung">Verstellung</label>
+            <input type="checkbox" id="versetzung" class="w-4 h-4" />
+            <label for="versetzung">Versetzung</label>
           </div>
           <div class="flex items-center gap-2">
             <input type="checkbox" id="umsetzung" class="w-4 h-4" />
@@ -97,8 +99,8 @@
         </div>
         <div class="flex items-center gap-2">
           <input type="checkbox" id="aufgabenaderung" class="w-4 h-4" />
-          <label for="aufgabenaderung">
-            Aufgabenaderung einschl. Aufgabenzuwachs und -wegfall
+          <label for="aufgabenanderung">
+            Aufgabenänderung einschl. Aufgabenzuwachs und -wegfall
           </label>
         </div>
         <div class="flex items-center gap-2">
@@ -108,7 +110,7 @@
             type="text"
             name="sonstiges-input"
             formControlName="sonstiges-input"
-            class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full"
+            class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full"
           />
         </div>
         <div class="flex items-center gap-2">
@@ -119,7 +121,7 @@
             formControlName="effectiveDate"
             placeholder="Datum*"
             [class]="
-              'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
               (hasFieldError('effectiveDate')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -133,7 +135,7 @@
           </div>
         </div>
         <div class="flex items-center gap-2 mt-14">
-          <h4 class="text-lg font-bold">
+          <h4 class="text-lg font-medium">
             Organisatorische Eingliederung des Arbeitsplatzes
           </h4>
         </div>
@@ -145,7 +147,7 @@
               formControlName="beschaftigungsdienststelle"
               placeholder="Beschäftigungsdienststelle*"
               [class]="
-                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('beschaftigungsdienststelle')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -166,7 +168,7 @@
               formControlName="organisationseinheit"
               placeholder="Organisationseinheit*"
               [class]="
-                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('organisationseinheit')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -186,7 +188,7 @@
               name="dienstpostennr"
               formControlName="dienstpostennr"
               placeholder="Dienstpostennr./Stellenschlüssel"
-              class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+              class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
             />
           </div>
 
@@ -197,7 +199,7 @@
               formControlName="funktion"
               placeholder="Funktion*"
               [class]="
-                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('funktion')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -212,11 +214,11 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-2">
         <div class="flex flex-row gap-2">
-          <h4 class="text-lg font-bold">Arbeitsplatzhaber/-in</h4>
+          <h4 class="text-lg font-medium">Arbeitsplatzinhaber/-in</h4>
         </div>
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-3">
           <div class="flex flex-col">
             <input
               type="text"
@@ -224,7 +226,7 @@
               formControlName="employeeName"
               placeholder="Name, Vorname*"
               [class]="
-                'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('employeeName')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -239,7 +241,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <label>
+            <label class="max-w-[50%] leading-tight">
               Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am:
             </label>
             <input
@@ -248,7 +250,7 @@
               formControlName="workplaceStartDate"
               placeholder="Datum*"
               [class]="
-                'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                 (hasFieldError('workplaceStartDate')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -291,7 +293,7 @@
           </div>
 
           <div class="flex flex-col gap-2 mt-7">
-            <h4 class="text-lg font-bold">Beschäftigungsumfang</h4>
+            <h4 class="text-lg font-medium">Beschäftigungsumfang</h4>
             <div class="flex gap-4">
               <div class="flex items-center gap-2">
                 <input
@@ -311,32 +313,31 @@
                   name="employmentScope"
                   value="parttime"
                   formControlName="employmentScope"
-                  class="w-4 h-4"
+                  class="w-4 h-4 ml-4"
                 />
                 <label for="parttime">Teilzeit mit</label>
                 <input
                   name="parttimeHours"
                   formControlName="parttimeHours"
-                  placeholder="Stunden"
-                  class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20"
+                  class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20"
                 />
                 <label>Stunden</label>
               </div>
             </div>
           </div>
 
-          <div class="flex flex-col gap-2 mt-6">
-            <h4 class="text-lg font-bold">Bezugszeitraum</h4>
+          <div class="flex flex-col gap-1 mt-6">
+            <h4 class="text-lg font-medium">Bezugszeitraum</h4>
             <div class="flex flex-col gap-3">
-              <div class="grid grid-cols-2 gap-8">
-                <div class="flex w-full justify-between items-center gap-2">
+              <div class="flex flex-row gap-2">
+                <div class="flex items-center gap-2">
                   <input
                     type="date"
                     name="periodStart"
                     formControlName="periodStart"
                     placeholder="Datum von"
                     [class]="
-                      'px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary ' +
+                      'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
                       (hasFieldError('periodStart')
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-[#e2e8f0] focus:border-secondary')
@@ -354,17 +355,17 @@
                     name="periodType"
                     value="until"
                     formControlName="periodType"
-                    class="w-4 h-4"
+                    class="w-4 h-4 ml-12"
                   />
                 </div>
 
-                <div class="flex w-full justify-between items-center gap-2">
+                <div class="flex w-full items-center gap-8">
                   <input
                     type="date"
                     name="periodEnd"
                     formControlName="periodEnd"
                     placeholder="Datum bis"
-                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+                    class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
                   />
                   <div class="flex items-center gap-2">
                     <input
@@ -389,13 +390,13 @@
   <div class="flex justify-end gap-2 mt-6">
     <button
       (click)="close()"
-      class="px-4 py-2 text-secondary hover:text-secondary/80"
+      class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
     >
       Abbrechen
     </button>
     <button
       (click)="export()"
-      class="px-4 py-2 text-secondary hover:text-secondary/80"
+      class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
     >
       Exportieren
     </button>
