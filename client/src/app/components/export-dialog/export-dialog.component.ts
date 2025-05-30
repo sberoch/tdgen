@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -9,6 +15,7 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-export-dialog',
@@ -22,10 +29,12 @@ import { MatIconModule } from '@angular/material/icon';
     ReactiveFormsModule,
   ],
 })
-export class ExportDialogComponent {
+export class ExportDialogComponent implements OnInit, OnDestroy {
   @Output() closeModal = new EventEmitter<void>();
 
   exportForm: FormGroup;
+  private formSubscription: Subscription = new Subscription();
+  private readonly storageKey = 'export-dialog-form-data';
 
   // Track which date inputs are focused to switch between text and date types
   dateInputTypes: { [key: string]: string } = {
@@ -41,7 +50,71 @@ export class ExportDialogComponent {
       department: ['', Validators.required],
       location: ['', Validators.required],
       date: ['', Validators.required],
+      einstellung: [false, Validators.required],
+      versetzung: [false, Validators.required],
+      umsetzung: [false, Validators.required],
+      aufgabenaderung: [false, Validators.required],
+      sonstigesCheckbox: [false, Validators.required],
+      sonstigesInput: ['', Validators.required],
+      effectiveDate: ['', Validators.required],
+      beschaftigungsdienststelle: ['', Validators.required],
+      organisationseinheit: ['', Validators.required],
+      dienstpostennr: ['', Validators.required],
+      funktion: ['', Validators.required],
+      employeeName: ['', Validators.required],
+      workplaceStartDate: ['', Validators.required],
+      disabled: ['', Validators.required],
+      employmentScope: ['', Validators.required],
+      parttimeHours: ['', Validators.required],
+      periodStart: ['', Validators.required],
+      periodEnd: ['', Validators.required],
+      periodType: ['', Validators.required],
     });
+  }
+
+  ngOnInit() {
+    this.loadFormData();
+    this.subscribeToFormChanges();
+  }
+
+  ngOnDestroy() {
+    this.formSubscription.unsubscribe();
+  }
+
+  private subscribeToFormChanges() {
+    this.formSubscription = this.exportForm.valueChanges.subscribe(
+      (formData) => {
+        this.saveFormData(formData);
+      }
+    );
+  }
+
+  private saveFormData(formData: any) {
+    try {
+      sessionStorage.setItem(this.storageKey, JSON.stringify(formData));
+    } catch (error) {
+      console.warn('Failed to save form data to session storage:', error);
+    }
+  }
+
+  private loadFormData() {
+    try {
+      const savedData = sessionStorage.getItem(this.storageKey);
+      if (savedData) {
+        const formData = JSON.parse(savedData);
+        this.exportForm.patchValue(formData);
+      }
+    } catch (error) {
+      console.warn('Failed to load form data from session storage:', error);
+    }
+  }
+
+  private clearFormData() {
+    try {
+      sessionStorage.removeItem(this.storageKey);
+    } catch (error) {
+      console.warn('Failed to clear form data from session storage:', error);
+    }
   }
 
   private transformFormData(formData: any) {
@@ -59,11 +132,22 @@ export class ExportDialogComponent {
   export() {
     if (this.exportForm.valid) {
       console.log('export', this.transformFormData(this.exportForm.value));
+      // Clear saved data after successful export
+      this.clearFormData();
     } else {
       // Mark all fields as touched to show validation errors
       this.exportForm.markAllAsTouched();
       console.log('Form is invalid');
     }
+  }
+
+  resetForm() {
+    this.exportForm.reset();
+    this.clearFormData();
+    // Reset date input types to text
+    Object.keys(this.dateInputTypes).forEach((key) => {
+      this.dateInputTypes[key] = 'text';
+    });
   }
 
   // Helper method to check if a field has errors and has been touched

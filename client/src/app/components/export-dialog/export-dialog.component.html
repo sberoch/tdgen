@@ -1,9 +1,13 @@
-<div class="flex flex-col gap-4 h-full" style="--flash-color: #ffffe6">
+<div
+  class="flex flex-col justify-between gap-4 h-full"
+  style="--flash-color: #ffffe6"
+>
   <div class="flex justify-between">
     <h1 class="text-xl 3xl:text-2xl tracking-wide text-black">
       Tätigkeitsdarstellung exportieren
     </h1>
     <button
+      (click)="resetForm()"
       class="bg-secondary text-white px-3 py-1 hover:bg-secondary/80 rounded-sm"
     >
       Felder zurücksetzen
@@ -28,12 +32,6 @@
               : 'border-[#e2e8f0] focus:border-secondary')
           "
         />
-        <div
-          *ngIf="hasFieldError('department')"
-          class="text-red-500 text-sm mt-1"
-        >
-          {{ getFieldErrorMessage("department") }}
-        </div>
       </div>
 
       <div class="flex flex-row w-1/2 gap-2">
@@ -50,12 +48,6 @@
                 : 'border-[#e2e8f0] focus:border-secondary')
             "
           />
-          <div
-            *ngIf="hasFieldError('location')"
-            class="text-red-500 text-sm mt-1"
-          >
-            {{ getFieldErrorMessage("location") }}
-          </div>
         </div>
 
         <p class="translate-y-2">,</p>
@@ -75,9 +67,6 @@
                 : 'border-[#e2e8f0] focus:border-secondary')
             "
           />
-          <div *ngIf="hasFieldError('date')" class="text-red-500 text-sm mt-1">
-            {{ getFieldErrorMessage("date") }}
-          </div>
         </div>
       </div>
     </div>
@@ -131,12 +120,6 @@
                 : 'border-[#e2e8f0] focus:border-secondary')
             "
           />
-          <div
-            *ngIf="hasFieldError('effectiveDate')"
-            class="text-red-500 text-sm mt-1"
-          >
-            {{ getFieldErrorMessage("effectiveDate") }}
-          </div>
         </div>
         <div class="flex items-center gap-2 mt-14">
           <h4 class="text-lg font-medium">
@@ -157,12 +140,6 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <div
-              *ngIf="hasFieldError('beschaftigungsdienststelle')"
-              class="text-red-500 text-sm mt-1"
-            >
-              {{ getFieldErrorMessage("beschaftigungsdienststelle") }}
-            </div>
           </div>
 
           <div class="flex flex-col">
@@ -178,12 +155,6 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <div
-              *ngIf="hasFieldError('organisationseinheit')"
-              class="text-red-500 text-sm mt-1"
-            >
-              {{ getFieldErrorMessage("organisationseinheit") }}
-            </div>
           </div>
 
           <div class="flex flex-col">
@@ -209,12 +180,6 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <div
-              *ngIf="hasFieldError('funktion')"
-              class="text-red-500 text-sm mt-1"
-            >
-              {{ getFieldErrorMessage("funktion") }}
-            </div>
           </div>
         </div>
       </div>
@@ -236,18 +201,9 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <div
-              *ngIf="hasFieldError('employeeName')"
-              class="text-red-500 text-sm mt-1"
-            >
-              {{ getFieldErrorMessage("employeeName") }}
-            </div>
           </div>
 
-          <div class="flex items-center gap-2">
-            <label class="max-w-[50%] leading-tight">
-              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am:
-            </label>
+          <div class="flex items-center gap-4">
             <input
               [type]="getInputType('workplaceStartDate')"
               name="workplaceStartDate"
@@ -262,12 +218,9 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <div
-              *ngIf="hasFieldError('workplaceStartDate')"
-              class="text-red-500 text-sm mt-1"
-            >
-              {{ getFieldErrorMessage("workplaceStartDate") }}
-            </div>
+            <label class="max-w-[40%] leading-tight">
+              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am
+            </label>
           </div>
 
           <div class="flex items-center gap-2">
@@ -298,7 +251,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-2 mt-7">
+          <div class="flex flex-col gap-2 mt-6">
             <h4 class="text-lg font-medium">Beschäftigungsumfang</h4>
             <div class="flex gap-4">
               <div class="flex items-center gap-2">
@@ -332,7 +285,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-1 mt-6">
+          <div class="flex flex-col gap-1 mt-5">
             <h4 class="text-lg font-medium">Bezugszeitraum</h4>
             <div class="flex flex-col gap-3">
               <div class="flex flex-row gap-2">
@@ -351,12 +304,6 @@
                         : 'border-[#e2e8f0] focus:border-secondary')
                     "
                   />
-                  <div
-                    *ngIf="hasFieldError('periodStart')"
-                    class="text-red-500 text-sm mt-1"
-                  >
-                    {{ getFieldErrorMessage("periodStart") }}
-                  </div>
                   <input
                     type="radio"
                     id="period-until"
@@ -395,9 +342,17 @@
         </div>
       </div>
     </div>
+
+    <!-- Global error message -->
+    <div
+      *ngIf="exportForm.invalid && exportForm.touched"
+      class="text-red-500 text-center"
+    >
+      Bitte füllen Sie alle Pflichtfelder aus.
+    </div>
   </form>
 
-  <div class="flex justify-end gap-2 mt-6">
+  <div class="flex justify-end gap-2 mt-16">
     <button
       (click)="close()"
       class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"

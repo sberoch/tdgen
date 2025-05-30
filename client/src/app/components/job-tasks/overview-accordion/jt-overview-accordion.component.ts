@@ -156,6 +156,7 @@ export class JtOverviewAccordionComponent
 
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
   @ViewChild('searchInput') searchInput!: ElementRef;
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   @Output() closeModal = new EventEmitter<void>();
 
   constructor(
@@ -186,9 +187,29 @@ export class JtOverviewAccordionComponent
     const newItemIndex = this.jobTasks.findIndex((jt) => jt.isNew);
 
     if (newItemIndex >= 0 && this.accordionItems.length > newItemIndex) {
-      const newItemElement =
-        this.accordionItems.toArray()[newItemIndex].nativeElement;
-      newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Wait for accordion animation (200ms) + extra time for Angular editor to render
+      setTimeout(() => {
+        const newItemElement =
+          this.accordionItems.toArray()[newItemIndex].nativeElement;
+        const scrollContainer = this.scrollContainer.nativeElement;
+
+        // Calculate the position relative to the scroll container
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const itemRect = newItemElement.getBoundingClientRect();
+
+        // Get the current scroll position
+        const currentScrollTop = scrollContainer.scrollTop;
+
+        // Calculate the new scroll position (item position relative to container + current scroll)
+        const newScrollTop =
+          currentScrollTop + (itemRect.top - containerRect.top) - 50;
+
+        // Smooth scroll to the new position
+        scrollContainer.scrollTo({
+          top: newScrollTop,
+          behavior: 'smooth',
+        });
+      }, 200); // 200ms for animation + 200ms buffer for editor
     }
   }
 
