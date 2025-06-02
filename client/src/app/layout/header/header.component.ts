@@ -99,6 +99,10 @@ export class HeaderComponent implements OnInit {
   }
 
   closeJobTaskModal() {
+    console.log('closeJobTaskModal');
+    if (this.jtOverviewAccordion) {
+      this.jtOverviewAccordion.onOverlayModalClosed();
+    }
     this.isJobTaskModalOpen = false;
   }
 

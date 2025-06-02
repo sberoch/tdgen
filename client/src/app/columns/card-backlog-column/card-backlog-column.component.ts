@@ -69,9 +69,11 @@ export class CardBacklogColumnComponent implements OnInit {
   private scrollContainer?: ElementRef<HTMLElement>;
   @ViewChild('backlogSearchInput')
   backlogSearchInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
 
   isWorkspaceSet = false;
   private allBacklogCards: Card[] = [];
+  private filteredBacklogCards: Card[] = [];
   backlogCards: Card[] = [];
   displayCards: Card[] = [];
   selectedCard: Card | null = null;
@@ -115,6 +117,7 @@ export class CardBacklogColumnComponent implements OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((cards) => {
         this.allBacklogCards = cards;
+        this.updateFilteredBacklogCards();
         this.applySearchFilter(this.currentSearchTerm);
         this.cdr.markForCheck();
       });
@@ -123,12 +126,7 @@ export class CardBacklogColumnComponent implements OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((displayCards) => {
         this.displayCards = displayCards;
-        const displayCardIds = new Set(
-          this.displayCards.map((dc) => dc.jobTask.id)
-        );
-        this.allBacklogCards = this.allBacklogCards.filter(
-          (card) => !displayCardIds.has(card.jobTask.id)
-        );
+        this.updateFilteredBacklogCards();
         this.applySearchFilter(this.currentSearchTerm);
         this.cdr.markForCheck();
       });
@@ -181,11 +179,11 @@ export class CardBacklogColumnComponent implements OnInit {
   private applySearchFilter(searchTerm: string): void {
     const termToFilter = searchTerm.trim().toLowerCase();
     if (!termToFilter) {
-      this.backlogCards = [...this.allBacklogCards];
+      this.backlogCards = [...this.filteredBacklogCards];
       return;
     }
 
-    this.backlogCards = this.allBacklogCards.filter((card) => {
+    this.backlogCards = this.filteredBacklogCards.filter((card) => {
       const tags = card.tags.join(' ');
       const text = `${tags} ${card.title} ${card.text}`.toLowerCase();
       const keywords = termToFilter.split(/\s+/);
@@ -329,5 +327,14 @@ export class CardBacklogColumnComponent implements OnInit {
 
   private saveColumnWidth(width: number): void {
     localStorage.setItem(COLUMN_WIDTH_STORAGE_KEY, width.toString());
+  }
+
+  private updateFilteredBacklogCards(): void {
+    const displayCardIds = new Set(
+      this.displayCards.map((dc) => dc.jobTask.id)
+    );
+    this.filteredBacklogCards = this.allBacklogCards.filter(
+      (card) => !displayCardIds.has(card.jobTask.id)
+    );
   }
 }

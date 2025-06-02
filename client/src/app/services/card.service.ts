@@ -31,29 +31,7 @@ export class CardService {
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {
         this.currentJobDescription = jobDescription;
-
-        this.cardsSubject.next(
-          this.allBacklogCards.filter(
-            (card) =>
-              !jobDescription?.tasks.some(
-                (jdTask) => jdTask.jobTask.id === card.jobTask.id
-              )
-          )
-        );
-
-        this.displayCardsSubject.next(
-          jobDescription?.tasks
-            .map((jdTask) => ({
-              classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
-              jobTask: jdTask.jobTask,
-              title: jdTask.jobTask?.title || '',
-              text: jdTask.jobTask?.text || '',
-              percentage: jdTask.percentage || 5,
-              order: jdTask.order || 0,
-              tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
-            }))
-            .sort((a, b) => a.order - b.order) || []
-        );
+        this.updateCardsSubjects();
       }
     );
   }
@@ -71,9 +49,38 @@ export class CardService {
           order: 0,
           tags: task.tags.map((tag) => tag.name),
         }));
-        this.cardsSubject.next(cards);
         this.allBacklogCards = cards;
+
+        // Apply current job description filtering
+        this.updateCardsSubjects();
       });
+  }
+
+  private updateCardsSubjects() {
+    // Update backlog cards (filtered to exclude those in current job description)
+    this.cardsSubject.next(
+      this.allBacklogCards.filter(
+        (card) =>
+          !this.currentJobDescription?.tasks.some(
+            (jdTask) => jdTask.jobTask.id === card.jobTask.id
+          )
+      )
+    );
+
+    // Update display cards (from current job description)
+    this.displayCardsSubject.next(
+      this.currentJobDescription?.tasks
+        .map((jdTask) => ({
+          classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
+          jobTask: jdTask.jobTask,
+          title: jdTask.jobTask?.title || '',
+          text: jdTask.jobTask?.text || '',
+          percentage: jdTask.percentage || 5,
+          order: jdTask.order || 0,
+          tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
+        }))
+        .sort((a, b) => a.order - b.order) || []
+    );
   }
 
   addToDisplay(card?: Card, index?: number) {

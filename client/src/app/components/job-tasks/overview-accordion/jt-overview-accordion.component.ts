@@ -636,9 +636,12 @@ export class JtOverviewAccordionComponent
         this.tagInput = ''; // Clear input
       }
 
-      // 2. Check if htmlContent (editor text) has changed
-      if (expandedItem.text !== this.htmlContent) {
+      // 2. Check if htmlContent (WYSIWYG editor text) has changed
+      const currentText = expandedItem.text || '';
+      const editorText = this.htmlContent || '';
+      if (currentText !== editorText) {
         payload.text = this.htmlContent;
+        expandedItem.text = this.htmlContent; // Update local copy
         needsSave = true;
       }
 

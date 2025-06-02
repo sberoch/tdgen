@@ -203,8 +203,13 @@
   </button>
 </mat-menu>
 
-<app-overlay-modal [isOpen]="isJobTaskModalOpen" (close)="closeJobTaskModal()">
+<app-overlay-modal
+  [isOpen]="isJobTaskModalOpen"
+  (close)="closeJobTaskModal()"
+  (contentClose)="jtAccordion.onOverlayModalClosed()"
+>
   <app-jt-overview-accordion
+    #jtAccordion
     [initialCard]="selectedCardToOpenModal"
   ></app-jt-overview-accordion>
 </app-overlay-modal>

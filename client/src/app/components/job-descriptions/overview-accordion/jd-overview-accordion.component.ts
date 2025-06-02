@@ -81,6 +81,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   filteredJobDescriptionsCount: number = 0;
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
   @ViewChild('searchInput') searchInput!: ElementRef;
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
   @Output() closeModal = new EventEmitter<void>();
 
   jobDescriptions: ExpandableJobDescription[] = [];
@@ -115,9 +116,24 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     const newItemIndex = this.jobDescriptions.findIndex((jd) => jd.isNew);
 
     if (newItemIndex >= 0 && this.accordionItems.length > newItemIndex) {
-      const newItemElement =
-        this.accordionItems.toArray()[newItemIndex].nativeElement;
-      newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+        const newItemElement =
+          this.accordionItems.toArray()[newItemIndex].nativeElement;
+        const scrollContainer = this.scrollContainer.nativeElement;
+
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const itemRect = newItemElement.getBoundingClientRect();
+
+        const currentScrollTop = scrollContainer.scrollTop;
+
+        const newScrollTop =
+          currentScrollTop + (itemRect.top - containerRect.top) - 50;
+
+        scrollContainer.scrollTo({
+          top: newScrollTop,
+          behavior: 'smooth',
+        });
+      }, 200);
     }
   }
 
@@ -138,14 +154,12 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
               jd.title === this.initialJobDescription.title),
         }));
 
-        // If there's a newly created item, flag for scrolling and remove the "new" status after 3 seconds
         if (
           this.newlyCreatedTitle !== null ||
           this.initialJobDescription !== null
         ) {
           this.shouldScrollToNew = true;
 
-          // Auto-expand the new item
           const targetTitle =
             this.initialJobDescription?.title || this.newlyCreatedTitle;
           const newItem = this.jobDescriptions.find(
@@ -331,7 +345,6 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   onOverlayModalClosed(): void {
-    // Save any pending changes when the modal is closed
     const expandedItem = this.jobDescriptions.find(
       (jd) => jd.id === this.expandedItemId
     );
