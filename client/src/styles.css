@@ -189,3 +189,14 @@ angular-editor:has([contenteditable="false"]) .angular-editor-toolbar {
   color: #888 !important;
   cursor: default !important;
 }
+
+/* Angular Editor textarea focus styling */
+.angular-editor-textarea:focus {
+  outline: none !important;
+  border-color: #004371 !important;
+}
+
+.angular-editor-textarea:focus-visible {
+  outline: none !important;
+  border-color: #004371 !important;
+}

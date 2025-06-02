@@ -99,7 +99,6 @@ export class HeaderComponent implements OnInit {
   }
 
   closeJobTaskModal() {
-    console.log('closeJobTaskModal');
     if (this.jtOverviewAccordion) {
       this.jtOverviewAccordion.onOverlayModalClosed();
     }
@@ -143,7 +142,6 @@ export class HeaderComponent implements OnInit {
   }
 
   exportDescription() {
-    console.log({ jobDescription: this.jobDescription });
     if (
       this.jobDescription?.tasks?.some(
         (task) =>

@@ -133,7 +133,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           top: newScrollTop,
           behavior: 'smooth',
         });
-      }, 200);
+      }, 50);
     }
   }
 
