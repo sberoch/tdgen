@@ -63,6 +63,17 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
     ScrollingModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [
+    `
+      :host ::ng-deep .cdk-virtual-scroll-content-wrapper {
+        min-height: calc(100% + 1px) !important;
+      }
+
+      :host ::ng-deep cdk-virtual-scroll-viewport {
+        scrollbar-gutter: stable;
+      }
+    `,
+  ],
 })
 export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('displayScrollContainer', { static: false })
