@@ -82,6 +82,7 @@
             </span>
             <button
               mat-icon-button
+              *ngIf="!item.deletedAt"
               class="text-gray-500 hover:text-secondary"
               title="Umbenennen"
               (click)="openEditDialog(item, $event)"
