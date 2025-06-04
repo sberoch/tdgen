@@ -1,5 +1,5 @@
 <div
-  class="flex flex-col justify-between gap-4 h-full"
+  class="flex flex-col justify-between gap-4 h-full relative"
   style="--flash-color: #ffffe6"
 >
   <div class="flex justify-between">
@@ -88,23 +88,23 @@
             <label for="umsetzung">Umsetzung</label>
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 mt-1">
           <input type="checkbox" id="aufgabenaderung" class="w-4 h-4" />
           <label for="aufgabenanderung">
             Aufgabenänderung einschl. Aufgabenzuwachs und -wegfall
           </label>
         </div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="sonstiges" class="w-4 h-4" />
-          <label for="sonstiges">Sonstiges:</label>
+        <div class="flex items-center gap-2 mt-1">
+          <input type="checkbox" id="sonstigesCheckbox" class="w-4 h-4" />
+          <label for="sonstigesCheckbox">Sonstiges:</label>
           <input
             type="text"
-            name="sonstiges-input"
-            formControlName="sonstiges-input"
+            name="sonstigesInput"
+            formControlName="sonstigesInput"
             class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full"
           />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 mt-3">
           <label>mit Wirkung vom</label>
           <input
             [type]="getInputType('effectiveDate')"
@@ -203,7 +203,10 @@
             />
           </div>
 
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 my-1">
+            <label class="max-w-[35%] leading-tight">
+              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am
+            </label>
             <input
               [type]="getInputType('workplaceStartDate')"
               name="workplaceStartDate"
@@ -218,9 +221,6 @@
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
-            <label class="max-w-[40%] leading-tight">
-              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am
-            </label>
           </div>
 
           <div class="flex items-center gap-2">
@@ -251,7 +251,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-2 mt-6">
+          <div class="flex flex-col gap-2 mt-7">
             <h4 class="text-lg font-medium">Beschäftigungsumfang</h4>
             <div class="flex gap-4">
               <div class="flex items-center gap-2">
@@ -285,7 +285,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-1 mt-5">
+          <div class="flex flex-col gap-1 mt-7">
             <h4 class="text-lg font-medium">Bezugszeitraum</h4>
             <div class="flex flex-col gap-3">
               <div class="flex flex-row gap-2">
@@ -333,7 +333,7 @@
                       formControlName="periodType"
                       class="w-4 h-4"
                     />
-                    <label for="period-today">oder „heute"</label>
+                    <label for="period-today">oder „heute“</label>
                   </div>
                 </div>
               </div>
@@ -346,7 +346,7 @@
     <!-- Global error message -->
     <div
       *ngIf="exportForm.invalid && exportForm.touched"
-      class="text-red-500 text-center"
+      class="text-red-500 absolute bottom-0 left-0 p-4"
     >
       Bitte füllen Sie alle Pflichtfelder aus.
     </div>

@@ -91,7 +91,28 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
   private saveFormData(formData: any) {
     try {
-      sessionStorage.setItem(this.storageKey, JSON.stringify(formData));
+      const formattedData = { ...formData };
+      const dateFields = [
+        'date',
+        'effectiveDate',
+        'workplaceStartDate',
+        'periodStart',
+        'periodEnd',
+      ];
+
+      dateFields.forEach((fieldName) => {
+        if (
+          formattedData[fieldName] &&
+          formattedData[fieldName].includes('-')
+        ) {
+          const [year, month, day] = formattedData[fieldName].split('-');
+          formattedData[fieldName] = `${day}/${month}/${year}`;
+        }
+      });
+
+      console.log('formattedData', formattedData);
+
+      sessionStorage.setItem(this.storageKey, JSON.stringify(formattedData));
     } catch (error) {
       console.warn('Failed to save form data to session storage:', error);
     }
@@ -102,6 +123,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       const savedData = sessionStorage.getItem(this.storageKey);
       if (savedData) {
         const formData = JSON.parse(savedData);
+        console.log('formData', formData);
         this.exportForm.patchValue(formData);
       }
     } catch (error) {
@@ -119,9 +141,28 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
   private transformFormData(formData: any) {
     return {
-      'f.dienst.1': formData.department,
+      'f.dienst.10': formData.department,
       'f.ort.1': formData.location,
-      'f.datum.1': formData.date,
+      'f.datum.0': formData.date,
+      'f.kk.1#0': formData.einstellung,
+      'f.kk.1#1': formData.versetzung,
+      'f.kk.1#2': formData.umsetzung,
+      'f.kk.2': formData.aufgabenaderung,
+      'f.kk.21': formData.sonstigesCheckbox,
+      'f.sonstiges.1': formData.sonstigesInput,
+      'f.datum.1': formData.effectiveDate,
+      'f.dienst.1': formData.beschaftigungsdienststelle,
+      'f.einheit.1': formData.organisationseinheit,
+      'f.dienstposten.1': formData.dienstpostennr,
+      'f.funktion.1': formData.funktion,
+      'f.vorn.1': formData.employeeName,
+      'f.uebernahme.1': formData.workplaceStartDate,
+      'f.kk.22#0': formData.disabled,
+      'f.kk.23#0': formData.employmentScope,
+      'f.std.1': formData.parttimeHours,
+      'f.zeitraum_von.1': formData.periodStart,
+      'f.zeitraum_bis.1': formData.periodEnd,
+      'f.bis.1': formData.periodType,
     };
   }
 
