@@ -604,6 +604,7 @@ export class JtOverviewAccordionComponent
   }
 
   onOverlayModalClosed(): void {
+    console.log('onOverlayModalClosed');
     const expandedItem = this.jobTasks.find(
       (jt) => jt.id === this.expandedItemId
     );

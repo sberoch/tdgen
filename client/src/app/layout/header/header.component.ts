@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
+import { DeletedTasksWarningDialogComponent } from '../../components/deleted-tasks-warning-dialog/deleted-tasks-warning-dialog.component';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
@@ -99,7 +100,7 @@ export class HeaderComponent implements OnInit {
   }
 
   closeJobTaskModal() {
-    if (this.jtOverviewAccordion) {
+    if (this.jtOverviewAccordion && this.isJobTaskModalOpen) {
       this.jtOverviewAccordion.onOverlayModalClosed();
     }
     this.isJobTaskModalOpen = false;
@@ -149,9 +150,9 @@ export class HeaderComponent implements OnInit {
           task.jobTask.deletedAt !== null
       )
     ) {
-      alert(
-        "Bitte entfernen Sie vor dem Exportieren zunächst die nicht mehr existierenden Arbeitsvorgänge (Eintrag 'Entfernen' im Dreipunkt-Menu)."
-      );
+      this.dialog.open(DeletedTasksWarningDialogComponent, {
+        width: '500px',
+      });
       return;
     }
     this.openExportModal();
