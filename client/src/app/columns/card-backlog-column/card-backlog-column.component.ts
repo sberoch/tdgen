@@ -121,6 +121,7 @@ export class CardBacklogColumnComponent implements OnInit {
             this.backlogSearchInputRef.nativeElement.value = '';
           }
           this.cardService.initializeCards();
+          this.cdr.markForCheck();
         }
       });
 
@@ -191,6 +192,7 @@ export class CardBacklogColumnComponent implements OnInit {
     const termToFilter = searchTerm.trim().toLowerCase();
     if (!termToFilter) {
       this.backlogCards = [...this.filteredBacklogCards];
+      this.cdr.markForCheck();
       return;
     }
 
@@ -347,5 +349,6 @@ export class CardBacklogColumnComponent implements OnInit {
     this.filteredBacklogCards = this.allBacklogCards.filter(
       (card) => !displayCardIds.has(card.jobTask.id)
     );
+    this.cdr.markForCheck();
   }
 }
