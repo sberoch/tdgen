@@ -175,7 +175,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
               ...jd,
               isNew: false,
             }));
-          }, 3000);
+          }, 100);
         }
       },
       error: (error) => {
@@ -326,6 +326,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
     this.currentWorkspaceService.triggerJobDescriptionFetch(item);
+    this.currentWorkspaceService.setCurrentJobDescription(item);
     this.onOverlayModalClosed();
   }
 
@@ -355,10 +356,16 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         .updateJobDescription(expandedItem.id, {
           title: expandedItem.title,
           metadata: expandedItem.metadata,
+          tags: expandedItem.tags.map((tag) => tag.name),
         })
         .subscribe({
-          next: () => {
-            console.log('Job description updated on modal close');
+          next: (response) => {
+            if (
+              response.id ===
+              this.currentWorkspaceService.getCurrentJobDescriptionValue()?.id
+            ) {
+              this.currentWorkspaceService.setCurrentJobDescription(response);
+            }
           },
           error: (error) => {
             console.error(

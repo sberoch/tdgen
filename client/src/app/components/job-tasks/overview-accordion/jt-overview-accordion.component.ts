@@ -541,7 +541,6 @@ export class JtOverviewAccordionComponent
         onConfirmCallback: () => {
           this.jobTasksService.deleteJobTask(item.id!).subscribe({
             next: () => {
-              console.log('Job task deleted successfully');
               this._handleSuccessfulUpdate({ reloadTasks: true });
             },
             error: (error) => {
@@ -604,7 +603,6 @@ export class JtOverviewAccordionComponent
   }
 
   onOverlayModalClosed(): void {
-    console.log('onOverlayModalClosed');
     const expandedItem = this.jobTasks.find(
       (jt) => jt.id === this.expandedItemId
     );
@@ -675,7 +673,6 @@ export class JtOverviewAccordionComponent
           });
       }
     }
-    this.closeModal.emit();
   }
 
   private _handleSuccessfulUpdate(
