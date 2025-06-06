@@ -7,6 +7,7 @@ import {
   Post,
   Body,
   Query,
+  Res,
 } from '@nestjs/common';
 import { JobDescription } from '@prisma/client';
 import { JobDescriptionsService } from './job-descriptions.service';
@@ -17,6 +18,8 @@ import {
   UpdateJobDescriptionPercentagesDto,
   JobDescriptionsListResponse,
 } from './job-descriptions.dto';
+import { Response } from 'express';
+import { join } from 'path';
 
 @Controller('job-descriptions')
 export class JobDescriptionsController {
@@ -39,6 +42,19 @@ export class JobDescriptionsController {
   @Get(':id/exists')
   async existsById(@Param('id') id: string): Promise<boolean> {
     return this.jobDescriptionsService.has(id);
+  }
+
+  @Get(':id/download')
+  downloadPdf(@Param('id') id: string, @Res() res: Response) {
+    const filePath = join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'static',
+      'TDGen_Form_4_30_018.pdf',
+    );
+    res.download(filePath);
   }
 
   @Get(':id')

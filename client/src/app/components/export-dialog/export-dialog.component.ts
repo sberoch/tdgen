@@ -16,6 +16,8 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
+import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 
 @Component({
   selector: 'app-export-dialog',
@@ -45,7 +47,11 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     periodEnd: 'text',
   };
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private jobDescriptionsService: JobDescriptionsService,
+    private currentWorkspaceService: CurrentWorkspaceService
+  ) {
     this.exportForm = this.fb.group({
       department: ['', Validators.required],
       location: ['', Validators.required],
@@ -171,15 +177,62 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   }
 
   export() {
-    if (this.exportForm.valid) {
-      console.log('export', this.transformFormData(this.exportForm.value));
-      // Clear saved data after successful export
-      this.clearFormData();
-    } else {
-      // Mark all fields as touched to show validation errors
-      this.exportForm.markAllAsTouched();
-      console.log('Form is invalid');
-    }
+    const currentJobDescription =
+      this.currentWorkspaceService.getCurrentJobDescriptionValue();
+    // if (!currentJobDescription) {
+    //   console.error('No job description selected');
+    //   return;
+    // }
+    const currentJobDescriptionId = 8; // currentJobDescription.id;
+    console.log('export', this.transformFormData(this.exportForm.value));
+    // if (this.exportForm.valid) {
+    //   console.log('export', this.transformFormData(this.exportForm.value));
+    //   // Clear saved data after successful export
+    //   this.clearFormData();
+    // } else {
+    //   // Mark all fields as touched to show validation errors
+    //   this.exportForm.markAllAsTouched();
+    //   console.log('Form is invalid');
+    // }
+    this.jobDescriptionsService
+      .downloadJobDescriptionPdf(currentJobDescriptionId)
+      .subscribe({
+        next: (blob) => {
+          // Create a blob URL and trigger download
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+
+          // Get form data for employee name
+          const formData = this.exportForm.value;
+          const employeeName = formData.employeeName || 'Unknown';
+
+          // Get job description title
+          const jobDescriptionTitle =
+            currentJobDescription?.title || 'Job Description';
+
+          // Get current date
+          const currentDate = new Date().toLocaleDateString('de-DE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          });
+
+          // Format filename: employeeName - titleOfJobDescription (Current date)
+          link.download = `${employeeName} - ${jobDescriptionTitle} (${currentDate}).pdf`;
+
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          // Clear saved data after successful export
+          this.clearFormData();
+        },
+        error: (error) => {
+          console.error('Error downloading PDF:', error);
+        },
+      });
   }
 
   resetForm() {

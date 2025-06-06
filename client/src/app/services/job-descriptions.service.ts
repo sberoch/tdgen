@@ -88,6 +88,12 @@ export class JobDescriptionsService {
     });
   }
 
+  downloadJobDescriptionPdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/download`, {
+      responseType: 'blob',
+    });
+  }
+
   private buildWhereClause(filter?: JobDescriptionFilter): HttpParams {
     let params = new HttpParams();
 
