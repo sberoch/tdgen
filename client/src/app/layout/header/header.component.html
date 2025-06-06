@@ -55,9 +55,8 @@
 
 <mat-menu #menu="matMenu" class="custom-menu">
   <button mat-menu-item (click)="openCreateDialog()">
-    Neue Tätigkeitsdarstellung
+    Tätigkeitsdarstellung erstellen
   </button>
-  <mat-divider></mat-divider>
   <button
     mat-menu-item
     (click)="openCloseDescriptionDialog()"
@@ -80,6 +79,7 @@
     Arbeitsvorgänge verwalten
   </button>
   <mat-divider></mat-divider>
+  <button mat-menu-item (click)="openInstructionPDF()">Anleitung öffnen</button>
   <button mat-menu-item (click)="openAboutDialog()">Über TDGen</button>
 </mat-menu>
 

@@ -16,6 +16,7 @@ import { JtOverviewAccordionComponent } from '../../components/job-tasks/overvie
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { MiscService } from '../../services/misc.service';
 import { JobDescription } from '../../types/job-descriptions';
 import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
 import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
@@ -55,7 +56,8 @@ export class HeaderComponent implements OnInit {
     private dialog: MatDialog,
     private router: Router,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private miscService: MiscService
   ) {}
 
   ngOnInit() {
@@ -153,6 +155,22 @@ export class HeaderComponent implements OnInit {
       return;
     }
     this.openExportModal();
+  }
+
+  openInstructionPDF() {
+    this.miscService.downloadInstructionManual().subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'TDGen_Manual_latest.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => console.error('Error downloading manual:', error),
+    });
   }
 
   openAboutDialog() {

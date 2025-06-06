@@ -1,5 +1,6 @@
 import { Tag } from './tag';
 import { JobDescriptionTask } from './job-description-tasks';
+import { FormControl } from '@angular/forms';
 
 export type JobDescriptionFormField = {
   key: string;
@@ -31,4 +32,29 @@ export type UpdateJobDescription = Partial<CreateJobDescription>;
 export type JobDescriptionsListResponse = {
   jobDescriptions: JobDescription[];
   totalCount: number;
+};
+
+export type ExportJobDescriptionForm = {
+  department: FormControl<string | null>;
+  location: FormControl<string | null>;
+  date: FormControl<string | null>;
+  einstellung: FormControl<boolean | null>;
+  versetzung: FormControl<boolean | null>;
+  umsetzung: FormControl<boolean | null>;
+  aufgabenaderung: FormControl<boolean | null>;
+  sonstigesCheckbox: FormControl<boolean | null>;
+  sonstigesInput: FormControl<string | null>;
+  effectiveDate: FormControl<string | null>;
+  beschaftigungsdienststelle: FormControl<string | null>;
+  organisationseinheit: FormControl<string | null>;
+  dienstpostennr: FormControl<string | null>;
+  funktion: FormControl<string | null>;
+  employeeName: FormControl<string | null>;
+  workplaceStartDate: FormControl<string | null>;
+  disabled: FormControl<string | null>;
+  employmentScope: FormControl<string | null>;
+  parttimeHours: FormControl<string | null>;
+  periodStart: FormControl<string | null>;
+  periodEnd: FormControl<string | null>;
+  periodType: FormControl<string | null>;
 };

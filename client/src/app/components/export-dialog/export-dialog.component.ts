@@ -18,6 +18,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Subscription } from 'rxjs';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
+import { ExportJobDescriptionForm } from '../../types/job-descriptions';
+import { fillJobDescriptionForm } from './fill-job-description-form';
 
 @Component({
   selector: 'app-export-dialog',
@@ -34,7 +36,7 @@ import { CurrentWorkspaceService } from '../../services/current-workspace.servic
 export class ExportDialogComponent implements OnInit, OnDestroy {
   @Output() closeModal = new EventEmitter<void>();
 
-  exportForm: FormGroup;
+  exportForm: FormGroup<ExportJobDescriptionForm>;
   private formSubscription: Subscription = new Subscription();
   private readonly storageKey = 'export-dialog-form-data';
 
@@ -145,33 +147,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  private transformFormData(formData: any) {
-    return {
-      'f.dienst.10': formData.department,
-      'f.ort.1': formData.location,
-      'f.datum.0': formData.date,
-      'f.kk.1#0': formData.einstellung,
-      'f.kk.1#1': formData.versetzung,
-      'f.kk.1#2': formData.umsetzung,
-      'f.kk.2': formData.aufgabenaderung,
-      'f.kk.21': formData.sonstigesCheckbox,
-      'f.sonstiges.1': formData.sonstigesInput,
-      'f.datum.1': formData.effectiveDate,
-      'f.dienst.1': formData.beschaftigungsdienststelle,
-      'f.einheit.1': formData.organisationseinheit,
-      'f.dienstposten.1': formData.dienstpostennr,
-      'f.funktion.1': formData.funktion,
-      'f.vorn.1': formData.employeeName,
-      'f.uebernahme.1': formData.workplaceStartDate,
-      'f.kk.22#0': formData.disabled,
-      'f.kk.23#0': formData.employmentScope,
-      'f.std.1': formData.parttimeHours,
-      'f.zeitraum_von.1': formData.periodStart,
-      'f.zeitraum_bis.1': formData.periodEnd,
-      'f.bis.1': formData.periodType,
-    };
-  }
-
   close() {
     this.closeModal.emit();
   }
@@ -184,7 +159,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     //   return;
     // }
     const currentJobDescriptionId = 8; // currentJobDescription.id;
-    console.log('export', this.transformFormData(this.exportForm.value));
     // if (this.exportForm.valid) {
     //   console.log('export', this.transformFormData(this.exportForm.value));
     //   // Clear saved data after successful export
@@ -197,15 +171,21 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     this.jobDescriptionsService
       .downloadJobDescriptionPdf(currentJobDescriptionId)
       .subscribe({
-        next: (blob) => {
+        next: async (blob) => {
+          const arrayBuffer = await blob.arrayBuffer();
+          const newArrayBuffer = await fillJobDescriptionForm(
+            this.exportForm,
+            currentJobDescription!,
+            arrayBuffer
+          );
           // Create a blob URL and trigger download
-          const url = window.URL.createObjectURL(blob);
+          const url = window.URL.createObjectURL(new Blob([newArrayBuffer]));
           const link = document.createElement('a');
           link.href = url;
 
           // Get form data for employee name
           const formData = this.exportForm.value;
-          const employeeName = formData.employeeName || 'Unknown';
+          const employeeName = formData.employeeName?.trim() || 'Unknown';
 
           // Get job description title
           const jobDescriptionTitle =
