@@ -81,7 +81,7 @@
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg flex-1 flex items-center"
             [class.line-through]="item.deletedAt"
           >
-            <span class="mr-2">
+            <span class="mr-2 font-bold">
               {{ truncate(item.title, 100) }}
             </span>
             <button
@@ -143,7 +143,7 @@
                     [disabled]="!!item.deletedAt"
                     [(ngModel)]="tagInput"
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm disabled:opacity-50"
+                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm disabled:opacity-50 placeholder:italic"
                   />
                   <button
                     [disabled]="!!item.deletedAt"

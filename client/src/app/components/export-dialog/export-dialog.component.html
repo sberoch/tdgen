@@ -26,7 +26,7 @@
           formControlName="department"
           placeholder="Dienststelle*"
           [class]="
-            'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+            'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
             (hasFieldError('department')
               ? 'border-red-500 focus:border-red-500'
               : 'border-[#e2e8f0] focus:border-secondary')
@@ -42,7 +42,7 @@
             formControlName="location"
             placeholder="Ort*"
             [class]="
-              'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
               (hasFieldError('location')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -61,7 +61,7 @@
             (focus)="onDateFocus($event)"
             (blur)="onDateBlur($event)"
             [class]="
-              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
               (hasFieldError('date')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -126,7 +126,7 @@
             type="text"
             name="sonstigesInput"
             formControlName="sonstigesInput"
-            class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full"
+            class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-full placeholder:italic"
           />
         </div>
         <div class="flex items-center gap-2 mt-3">
@@ -139,7 +139,7 @@
             (focus)="onDateFocus($event)"
             (blur)="onDateBlur($event)"
             [class]="
-              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
               (hasFieldError('effectiveDate')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
@@ -159,7 +159,7 @@
               formControlName="beschaftigungsdienststelle"
               placeholder="Beschäftigungsdienststelle*"
               [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                 (hasFieldError('beschaftigungsdienststelle')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -174,7 +174,7 @@
               formControlName="organisationseinheit"
               placeholder="Organisationseinheit*"
               [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                 (hasFieldError('organisationseinheit')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -188,7 +188,7 @@
               name="dienstpostennr"
               formControlName="dienstpostennr"
               placeholder="Dienstpostennr./Stellenschlüssel"
-              class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+              class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
             />
           </div>
 
@@ -199,7 +199,7 @@
               formControlName="funktion"
               placeholder="Funktion*"
               [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                 (hasFieldError('funktion')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -220,7 +220,7 @@
               formControlName="employeeName"
               placeholder="Name, Vorname*"
               [class]="
-                'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                 (hasFieldError('employeeName')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -240,7 +240,7 @@
               (focus)="onDateFocus($event)"
               (blur)="onDateBlur($event)"
               [class]="
-                'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                 (hasFieldError('workplaceStartDate')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
@@ -303,7 +303,7 @@
                 <input
                   name="parttimeHours"
                   formControlName="parttimeHours"
-                  class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20"
+                  class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20 placeholder:italic"
                 />
                 <label>Stunden</label>
               </div>
@@ -323,7 +323,7 @@
                     (focus)="onDateFocus($event)"
                     (blur)="onDateBlur($event)"
                     [class]="
-                      'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary ' +
+                      'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
                       (hasFieldError('periodStart')
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-[#e2e8f0] focus:border-secondary')
@@ -348,7 +348,7 @@
                       placeholder="Datum bis"
                       (focus)="onDateFocus($event)"
                       (blur)="onDateBlur($event)"
-                      class="w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary"
+                      class="w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
                     />
                     <!-- Custom tooltip for date range validation -->
                     <div
