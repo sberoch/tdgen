@@ -6,7 +6,8 @@ import {
 } from '../../types/job-descriptions';
 
 export const transformFormData = (
-  formData: FormGroup<ExportJobDescriptionForm>
+  formData: FormGroup<ExportJobDescriptionForm>,
+  jobDescription: JobDescription
 ) => {
   const formValue = formData.value;
   return {
@@ -30,7 +31,19 @@ export const transformFormData = (
     //'f.kk.22#0': formValue.disabled,
     //'f.kk.23#0': formValue.employmentScope,
     'f.std.1': formValue.parttimeHours,
-    'f.zeitraum.1': formValue.periodStart + ' - ' + formValue.periodEnd,
+    'f.zeitraum.1':
+      formValue.periodStart +
+      (formValue.periodType
+        ? ' bis ' +
+          (formValue.periodType === 'today' ? 'heute' : formValue.periodEnd)
+        : ''),
+    'f.zeitraum.2':
+      formValue.periodStart +
+      (formValue.periodType
+        ? ' bis ' +
+          (formValue.periodType === 'today' ? 'heute' : formValue.periodEnd)
+        : ''),
+    jdFormFields: jobDescription.formFields,
   };
 };
 
@@ -43,7 +56,7 @@ export const fillJobDescriptionForm = async (
     ignoreEncryption: true,
   });
   const pdfForm = pdfDoc.getForm();
-  const formData = transformFormData(form);
+  const formData = transformFormData(form, jobDescription);
 
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
   pdfForm
@@ -79,6 +92,29 @@ export const fillJobDescriptionForm = async (
 
   pdfForm.getTextField('f.std.1').setText(formData['f.std.1'] || '');
   pdfForm.getTextField('f.zeitraum.1').setText(formData['f.zeitraum.1'] || '');
+  pdfForm.getTextField('f.zeitraum.2').setText(formData['f.zeitraum.2'] || '');
+
+  for (const field of formData.jdFormFields) {
+    if (field.key === 'f.aufgabenbeschreibung.1') {
+      pdfForm
+        .getTextField('f.aufgabenbeschreibung.1')
+        .setText(field.value || '');
+    } else if (field.key === 'f.eingliederung.1') {
+      pdfForm.getTextField('f.eingliederung.1').setText(field.value || '');
+    } else if (field.key === 'f.beschaeftigter.1') {
+      pdfForm.getTextField('f.beschaeftigter.1').setText(field.value || '');
+    } else if (field.key === 'f.beschaeftigter.2') {
+      pdfForm.getTextField('f.beschaeftigter.2').setText(field.value || '');
+    } else if (field.key === 'f.beschaeftigter.3') {
+      pdfForm.getTextField('f.beschaeftigter.3').setText(field.value || '');
+    } else if (field.key === 'f.beschaeftigter.4') {
+      pdfForm.getTextField('f.beschaeftigter.4').setText(field.value || '');
+    } else if (field.key === 'f.ausbildung.1') {
+      pdfForm.getTextField('f.ausbildung.1').setText(field.value || '');
+    } else if (field.key === 'f.fachkenntnisse.1') {
+      pdfForm.getTextField('f.fachkenntnisse.1').setText(field.value || '');
+    }
+  }
 
   return await pdfDoc.save();
 };

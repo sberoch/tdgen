@@ -154,11 +154,11 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   export() {
     const currentJobDescription =
       this.currentWorkspaceService.getCurrentJobDescriptionValue();
-    // if (!currentJobDescription) {
-    //   console.error('No job description selected');
-    //   return;
-    // }
-    const currentJobDescriptionId = 8; // currentJobDescription.id;
+    if (!currentJobDescription) {
+      console.error('No job description selected');
+      return;
+    }
+    const currentJobDescriptionId = currentJobDescription.id;
     // if (this.exportForm.valid) {
     //   console.log('export', this.transformFormData(this.exportForm.value));
     //   // Clear saved data after successful export
@@ -175,7 +175,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
           const arrayBuffer = await blob.arrayBuffer();
           const newArrayBuffer = await fillJobDescriptionForm(
             this.exportForm,
-            currentJobDescription!,
+            currentJobDescription,
             arrayBuffer
           );
           // Create a blob URL and trigger download

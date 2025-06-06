@@ -110,6 +110,10 @@ export class JtOverviewAccordionComponent
       [
         'undo',
         'redo',
+        'bold',
+        'italic',
+        'underline',
+        'strikeThrough',
         'subscript',
         'superscript',
         'justifyLeft',
