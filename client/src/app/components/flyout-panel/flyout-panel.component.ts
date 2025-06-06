@@ -11,6 +11,10 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import {
+  AngularEditorConfig,
+  AngularEditorModule,
+} from '@kolkov/angular-editor';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
@@ -23,7 +27,13 @@ import { RAHMENDATEN_FORM_FIELDS } from '../../utils/const/job-description-form-
   selector: 'app-flyout-panel',
   templateUrl: './flyout-panel.component.html',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    FormsModule,
+    AngularEditorModule,
+  ],
 })
 export class FlyoutPanelComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;
@@ -34,6 +44,47 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   formData: Record<string, string> = {};
   currentJobDescription: JobDescription | null = null;
   private destroy$ = new Subject<void>();
+
+  editorConfig: AngularEditorConfig = {
+    editable: true,
+    sanitize: false,
+    spellcheck: true,
+    minHeight: '120px',
+    maxHeight: '300px',
+    toolbarHiddenButtons: [
+      [
+        'undo',
+        'redo',
+        'bold',
+        'italic',
+        'underline',
+        'strikeThrough',
+        'subscript',
+        'superscript',
+        'justifyLeft',
+        'justifyCenter',
+        'justifyRight',
+        'justifyFull',
+        'indent',
+        'outdent',
+        'heading',
+        'fontName',
+      ],
+      [
+        'fontSize',
+        'textColor',
+        'backgroundColor',
+        'customClasses',
+        'link',
+        'unlink',
+        'insertImage',
+        'insertVideo',
+        'insertHorizontalRule',
+        'removeFormat',
+        'toggleEditorMode',
+      ],
+    ],
+  };
 
   constructor(
     private currentWorkspaceService: CurrentWorkspaceService,
@@ -142,5 +193,14 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
         : null;
     }
     return null;
+  }
+
+  getEditorConfig(field: FormField): AngularEditorConfig {
+    const maxLength = this.getMaxLength(field);
+    return {
+      ...this.editorConfig,
+      minHeight: maxLength && maxLength > 200 ? '200px' : '120px',
+      maxHeight: maxLength && maxLength > 200 ? '400px' : '300px',
+    };
   }
 }

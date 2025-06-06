@@ -104,6 +104,7 @@ export class JtOverviewAccordionComponent
   filteredJobTasksCount: number = 0;
   editorConfig: AngularEditorConfig = {
     editable: true,
+    sanitize: false,
     spellcheck: true,
     minHeight: '300px',
     toolbarHiddenButtons: [

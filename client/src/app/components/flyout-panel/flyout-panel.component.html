@@ -47,27 +47,14 @@
             >
               {{ field.label }}
             </label>
-            <textarea
-              *ngIf="(getMaxLength(field) || 0) > 200; else singleLineInput"
+            <angular-editor
               [id]="field.name"
               [name]="field.name!"
               [(ngModel)]="formData[field.name!]"
+              [config]="getEditorConfig(field)"
               (blur)="saveForm()"
-              class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary text-xs 2xl:text-sm 3xl:text-base"
-              rows="4"
-              [maxLength]="getMaxLength(field) || undefined"
-            ></textarea>
-            <ng-template #singleLineInput>
-              <input
-                type="text"
-                [id]="field.name"
-                [name]="field.name!"
-                [(ngModel)]="formData[field.name!]"
-                (blur)="saveForm()"
-                class="mt-1 block w-full px-3 py-2 border border-[#e2e8f0] rounded-md shadow-sm focus:outline-none focus:ring-secondary focus:border-secondary text-xs 2xl:text-sm 3xl:text-base"
-                [maxLength]="getMaxLength(field) || undefined"
-              />
-            </ng-template>
+              class="mt-1 block w-full"
+            ></angular-editor>
             <div
               *ngIf="getMaxLength(field) as maxLength"
               class="text-[10px] 2xl:text-xs 3xl:text-sm mt-1 text-right text-black/50 italic"

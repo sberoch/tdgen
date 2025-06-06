@@ -72,6 +72,22 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
       :host ::ng-deep cdk-virtual-scroll-viewport {
         scrollbar-gutter: stable;
       }
+
+      :host ::ng-deep ol {
+        list-style: decimal;
+        padding-left: 1.5rem;
+        margin: 0.5rem 0;
+      }
+
+      :host ::ng-deep ul {
+        list-style: disc;
+        padding-left: 1.5rem;
+        margin: 0.5rem 0;
+      }
+
+      :host ::ng-deep li {
+        margin: 0.25rem 0;
+      }
     `,
   ],
 })
