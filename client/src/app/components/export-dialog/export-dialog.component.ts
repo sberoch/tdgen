@@ -12,6 +12,8 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -54,30 +56,33 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     private jobDescriptionsService: JobDescriptionsService,
     private currentWorkspaceService: CurrentWorkspaceService
   ) {
-    this.exportForm = this.fb.group({
-      department: ['', Validators.required],
-      location: ['', Validators.required],
-      date: ['', Validators.required],
-      einstellung: [false, Validators.required],
-      versetzung: [false, Validators.required],
-      umsetzung: [false, Validators.required],
-      aufgabenaderung: [false, Validators.required],
-      sonstigesCheckbox: [false, Validators.required],
-      sonstigesInput: ['', Validators.required],
-      effectiveDate: ['', Validators.required],
-      beschaftigungsdienststelle: ['', Validators.required],
-      organisationseinheit: ['', Validators.required],
-      dienstpostennr: ['', Validators.required],
-      funktion: ['', Validators.required],
-      employeeName: ['', Validators.required],
-      workplaceStartDate: ['', Validators.required],
-      disabled: ['', Validators.required],
-      employmentScope: ['', Validators.required],
-      parttimeHours: ['', Validators.required],
-      periodStart: ['', Validators.required],
-      periodEnd: ['', Validators.required],
-      periodType: ['', Validators.required],
-    });
+    this.exportForm = this.fb.group(
+      {
+        department: ['', Validators.required],
+        location: ['', Validators.required],
+        date: ['', Validators.required],
+        einstellung: [false, Validators.required],
+        versetzung: [false, Validators.required],
+        umsetzung: [false, Validators.required],
+        aufgabenaderung: [false, Validators.required],
+        sonstigesCheckbox: [false, Validators.required],
+        sonstigesInput: ['', Validators.required],
+        effectiveDate: ['', Validators.required],
+        beschaftigungsdienststelle: ['', Validators.required],
+        organisationseinheit: ['', Validators.required],
+        dienstpostennr: ['', Validators.required],
+        funktion: ['', Validators.required],
+        employeeName: ['', Validators.required],
+        workplaceStartDate: ['', Validators.required],
+        disabled: ['', Validators.required],
+        employmentScope: ['', Validators.required],
+        parttimeHours: ['', Validators.required],
+        periodStart: ['', Validators.required],
+        periodEnd: ['', Validators.required],
+        periodType: ['', Validators.required],
+      },
+      { validators: this.dateRangeValidator }
+    );
   }
 
   ngOnInit() {
@@ -96,7 +101,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       }
     );
   }
-
   private saveFormData(formData: any) {
     try {
       const formattedData = { ...formData };
@@ -114,7 +118,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
           formattedData[fieldName].includes('-')
         ) {
           const [year, month, day] = formattedData[fieldName].split('-');
-          formattedData[fieldName] = `${day}/${month}/${year}`;
+          formattedData[fieldName] = `${day}.${month}.${year}`;
         }
       });
 
@@ -265,5 +269,31 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         this.dateInputTypes[fieldName] = 'text';
       }
     }
+  }
+
+  // Custom date range validator
+  dateRangeValidator = (group: AbstractControl): ValidationErrors | null => {
+    const periodStart = group.get('periodStart')?.value;
+    const periodEnd = group.get('periodEnd')?.value;
+
+    if (periodStart && periodEnd) {
+      // Convert date strings to Date objects for comparison
+      const startDate = new Date(periodStart);
+      const endDate = new Date(periodEnd);
+
+      if (endDate < startDate) {
+        return { dateRangeInvalid: true };
+      }
+    }
+    return null;
+  };
+
+  // Check if date range validation error exists
+  hasDateRangeError(): boolean {
+    return !!(
+      this.exportForm.hasError('dateRangeInvalid') &&
+      this.exportForm.get('periodStart')?.value &&
+      this.exportForm.get('periodEnd')?.value
+    );
   }
 }
