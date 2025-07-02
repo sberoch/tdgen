@@ -46,10 +46,16 @@ export class JobDescriptionsService {
     const jobDescriptionsWithWeightedAverage = jobDescriptions.map(
       (jobDescription) => {
         const { tasks, ...rest } = jobDescription;
-        return {
-          ...rest,
-          weightedAverage: getWeightedPayGroupFromTasks(tasks),
-        };
+        try {
+          const weightedAverage = getWeightedPayGroupFromTasks(tasks);
+          return {
+            ...rest,
+            weightedAverage,
+          };
+        } catch (error) {
+          console.error(error);
+          return { ...rest, weightedAverage: 0 };
+        }
       },
     );
 

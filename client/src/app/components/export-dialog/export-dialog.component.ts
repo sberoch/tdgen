@@ -41,6 +41,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   exportForm: FormGroup<ExportJobDescriptionForm>;
   private formSubscription: Subscription = new Subscription();
   private readonly storageKey = 'export-dialog-form-data';
+  showValidationErrors = false;
 
   // Track which date inputs are focused to switch between text and date types
   dateInputTypes: { [key: string]: string } = {
@@ -98,12 +99,20 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     this.formSubscription = this.exportForm.valueChanges.subscribe(
       (formData) => {
         this.saveFormData(formData);
+        // Hide validation errors if form becomes valid
+        if (this.exportForm.valid && this.showValidationErrors) {
+          this.showValidationErrors = false;
+        }
       }
     );
   }
   private saveFormData(formData: any) {
     try {
       const formattedData = { ...formData };
+
+      // Remove the employeeName field from storage
+      delete formattedData.employeeName;
+
       const dateFields = [
         'date',
         'effectiveDate',
@@ -162,16 +171,15 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       console.error('No job description selected');
       return;
     }
+
+    // Validate form before export
+    if (this.exportForm.invalid) {
+      this.showValidationErrors = true;
+      this.exportForm.markAllAsTouched();
+      return;
+    }
+
     const currentJobDescriptionId = currentJobDescription.id;
-    // if (this.exportForm.valid) {
-    //   console.log('export', this.transformFormData(this.exportForm.value));
-    //   // Clear saved data after successful export
-    //   this.clearFormData();
-    // } else {
-    //   // Mark all fields as touched to show validation errors
-    //   this.exportForm.markAllAsTouched();
-    //   console.log('Form is invalid');
-    // }
     this.jobDescriptionsService
       .downloadJobDescriptionPdf(currentJobDescriptionId)
       .subscribe({
@@ -209,9 +217,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
           link.click();
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
-
-          // Clear saved data after successful export
-          this.clearFormData();
         },
         error: (error) => {
           console.error('Error downloading PDF:', error);
@@ -222,6 +227,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   resetForm() {
     this.exportForm.reset();
     this.clearFormData();
+    this.showValidationErrors = false;
     // Reset date input types to text
     Object.keys(this.dateInputTypes).forEach((key) => {
       this.dateInputTypes[key] = 'text';

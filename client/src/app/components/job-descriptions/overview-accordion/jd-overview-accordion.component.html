@@ -77,7 +77,7 @@
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg flex-1 flex items-center"
             [class.line-through]="item.deletedAt"
           >
-            <span class="mr-2 font-bold">
+            <span class="mr-2 font-medium">
               {{ truncate(item.title, 100) }}
             </span>
             <button
@@ -121,10 +121,10 @@
               <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
             </button>
             <button
-              *ngIf="!item.deletedAt"
               mat-icon-button
               class="group"
               [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+              [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
               title="Löschen"
               (click)="$event.stopPropagation(); deleteItem(item)"
             >
@@ -142,7 +142,7 @@
         >
           <div class="p-4 w-full">
             <div class="flex w-full justify-between">
-              <div class="flex items-center gap-2 mb-4">
+              <div class="flex items-center gap-2 mb-2">
                 <div class="relative w-[400px]">
                   <input
                     type="text"
@@ -170,7 +170,7 @@
               </div>
             </div>
             <div
-              class="flex flex-wrap gap-2"
+              class="flex flex-wrap gap-2 mb-4"
               *ngIf="item.tags && item.tags.length > 0"
             >
               <div

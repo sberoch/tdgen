@@ -158,19 +158,7 @@ export class HeaderComponent implements OnInit {
   }
 
   openInstructionPDF() {
-    this.miscService.downloadInstructionManual().subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'TDGen_Manual_latest.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      },
-      error: (error) => console.error('Error downloading manual:', error),
-    });
+    window.open('/TDGen_Manual_latest.pdf', '_blank');
   }
 
   openAboutDialog() {

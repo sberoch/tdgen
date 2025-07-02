@@ -6,7 +6,6 @@ import { JobTasksModule } from './job-tasks/job-tasks.module';
 import { JobDescriptionsModule } from './job-descriptions/job-descriptions.module';
 import { JobDescriptionTasksModule } from './job-description-tasks/job-description-tasks.module';
 import { AuthModule } from './auth/auth.module';
-import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -20,6 +19,6 @@ import { AppController } from './app.controller';
     JobDescriptionTasksModule,
     AuthModule,
   ],
-  controllers: [AppController],
+  controllers: [],
 })
 export class AppModule {}

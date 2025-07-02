@@ -39,6 +39,7 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   @Input() isOpen = false;
   @Input() title = 'Panel Title';
   @Output() close = new EventEmitter<void>();
+  @Output() exportClick = new EventEmitter<void>();
 
   formFieldsDefinition: FormField[] = RAHMENDATEN_FORM_FIELDS;
   formData: Record<string, string> = {};
@@ -49,8 +50,7 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
     editable: true,
     sanitize: false,
     spellcheck: true,
-    minHeight: '120px',
-    maxHeight: '300px',
+    minHeight: '300px',
     toolbarHiddenButtons: [
       [
         'undo',
@@ -196,11 +196,17 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   }
 
   getEditorConfig(field: FormField): AngularEditorConfig {
-    const maxLength = this.getMaxLength(field);
     return {
       ...this.editorConfig,
-      minHeight: maxLength && maxLength > 200 ? '200px' : '120px',
-      maxHeight: maxLength && maxLength > 200 ? '400px' : '300px',
     };
+  }
+
+  onExportClick(): void {
+    this.saveForm();
+    this.exportClick.emit();
+  }
+
+  canExport(): boolean {
+    return this.currentJobDescription !== null;
   }
 }
