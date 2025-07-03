@@ -61,7 +61,7 @@ export class CardService {
     this.cardsSubject.next(
       this.allBacklogCards.filter(
         (card) =>
-          !this.currentJobDescription?.tasks.some(
+          !(this.currentJobDescription?.tasks || []).some(
             (jdTask) => jdTask.jobTask.id === card.jobTask.id
           )
       )
@@ -69,7 +69,7 @@ export class CardService {
 
     // Update display cards (from current job description)
     this.displayCardsSubject.next(
-      this.currentJobDescription?.tasks
+      (this.currentJobDescription?.tasks || [])
         .map((jdTask) => ({
           classification: jdTask.jobTask?.metadata?.['paymentGroup'] || '',
           jobTask: jdTask.jobTask,
@@ -79,7 +79,7 @@ export class CardService {
           order: jdTask.order || 0,
           tags: jdTask.jobTask?.tags?.map((tag) => tag.name) || [],
         }))
-        .sort((a, b) => a.order - b.order) || []
+        .sort((a, b) => a.order - b.order)
     );
   }
 

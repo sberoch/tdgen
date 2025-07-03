@@ -35,18 +35,17 @@ export class CardSizingColumnComponent implements OnInit {
         if (jobDescription) {
           this.jobDescription = jobDescription;
           this.isWorkspaceSet = true;
-          this.cards =
-            jobDescription?.tasks
-              .map((task, index) => ({
-                classification: task.jobTask.metadata?.['paymentGroup'] || '',
-                jobTask: task.jobTask,
-                title: task.jobTask.title,
-                text: task.jobTask.text,
-                tags: task.jobTask.tags?.map((tag) => tag.name) || [],
-                percentage: task.percentage,
-                order: task.order,
-              }))
-              .sort((a, b) => a.order - b.order) || [];
+          this.cards = (jobDescription?.tasks || [])
+            .map((task) => ({
+              classification: task.jobTask.metadata?.['paymentGroup'] || '',
+              jobTask: task.jobTask,
+              title: task.jobTask.title,
+              text: task.jobTask.text,
+              tags: task.jobTask.tags?.map((tag) => tag.name) || [],
+              percentage: task.percentage,
+              order: task.order,
+            }))
+            .sort((a, b) => a.order - b.order);
         } else {
           this.isWorkspaceSet = false;
         }
