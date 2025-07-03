@@ -173,11 +173,11 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     }
 
     // Validate form before export
-    if (this.exportForm.invalid) {
-      this.showValidationErrors = true;
-      this.exportForm.markAllAsTouched();
-      return;
-    }
+    // if (this.exportForm.invalid) {
+    //   this.showValidationErrors = true;
+    //   this.exportForm.markAllAsTouched();
+    //   return;
+    // }
 
     const currentJobDescriptionId = currentJobDescription.id;
     this.jobDescriptionsService
@@ -204,11 +204,10 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
             currentJobDescription?.title || 'Job Description';
 
           // Get current date
-          const currentDate = new Date().toLocaleDateString('de-DE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          });
+          const now = new Date();
+          const currentDate = `${now.getFullYear()}${(now.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
 
           // Format filename: employeeName - titleOfJobDescription (Current date)
           link.download = `${employeeName} - ${jobDescriptionTitle} (${currentDate}).pdf`;
