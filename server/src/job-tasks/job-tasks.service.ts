@@ -95,6 +95,17 @@ export class JobTasksService {
     });
   }
 
+  async getAffectedJobDescriptionsCount(id: string): Promise<number> {
+    return this.prisma.jobDescriptionTask.count({
+      where: {
+        jobTaskId: Number(id),
+        jobDescription: {
+          deletedAt: null,
+        },
+      },
+    });
+  }
+
   async delete(id: string): Promise<void> {
     const jobTask = await this.get(id);
     await this.prisma.jobTask.update({

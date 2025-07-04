@@ -1,5 +1,11 @@
 import { FormGroup } from '@angular/forms';
-import { PDFDocument, PDFTextField } from 'pdf-lib';
+import {
+  PDFAcroCheckBox,
+  PDFAcroField,
+  PDFDocument,
+  PDFRadioGroup,
+  PDFTextField,
+} from 'pdf-lib';
 import {
   ExportJobDescriptionForm,
   JobDescription,
@@ -34,6 +40,20 @@ const setTextFieldFontSize = (
     newDA = `/Helvetica ${fontSize} Tf`;
   }
   acroField.setDefaultAppearance(newDA);
+};
+
+const getOptions = (acroField: PDFAcroCheckBox): string[] => {
+  const exportValues = acroField.getExportValues();
+  if (exportValues) {
+    const exportOptions = new Array<string>(exportValues.length);
+    for (let idx = 0, len = exportValues.length; idx < len; idx++) {
+      exportOptions[idx] = exportValues[idx].decodeText();
+    }
+    return exportOptions;
+  }
+
+  console.log('no export values');
+  return [];
 };
 
 export const transformFormData = (
@@ -96,7 +116,10 @@ export const fillJobDescriptionForm = async (
     .getTextField('f.ort_datum.1')
     .setText(formData['f.ort_datum.1'] || '');
   setTextFieldFontSize(pdfForm.getTextField('f.ort_datum.1'), FONT_SIZE);
+
   //TODO: handle f.kk.1 checkboxes. They all have the same name but different exportvalue.
+  const radio = pdfForm.getCheckBox('f.kk.1');
+  console.log(getOptions(radio.acroField));
 
   formData['f.kk.2']
     ? pdfForm.getCheckBox('f.kk.2').check()

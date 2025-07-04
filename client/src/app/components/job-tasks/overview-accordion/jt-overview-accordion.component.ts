@@ -9,6 +9,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import {
   AfterViewChecked,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -19,9 +20,8 @@ import {
   Output,
   QueryList,
   SimpleChanges,
-  ViewChildren,
   ViewChild,
-  ChangeDetectorRef,
+  ViewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -39,10 +39,10 @@ import {
   JobTasksService,
 } from '../../../services/job-tasks.service';
 import { JobDescription } from '../../../types/job-descriptions';
-import { JobTask, CreateJobTask } from '../../../types/job-tasks';
+import { CreateJobTask, JobTask } from '../../../types/job-tasks';
 import { Tag } from '../../../types/tag';
 import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
-import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
+import { JobTaskDeleteConfirmationDialogComponent } from '../../job-task-delete-confirmation-dialog/job-task-delete-confirmation-dialog.component';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
@@ -539,20 +539,28 @@ export class JtOverviewAccordionComponent
   }
 
   deleteItem(item: JobTask): void {
-    this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Eintrag löschen?',
-        onConfirmCallback: () => {
-          this.jobTasksService.deleteJobTask(item.id!).subscribe({
-            next: () => {
-              this._handleSuccessfulUpdate({ reloadTasks: true });
+    this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
+      next: (affectedCount) => {
+        this.dialog.open(JobTaskDeleteConfirmationDialogComponent, {
+          width: '500px',
+          data: {
+            jobTask: item,
+            affectedCount: affectedCount,
+            onConfirmCallback: () => {
+              this.jobTasksService.deleteJobTask(item.id!).subscribe({
+                next: () => {
+                  this._handleSuccessfulUpdate({ reloadTasks: true });
+                },
+                error: (error) => {
+                  console.error('Error deleting job task:', error);
+                },
+              });
             },
-            error: (error) => {
-              console.error('Error deleting job task:', error);
-            },
-          });
-        },
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching affected job descriptions count:', error);
       },
     });
   }

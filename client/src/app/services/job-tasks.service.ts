@@ -64,6 +64,10 @@ export class JobTasksService {
     return this.http.get<boolean>(`${this.apiUrl}/exists?title=${title}`);
   }
 
+  getAffectedJobDescriptionsCount(id: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/${id}/affected-job-descriptions-count`);
+  }
+
   private buildWhereClause(filter?: JobTaskFilter): HttpParams {
     let params = new HttpParams();
 

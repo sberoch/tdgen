@@ -36,6 +36,13 @@ export class JobTasksController {
     return this.jobTasksService.has(id);
   }
 
+  @Get(':id/affected-job-descriptions-count')
+  async getAffectedJobDescriptionsCount(
+    @Param('id') id: string,
+  ): Promise<number> {
+    return this.jobTasksService.getAffectedJobDescriptionsCount(id);
+  }
+
   @Get(':id')
   async get(@Param('id') id: string): Promise<JobTask> {
     return this.jobTasksService.get(id);
