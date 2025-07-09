@@ -8,8 +8,6 @@ import {
 } from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   HostListener,
@@ -62,7 +60,6 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
     PastelColorPipe,
     ScrollingModule,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [
     `
       :host ::ng-deep .cdk-virtual-scroll-content-wrapper {
@@ -118,8 +115,7 @@ export class CardBacklogColumnComponent implements OnInit {
     private dialog: MatDialog,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService,
-    private cdr: ChangeDetectorRef
+    private jobDescriptionsService: JobDescriptionsService
   ) {}
 
   ngOnInit() {
@@ -127,17 +123,13 @@ export class CardBacklogColumnComponent implements OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((jobDescription) => {
         const newWorkspaceSet = jobDescription !== null;
-        if (newWorkspaceSet !== this.isWorkspaceSet) {
-          this.isWorkspaceSet = newWorkspaceSet;
-          this.cdr.markForCheck();
-        }
+        this.isWorkspaceSet = newWorkspaceSet;
         if (!jobDescription) {
           this.currentSearchTerm = '';
           if (this.backlogSearchInputRef) {
             this.backlogSearchInputRef.nativeElement.value = '';
           }
           this.cardService.initializeCards();
-          this.cdr.markForCheck();
         }
       });
 
@@ -147,7 +139,6 @@ export class CardBacklogColumnComponent implements OnInit {
         this.allBacklogCards = cards;
         this.updateFilteredBacklogCards();
         this.applySearchFilter(this.currentSearchTerm);
-        this.cdr.markForCheck();
       });
 
     this.cardService.displayCards$
@@ -156,7 +147,6 @@ export class CardBacklogColumnComponent implements OnInit {
         this.displayCards = displayCards;
         this.updateFilteredBacklogCards();
         this.applySearchFilter(this.currentSearchTerm);
-        this.cdr.markForCheck();
       });
 
     this.cardService.selectedCard$
@@ -165,7 +155,6 @@ export class CardBacklogColumnComponent implements OnInit {
         this.selectedCard = card;
         setTimeout(() => {
           this.scrollToSelectedCard();
-          this.cdr.markForCheck();
         }, 50);
       });
   }
@@ -208,7 +197,6 @@ export class CardBacklogColumnComponent implements OnInit {
     const termToFilter = searchTerm.trim().toLowerCase();
     if (!termToFilter) {
       this.backlogCards = [...this.filteredBacklogCards];
-      this.cdr.markForCheck();
       return;
     }
 
@@ -218,8 +206,6 @@ export class CardBacklogColumnComponent implements OnInit {
       const keywords = termToFilter.split(/\s+/);
       return keywords.every((keyword) => text.includes(keyword));
     });
-
-    this.cdr.markForCheck();
   }
 
   clearSearch(inputElement: HTMLInputElement) {
@@ -302,13 +288,11 @@ export class CardBacklogColumnComponent implements OnInit {
   openDialogWithCard(card: Card) {
     this.isJobTaskModalOpen = true;
     this.selectedCardToOpenModal = card;
-    this.cdr.markForCheck();
   }
 
   closeJobTaskModal() {
     this.isJobTaskModalOpen = false;
     this.selectedCardToOpenModal = null;
-    this.cdr.markForCheck();
   }
 
   shouldDisableEditButton(card: Card): boolean {
@@ -332,7 +316,6 @@ export class CardBacklogColumnComponent implements OnInit {
       const newLeftWidth = (event.clientX / containerWidth) * 100;
       this.leftWidth = Math.min(Math.max(newLeftWidth, minWidth), maxWidth);
       this.saveColumnWidth(this.leftWidth);
-      this.cdr.markForCheck();
     }
   }
 
@@ -365,6 +348,5 @@ export class CardBacklogColumnComponent implements OnInit {
     this.filteredBacklogCards = this.allBacklogCards.filter(
       (card) => !displayCardIds.has(card.jobTask.id)
     );
-    this.cdr.markForCheck();
   }
 }
