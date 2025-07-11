@@ -1,5 +1,11 @@
 import { FormGroup } from '@angular/forms';
-import { PDFDocument, PDFTextField } from 'pdf-lib';
+import {
+  PDFDocument,
+  PDFForm,
+  PDFTextField,
+  PDFWidgetAnnotation,
+  rgb,
+} from 'pdf-lib';
 import {
   ExportJobDescriptionForm,
   JobDescription,
@@ -44,12 +50,6 @@ export const transformFormData = (
   return {
     'f.dienst.10': formValue.department,
     'f.ort_datum.1': formValue.location + ', ' + formValue.date,
-    //TODO: handle f.kk.1 checkboxes. They all have the same name but different exportvalue.
-    //'f.kk.1': formValue.einstellung,
-    //'f.kk.1#1': formValue.versetzung,
-    //'f.kk.1#2': formValue.umsetzung,
-    'f.kk.2': formValue.aufgabenaderung,
-    'f.kk.21': formValue.sonstigesCheckbox,
     'f.sonstiges.1': formValue.sonstigesInput,
     'f.datum.1': formValue.effectiveDate,
     'f.dienstst.1': formValue.beschaftigungsdienststelle,
@@ -58,9 +58,6 @@ export const transformFormData = (
     'f.funktion.1': formValue.funktion,
     'f.vorn.1': formValue.employeeName,
     'f.uebernahme.1': formValue.workplaceStartDate,
-    //TODO: handle f.kk.22#0 and f.kk.23#0 checkboxes
-    //'f.kk.22#0': formValue.disabled,
-    //'f.kk.23#0': formValue.employmentScope,
     'f.std.1': formValue.parttimeHours,
     'f.zeitraum.1':
       formValue.periodStart +
@@ -78,6 +75,121 @@ export const transformFormData = (
   };
 };
 
+const drawBlankCheckbox = (
+  pdfDoc: PDFDocument,
+  widget: PDFWidgetAnnotation,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => {
+  const pageRef = widget.P();
+  const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
+
+  if (page) {
+    // Draw white rectangle with black border
+    page.drawRectangle({
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      color: rgb(1, 1, 1), // White fill
+      borderColor: rgb(0, 0, 0), // Black border
+      borderWidth: 1,
+    });
+  }
+};
+
+const drawXInCheckbox = (
+  pdfDoc: PDFDocument,
+  widget: PDFWidgetAnnotation,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) => {
+  const pageRef = widget.P();
+  const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
+
+  if (page) {
+    // Draw an "X" to mark the checkbox as checked
+    page.drawText('X', {
+      x: x + Math.abs(width) / 2 - 3,
+      y: y + Math.abs(height) / 2 - 3,
+      size: Math.min(Math.abs(width), Math.abs(height)) * 0.8,
+      color: rgb(0, 0, 0),
+    });
+  }
+};
+// Fill checkboxes with an "X". We need to do this instead of checking them because PDF is misconfigured and all
+// checkboxes have the same name but different exportvalue, making it impossible to check them using pdf-lib.
+const fillCheckboxes = (
+  pdfDoc: PDFDocument,
+  pdfForm: PDFForm,
+  formData: FormGroup<ExportJobDescriptionForm>
+) => {
+  const checkboxes = ['f.kk.1', 'f.kk.2', 'f.kk.21', 'f.kk.22', 'f.kk.23'];
+  for (const checkbox of checkboxes) {
+    const field = pdfForm.getCheckBox(checkbox);
+    field.enableReadOnly();
+    field.uncheck();
+  }
+
+  const allFields = pdfForm.getFields();
+  allFields.forEach((field) => {
+    const fieldName = field.acroField.getFullyQualifiedName();
+    if (fieldName && checkboxes.includes(fieldName)) {
+      const widgets = field.acroField.getWidgets();
+      widgets.forEach((widget) => {
+        const { x, y, width, height } = widget.getRectangle();
+
+        console.log({
+          fieldName,
+          x,
+          y,
+          width,
+          height,
+        });
+
+        drawBlankCheckbox(pdfDoc, widget, x, y, width, height);
+
+        if (fieldName === 'f.kk.1') {
+          if (Math.abs(x - 62) < 1 && formData.value.einstellung) {
+            drawXInCheckbox(pdfDoc, widget, x, y - 1, width, height);
+          } else if (Math.abs(x - 223.8) < 1 && formData.value.versetzung) {
+            drawXInCheckbox(pdfDoc, widget, x, 635.895, width, height);
+          } else if (Math.abs(x - 370.2) < 1 && formData.value.umsetzung) {
+            drawXInCheckbox(pdfDoc, widget, x, y - 1, width, height);
+          }
+        }
+
+        if (fieldName === 'f.kk.2' || fieldName === 'f.kk.21') {
+          drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+        }
+
+        if (fieldName === 'f.kk.22') {
+          if (Math.abs(x - 311.8) < 1 && formData.value.disabled) {
+            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+          } else if (Math.abs(x - 390.4) < 1 && !formData.value.disabled) {
+            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+          }
+        }
+
+        if (fieldName === 'f.kk.23') {
+          if (Math.abs(x - 61.8) < 1 && formData.value.employmentScope) {
+            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+          } else if (
+            Math.abs(x - 223.8) < 1 &&
+            !formData.value.employmentScope
+          ) {
+            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+          }
+        }
+      });
+    }
+  });
+};
+
 export const fillJobDescriptionForm = async (
   form: FormGroup<ExportJobDescriptionForm>,
   jobDescription: JobDescription,
@@ -92,19 +204,12 @@ export const fillJobDescriptionForm = async (
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
   setTextFieldFontSize(pdfForm.getTextField('f.dienstst.10'), FONT_SIZE);
 
+  fillCheckboxes(pdfDoc, pdfForm, form);
+
   pdfForm
     .getTextField('f.ort_datum.1')
     .setText(formData['f.ort_datum.1'] || '');
   setTextFieldFontSize(pdfForm.getTextField('f.ort_datum.1'), FONT_SIZE);
-
-  //TODO: handle f.kk.1 checkboxes. They all have the same name but different exportvalue.
-
-  formData['f.kk.2']
-    ? pdfForm.getCheckBox('f.kk.2').check()
-    : pdfForm.getCheckBox('f.kk.2').uncheck();
-  formData['f.kk.21']
-    ? pdfForm.getCheckBox('f.kk.21').check()
-    : pdfForm.getCheckBox('f.kk.21').uncheck();
 
   pdfForm
     .getTextField('f.sonstiges.1')
@@ -129,7 +234,6 @@ export const fillJobDescriptionForm = async (
     .getTextField('f.uebernahme.1')
     .setText(formData['f.uebernahme.1'] || '');
   setTextFieldFontSize(pdfForm.getTextField('f.uebernahme.1'), FONT_SIZE);
-  //TODO: handle f.kk.22#0 and f.kk.23#0 checkboxes
 
   pdfForm.getTextField('f.std.1').setText(formData['f.std.1'] || '');
   setTextFieldFontSize(pdfForm.getTextField('f.std.1'), FONT_SIZE);
