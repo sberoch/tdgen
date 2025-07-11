@@ -201,6 +201,14 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
     };
   }
 
+  getPlainTextLength(htmlContent: string): number {
+    if (!htmlContent) return 0;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlContent;
+    return tempDiv.textContent?.length || 0;
+  }
+
   onExportClick(): void {
     this.saveForm();
     this.exportClick.emit();
@@ -208,5 +216,73 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
 
   canExport(): boolean {
     return this.currentJobDescription !== null;
+  }
+
+  onKeydown(event: KeyboardEvent, field: FormField): void {
+    const maxLength = this.getMaxLength(field);
+    const fieldName = field.name;
+
+    if (!maxLength || !fieldName) {
+      return;
+    }
+
+    const currentLength = this.getPlainTextLength(
+      this.formData[fieldName] || ''
+    );
+    console.log('currentLength', currentLength);
+
+    if (currentLength >= maxLength) {
+      const allowedKeys = [
+        'Backspace',
+        'Delete',
+        'Tab',
+        'Escape',
+        'Enter',
+        'Home',
+        'End',
+        'PageUp',
+        'PageDown',
+        'ArrowLeft',
+        'ArrowRight',
+        'ArrowUp',
+        'ArrowDown',
+      ];
+
+      const isCtrlPressed = event.ctrlKey || event.metaKey;
+      const isSpecialCombo =
+        isCtrlPressed && ['a', 'c', 'x', 'z'].includes(event.key.toLowerCase());
+
+      if (!allowedKeys.includes(event.key) && !isSpecialCombo) {
+        event.preventDefault();
+      }
+    }
+  }
+
+  onPaste(event: ClipboardEvent, field: FormField): void {
+    const maxLength = this.getMaxLength(field);
+    const fieldName = field.name;
+
+    if (!maxLength || !fieldName) {
+      return;
+    }
+
+    const pastedText = event.clipboardData?.getData('text') || '';
+    const currentText = this.formData[fieldName] || '';
+
+    if (pastedText.length > 0) {
+      const availableSpace = maxLength - this.getPlainTextLength(currentText);
+
+      if (availableSpace <= 0) {
+        event.preventDefault();
+        return;
+      }
+
+      if (pastedText.length > availableSpace) {
+        event.preventDefault();
+        const truncatedText = pastedText.substring(0, availableSpace);
+        this.formData[fieldName] = currentText + truncatedText;
+        this.saveForm();
+      }
+    }
   }
 }

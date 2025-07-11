@@ -54,12 +54,14 @@
               [config]="getEditorConfig(field)"
               (blur)="saveForm()"
               class="mt-1 block w-full"
+              (keydown)="onKeydown($event, field)"
+              (paste)="onPaste($event, field)"
             ></angular-editor>
             <div
               *ngIf="getMaxLength(field) as maxLength"
               class="text-[10px] 2xl:text-xs 3xl:text-sm mt-1 text-right text-black/50 italic"
             >
-              {{ (formData[field.name!] || "").length }} /
+              {{ getPlainTextLength(formData[field.name!] || "") }} /
               {{ maxLength }} Zeichen
             </div>
           </div>
