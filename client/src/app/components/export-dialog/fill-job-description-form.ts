@@ -1,8 +1,8 @@
 import { FormGroup } from '@angular/forms';
 import {
+  PDFAcroTerminal,
   PDFDocument,
   PDFForm,
-  PDFTextField,
   PDFWidgetAnnotation,
   rgb,
 } from 'pdf-lib';
@@ -13,18 +13,38 @@ import {
 
 const FONT_SIZE = 12;
 
+const lengthThresholdsForFontSizeChange: Record<string, number> = {
+  'f.aufgabenbeschreibung.1': 500,
+  'f.beschreibung.1': 1000,
+  'f.beschreibung.2': 1000,
+  'f.eingliederung.1': 300,
+  'f.beschaeftigter.1': 300,
+  'f.beschaeftigter.2': 300,
+  'f.beschaeftigter.3': 300,
+  'f.beschaeftigter.4': 300,
+  'f.ausbildung.1': 500,
+  'f.ausbildung.2': 500,
+};
+
 // Helper function to set font size for a PDF text field
 const setTextFieldFontSize = (
-  textField: PDFTextField,
-  fontSize: number = FONT_SIZE
+  acroField: PDFAcroTerminal,
+  fontSize: number = FONT_SIZE,
+  label: string,
+  value: string | null | undefined
 ): void => {
-  const acroField = textField.acroField;
-
   // Set font size by modifying the default appearance
   const currentDA = acroField.getDefaultAppearance();
   // Replace any existing font size with the specified size, or add it if none exists
   // The DA string format is like: "/FontName 12 Tf" where 12 is the font size
   let newDA;
+
+  if (value && value.length > lengthThresholdsForFontSizeChange[label]) {
+    fontSize = 0; // Automatically adjust font size to fit the text
+    acroField.setDefaultAppearance(`/Courier ${fontSize} Tf`);
+    return;
+  }
+
   if (currentDA) {
     // Replace existing font size (pattern: /FontName number Tf)
     newDA = currentDA.replace(/\/\w+\s+\d+(\.\d+)?\s+Tf/, (match: string) => {
@@ -33,11 +53,11 @@ const setTextFieldFontSize = (
     });
     // If no font was found, append font size to existing DA
     if (newDA === currentDA && !currentDA.includes('Tf')) {
-      newDA = currentDA + ` /Helvetica ${fontSize} Tf`;
+      newDA = currentDA + ` /Courier ${fontSize} Tf`;
     }
   } else {
     // If no DA exists, create a new one with the specified font size
-    newDA = `/Helvetica ${fontSize} Tf`;
+    newDA = `/Courier ${fontSize} Tf`;
   }
   acroField.setDefaultAppearance(newDA);
 };
@@ -202,45 +222,110 @@ export const fillJobDescriptionForm = async (
   const formData = transformFormData(form, jobDescription);
 
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.dienstst.10'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.dienstst.10').acroField,
+    FONT_SIZE,
+    'f.dienst.10',
+    formData['f.dienst.10']
+  );
 
   fillCheckboxes(pdfDoc, pdfForm, form);
 
   pdfForm
     .getTextField('f.ort_datum.1')
     .setText(formData['f.ort_datum.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.ort_datum.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.ort_datum.1').acroField,
+    FONT_SIZE,
+    'f.ort_datum.1',
+    formData['f.ort_datum.1']
+  );
 
   pdfForm
     .getTextField('f.sonstiges.1')
     .setText(formData['f.sonstiges.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.sonstiges.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.sonstiges.1').acroField,
+    FONT_SIZE,
+    'f.sonstiges.1',
+    formData['f.sonstiges.1']
+  );
   pdfForm.getTextField('f.datum.1').setText(formData['f.datum.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.datum.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.datum.1').acroField,
+    FONT_SIZE,
+    'f.datum.1',
+    formData['f.datum.1']
+  );
 
   pdfForm.getTextField('f.dienstst.1').setText(formData['f.dienstst.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.dienstst.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.dienstst.1').acroField,
+    FONT_SIZE,
+    'f.dienstst.1',
+    formData['f.dienstst.1']
+  );
   pdfForm.getTextField('f.einheit.1').setText(formData['f.einheit.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.einheit.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.einheit.1').acroField,
+    FONT_SIZE,
+    'f.einheit.1',
+    formData['f.einheit.1']
+  );
   pdfForm
     .getTextField('f.dienstposten.1')
     .setText(formData['f.dienstposten.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.dienstposten.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.dienstposten.1').acroField,
+    FONT_SIZE,
+    'f.dienstposten.1',
+    formData['f.dienstposten.1']
+  );
   pdfForm.getTextField('f.funktion.1').setText(formData['f.funktion.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.funktion.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.funktion.1').acroField,
+    FONT_SIZE,
+    'f.funktion.1',
+    formData['f.funktion.1']
+  );
   pdfForm.getTextField('f.vorn.1').setText(formData['f.vorn.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.vorn.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.vorn.1').acroField,
+    FONT_SIZE,
+    'f.vorn.1',
+    formData['f.vorn.1']
+  );
   pdfForm
     .getTextField('f.uebernahme.1')
     .setText(formData['f.uebernahme.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.uebernahme.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.uebernahme.1').acroField,
+    FONT_SIZE,
+    'f.uebernahme.1',
+    formData['f.uebernahme.1']
+  );
 
   pdfForm.getTextField('f.std.1').setText(formData['f.std.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.std.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.std.1').acroField,
+    FONT_SIZE,
+    'f.std.1',
+    formData['f.std.1']
+  );
   pdfForm.getTextField('f.zeitraum.1').setText(formData['f.zeitraum.1'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.zeitraum.1'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.zeitraum.1').acroField,
+    FONT_SIZE,
+    'f.zeitraum.1',
+    formData['f.zeitraum.1']
+  );
   pdfForm.getTextField('f.zeitraum.2').setText(formData['f.zeitraum.2'] || '');
-  setTextFieldFontSize(pdfForm.getTextField('f.zeitraum.2'), FONT_SIZE);
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.zeitraum.2').acroField,
+    FONT_SIZE,
+    'f.zeitraum.2',
+    formData['f.zeitraum.2']
+  );
 
   for (const field of formData.jdFormFields) {
     if (field.key === 'f.aufgabenbeschreibung.1') {
@@ -248,47 +333,66 @@ export const fillJobDescriptionForm = async (
         .getTextField('f.aufgabenbeschreibung.1')
         .setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.aufgabenbeschreibung.1'),
-        FONT_SIZE
+        pdfForm.getTextField('f.aufgabenbeschreibung.1').acroField,
+        FONT_SIZE,
+        'f.aufgabenbeschreibung.1',
+        field.value
       );
     } else if (field.key === 'f.eingliederung.1') {
       pdfForm.getTextField('f.eingliederung.1').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.eingliederung.1'),
-        FONT_SIZE
+        pdfForm.getTextField('f.eingliederung.1').acroField,
+        FONT_SIZE,
+        'f.eingliederung.1',
+        field.value
       );
     } else if (field.key === 'f.beschaeftigter.1') {
       pdfForm.getTextField('f.beschaeftigter.1').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.1'),
-        FONT_SIZE
+        pdfForm.getTextField('f.beschaeftigter.1').acroField,
+        FONT_SIZE,
+        'f.beschaeftigter.1',
+        field.value
       );
     } else if (field.key === 'f.beschaeftigter.2') {
       pdfForm.getTextField('f.beschaeftigter.2').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.2'),
-        FONT_SIZE
+        pdfForm.getTextField('f.beschaeftigter.2').acroField,
+        FONT_SIZE,
+        'f.beschaeftigter.2',
+        field.value
       );
     } else if (field.key === 'f.beschaeftigter.3') {
       pdfForm.getTextField('f.beschaeftigter.3').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.3'),
-        FONT_SIZE
+        pdfForm.getTextField('f.beschaeftigter.3').acroField,
+        FONT_SIZE,
+        'f.beschaeftigter.3',
+        field.value
       );
     } else if (field.key === 'f.beschaeftigter.4') {
       pdfForm.getTextField('f.beschaeftigter.4').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.4'),
-        FONT_SIZE
+        pdfForm.getTextField('f.beschaeftigter.4').acroField,
+        FONT_SIZE,
+        'f.beschaeftigter.4',
+        field.value
       );
     } else if (field.key === 'f.ausbildung.1') {
       pdfForm.getTextField('f.ausbildung.1').setText(field.value || '');
-      setTextFieldFontSize(pdfForm.getTextField('f.ausbildung.1'), FONT_SIZE);
+      setTextFieldFontSize(
+        pdfForm.getTextField('f.ausbildung.1').acroField,
+        FONT_SIZE,
+        'f.ausbildung.1',
+        field.value
+      );
     } else if (field.key === 'f.fachkenntnisse.1') {
       pdfForm.getTextField('f.fachkenntnisse.1').setText(field.value || '');
       setTextFieldFontSize(
-        pdfForm.getTextField('f.fachkenntnisse.1'),
-        FONT_SIZE
+        pdfForm.getTextField('f.fachkenntnisse.1').acroField,
+        FONT_SIZE,
+        'f.fachkenntnisse.1',
+        field.value
       );
     }
   }
