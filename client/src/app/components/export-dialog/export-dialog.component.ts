@@ -130,9 +130,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
           formattedData[fieldName] = `${day}.${month}.${year}`;
         }
       });
-
-      console.log('formattedData', formattedData);
-
       sessionStorage.setItem(this.storageKey, JSON.stringify(formattedData));
     } catch (error) {
       console.warn('Failed to save form data to session storage:', error);
@@ -144,7 +141,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       const savedData = sessionStorage.getItem(this.storageKey);
       if (savedData) {
         const formData = JSON.parse(savedData);
-        console.log('formData', formData);
         this.exportForm.patchValue(formData);
       }
     } catch (error) {

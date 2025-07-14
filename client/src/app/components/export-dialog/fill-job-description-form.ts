@@ -1,72 +1,24 @@
 import { FormGroup } from '@angular/forms';
-import {
-  PDFAcroTerminal,
-  PDFDocument,
-  PDFForm,
-  PDFWidgetAnnotation,
-  rgb,
-} from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import {
   ExportJobDescriptionForm,
   JobDescription,
 } from '../../types/job-descriptions';
+import {
+  fillCheckboxes,
+  jobTasksTextSplit,
+  setTextFieldFontSize,
+  convertHtmlToText,
+} from './fill-job-description-utils';
 
 const FONT_SIZE = 12;
-
-const lengthThresholdsForFontSizeChange: Record<string, number> = {
-  'f.aufgabenbeschreibung.1': 500,
-  'f.beschreibung.1': 1000,
-  'f.beschreibung.2': 1000,
-  'f.eingliederung.1': 300,
-  'f.beschaeftigter.1': 300,
-  'f.beschaeftigter.2': 300,
-  'f.beschaeftigter.3': 300,
-  'f.beschaeftigter.4': 300,
-  'f.ausbildung.1': 500,
-  'f.ausbildung.2': 500,
-};
-
-// Helper function to set font size for a PDF text field
-const setTextFieldFontSize = (
-  acroField: PDFAcroTerminal,
-  fontSize: number = FONT_SIZE,
-  label: string,
-  value: string | null | undefined
-): void => {
-  // Set font size by modifying the default appearance
-  const currentDA = acroField.getDefaultAppearance();
-  // Replace any existing font size with the specified size, or add it if none exists
-  // The DA string format is like: "/FontName 12 Tf" where 12 is the font size
-  let newDA;
-
-  if (value && value.length > lengthThresholdsForFontSizeChange[label]) {
-    fontSize = 0; // Automatically adjust font size to fit the text
-    acroField.setDefaultAppearance(`/Courier ${fontSize} Tf`);
-    return;
-  }
-
-  if (currentDA) {
-    // Replace existing font size (pattern: /FontName number Tf)
-    newDA = currentDA.replace(/\/\w+\s+\d+(\.\d+)?\s+Tf/, (match: string) => {
-      const parts = match.split(' ');
-      return `${parts[0]} ${fontSize} Tf`;
-    });
-    // If no font was found, append font size to existing DA
-    if (newDA === currentDA && !currentDA.includes('Tf')) {
-      newDA = currentDA + ` /Courier ${fontSize} Tf`;
-    }
-  } else {
-    // If no DA exists, create a new one with the specified font size
-    newDA = `/Courier ${fontSize} Tf`;
-  }
-  acroField.setDefaultAppearance(newDA);
-};
 
 export const transformFormData = (
   formData: FormGroup<ExportJobDescriptionForm>,
   jobDescription: JobDescription
 ) => {
   const formValue = formData.value;
+  const jobTasksTextSplitResult = jobTasksTextSplit(jobDescription.tasks);
   return {
     'f.dienst.10': formValue.department,
     'f.ort_datum.1': formValue.location + ', ' + formValue.date,
@@ -91,123 +43,12 @@ export const transformFormData = (
         ? ' bis ' +
           (formValue.periodType === 'today' ? 'heute' : formValue.periodEnd)
         : ''),
+    'f.beschreibung.1': jobTasksTextSplitResult.group1,
+    'f.beschreibung.2': jobTasksTextSplitResult.group2,
+    'f.zeitanteil.1': jobTasksTextSplitResult.stats1,
+    'f.zeitanteil.2': jobTasksTextSplitResult.stats2,
     jdFormFields: jobDescription.formFields,
   };
-};
-
-const drawBlankCheckbox = (
-  pdfDoc: PDFDocument,
-  widget: PDFWidgetAnnotation,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) => {
-  const pageRef = widget.P();
-  const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
-
-  if (page) {
-    // Draw white rectangle with black border
-    page.drawRectangle({
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-      color: rgb(1, 1, 1), // White fill
-      borderColor: rgb(0, 0, 0), // Black border
-      borderWidth: 1,
-    });
-  }
-};
-
-const drawXInCheckbox = (
-  pdfDoc: PDFDocument,
-  widget: PDFWidgetAnnotation,
-  x: number,
-  y: number,
-  width: number,
-  height: number
-) => {
-  const pageRef = widget.P();
-  const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
-
-  if (page) {
-    // Draw an "X" to mark the checkbox as checked
-    page.drawText('X', {
-      x: x + Math.abs(width) / 2 - 3,
-      y: y + Math.abs(height) / 2 - 3,
-      size: Math.min(Math.abs(width), Math.abs(height)) * 0.8,
-      color: rgb(0, 0, 0),
-    });
-  }
-};
-// Fill checkboxes with an "X". We need to do this instead of checking them because PDF is misconfigured and all
-// checkboxes have the same name but different exportvalue, making it impossible to check them using pdf-lib.
-const fillCheckboxes = (
-  pdfDoc: PDFDocument,
-  pdfForm: PDFForm,
-  formData: FormGroup<ExportJobDescriptionForm>
-) => {
-  const checkboxes = ['f.kk.1', 'f.kk.2', 'f.kk.21', 'f.kk.22', 'f.kk.23'];
-  for (const checkbox of checkboxes) {
-    const field = pdfForm.getCheckBox(checkbox);
-    field.enableReadOnly();
-    field.uncheck();
-  }
-
-  const allFields = pdfForm.getFields();
-  allFields.forEach((field) => {
-    const fieldName = field.acroField.getFullyQualifiedName();
-    if (fieldName && checkboxes.includes(fieldName)) {
-      const widgets = field.acroField.getWidgets();
-      widgets.forEach((widget) => {
-        const { x, y, width, height } = widget.getRectangle();
-
-        console.log({
-          fieldName,
-          x,
-          y,
-          width,
-          height,
-        });
-
-        drawBlankCheckbox(pdfDoc, widget, x, y, width, height);
-
-        if (fieldName === 'f.kk.1') {
-          if (Math.abs(x - 62) < 1 && formData.value.einstellung) {
-            drawXInCheckbox(pdfDoc, widget, x, y - 1, width, height);
-          } else if (Math.abs(x - 223.8) < 1 && formData.value.versetzung) {
-            drawXInCheckbox(pdfDoc, widget, x, 635.895, width, height);
-          } else if (Math.abs(x - 370.2) < 1 && formData.value.umsetzung) {
-            drawXInCheckbox(pdfDoc, widget, x, y - 1, width, height);
-          }
-        }
-
-        if (fieldName === 'f.kk.2' || fieldName === 'f.kk.21') {
-          drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-        }
-
-        if (fieldName === 'f.kk.22') {
-          if (Math.abs(x - 311.8) < 1 && formData.value.disabled) {
-            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-          } else if (Math.abs(x - 390.4) < 1 && !formData.value.disabled) {
-            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-          }
-        }
-
-        if (fieldName === 'f.kk.23') {
-          if (Math.abs(x - 61.8) < 1 && formData.value.employmentScope) {
-            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-          } else if (
-            Math.abs(x - 223.8) < 1 &&
-            !formData.value.employmentScope
-          ) {
-            drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-          }
-        }
-      });
-    }
-  });
 };
 
 export const fillJobDescriptionForm = async (
@@ -327,72 +168,113 @@ export const fillJobDescriptionForm = async (
     formData['f.zeitraum.2']
   );
 
+  pdfForm
+    .getTextField('f.beschreibung.1')
+    .setText(formData['f.beschreibung.1'] || '');
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.beschreibung.1').acroField,
+    FONT_SIZE,
+    'f.beschreibung.1',
+    formData['f.beschreibung.1']
+  );
+
+  pdfForm
+    .getTextField('f.beschreibung.2')
+    .setText(formData['f.beschreibung.2'] || '');
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.beschreibung.2').acroField,
+    FONT_SIZE,
+    'f.beschreibung.2',
+    formData['f.beschreibung.2']
+  );
+
+  pdfForm
+    .getTextField('f.zeitanteil.1')
+    .setText(formData['f.zeitanteil.1'] || '');
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.zeitanteil.1').acroField,
+    FONT_SIZE,
+    'f.zeitanteil.1',
+    formData['f.zeitanteil.1']
+  );
+
+  pdfForm
+    .getTextField('f.zeitanteil.2')
+    .setText(formData['f.zeitanteil.2'] || '');
+  setTextFieldFontSize(
+    pdfForm.getTextField('f.zeitanteil.2').acroField,
+    FONT_SIZE,
+    'f.zeitanteil.2',
+    formData['f.zeitanteil.2']
+  );
+
   for (const field of formData.jdFormFields) {
+    console.log(field.value);
+    const value = convertHtmlToText(field.value);
+    console.log(value);
     if (field.key === 'f.aufgabenbeschreibung.1') {
-      pdfForm
-        .getTextField('f.aufgabenbeschreibung.1')
-        .setText(field.value || '');
+      pdfForm.getTextField('f.aufgabenbeschreibung.1').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.aufgabenbeschreibung.1').acroField,
         FONT_SIZE,
         'f.aufgabenbeschreibung.1',
-        field.value
+        value
       );
     } else if (field.key === 'f.eingliederung.1') {
-      pdfForm.getTextField('f.eingliederung.1').setText(field.value || '');
+      pdfForm.getTextField('f.eingliederung.1').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.eingliederung.1').acroField,
         FONT_SIZE,
         'f.eingliederung.1',
-        field.value
+        value
       );
     } else if (field.key === 'f.beschaeftigter.1') {
-      pdfForm.getTextField('f.beschaeftigter.1').setText(field.value || '');
+      pdfForm.getTextField('f.beschaeftigter.1').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.beschaeftigter.1').acroField,
         FONT_SIZE,
         'f.beschaeftigter.1',
-        field.value
+        value
       );
     } else if (field.key === 'f.beschaeftigter.2') {
-      pdfForm.getTextField('f.beschaeftigter.2').setText(field.value || '');
+      pdfForm.getTextField('f.beschaeftigter.2').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.beschaeftigter.2').acroField,
         FONT_SIZE,
         'f.beschaeftigter.2',
-        field.value
+        value
       );
     } else if (field.key === 'f.beschaeftigter.3') {
-      pdfForm.getTextField('f.beschaeftigter.3').setText(field.value || '');
+      pdfForm.getTextField('f.beschaeftigter.3').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.beschaeftigter.3').acroField,
         FONT_SIZE,
         'f.beschaeftigter.3',
-        field.value
+        value
       );
     } else if (field.key === 'f.beschaeftigter.4') {
-      pdfForm.getTextField('f.beschaeftigter.4').setText(field.value || '');
+      pdfForm.getTextField('f.beschaeftigter.4').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.beschaeftigter.4').acroField,
         FONT_SIZE,
         'f.beschaeftigter.4',
-        field.value
+        value
       );
     } else if (field.key === 'f.ausbildung.1') {
-      pdfForm.getTextField('f.ausbildung.1').setText(field.value || '');
+      pdfForm.getTextField('f.ausbildung.1').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.ausbildung.1').acroField,
         FONT_SIZE,
         'f.ausbildung.1',
-        field.value
+        value
       );
     } else if (field.key === 'f.fachkenntnisse.1') {
-      pdfForm.getTextField('f.fachkenntnisse.1').setText(field.value || '');
+      pdfForm.getTextField('f.fachkenntnisse.1').setText(value || '');
       setTextFieldFontSize(
         pdfForm.getTextField('f.fachkenntnisse.1').acroField,
         FONT_SIZE,
         'f.fachkenntnisse.1',
-        field.value
+        value
       );
     }
   }

@@ -229,7 +229,6 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
     const currentLength = this.getPlainTextLength(
       this.formData[fieldName] || ''
     );
-    console.log('currentLength', currentLength);
 
     if (currentLength >= maxLength) {
       const allowedKeys = [
