@@ -32,7 +32,6 @@ import { JobDescriptionsService } from '../../services/job-descriptions.service'
 import { JobDescription } from '../../types/job-descriptions';
 import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-import { ScrollingModule } from '@angular/cdk/scrolling';
 import { Subject, takeUntil } from 'rxjs';
 
 const MAX_DISPLAY_CARDS = 10;
@@ -58,18 +57,9 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
     CommonModule,
     TruncateSafeHtmlPipe,
     PastelColorPipe,
-    ScrollingModule,
   ],
   styles: [
     `
-      :host ::ng-deep .cdk-virtual-scroll-content-wrapper {
-        min-height: calc(100% + 1px) !important;
-      }
-
-      :host ::ng-deep cdk-virtual-scroll-viewport {
-        scrollbar-gutter: stable;
-      }
-
       :host ::ng-deep ol {
         list-style: decimal;
         padding-left: 1.5rem;
