@@ -1,5 +1,5 @@
 import { FormGroup } from '@angular/forms';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDict, PDFDocument, PDFName, StandardFonts } from 'pdf-lib';
 import {
   ExportJobDescriptionForm,
   JobDescription,
@@ -59,7 +59,25 @@ export const fillJobDescriptionForm = async (
   const pdfDoc = await PDFDocument.load(arrayBuffer, {
     ignoreEncryption: true,
   });
+  const courierFont = await pdfDoc.embedFont(StandardFonts.Courier);
   const pdfForm = pdfDoc.getForm();
+  const acroForm = pdfForm.acroForm;
+  const dict = acroForm.dict;
+  let DR = dict.lookupMaybe(PDFName.of('DR'), PDFDict);
+  if (!DR) {
+    DR = pdfDoc.context.obj({});
+    dict.set(PDFName.of('DR'), DR);
+  }
+
+  let fontDict = DR.lookupMaybe(PDFName.of('Font'), PDFDict);
+  if (!fontDict) {
+    fontDict = pdfDoc.context.obj({});
+    DR.set(PDFName.of('Font'), fontDict);
+  }
+
+  const courierRef = pdfDoc.context.register(courierFont.ref);
+  fontDict.set(PDFName.of('Courier'), courierRef);
+
   const formData = transformFormData(form, jobDescription);
 
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
