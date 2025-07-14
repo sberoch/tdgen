@@ -139,7 +139,11 @@ export const fillCheckboxes = (
           }
         }
 
-        if (fieldName === 'f.kk.2' || fieldName === 'f.kk.21') {
+        if (fieldName === 'f.kk.2' && formData.value.aufgabenaderung) {
+          drawXInCheckbox(pdfDoc, widget, x, y, width, height);
+        }
+
+        if (fieldName === 'f.kk.21' && formData.value.sonstigesCheckbox) {
           drawXInCheckbox(pdfDoc, widget, x, y, width, height);
         }
 
@@ -365,7 +369,6 @@ export const jobTasksTextSplit = (tasks: JobDescriptionTask[]) => {
     convertHtmlToText(task.jobTask.text),
     task.percentage,
   ]) as [string, number][];
-  console.log(tasksArray);
   const result: JobTasksTextSplitResult = textSplit(tasksArray);
   return result;
 };

@@ -312,7 +312,6 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         onConfirmCallback: () => {
           this.jobDescriptionsService.deleteJobDescription(item.id).subscribe({
             next: () => {
-              console.log('Job description deleted successfully');
               this.loadJobDescriptions();
             },
             error: (error) => {

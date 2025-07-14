@@ -13,35 +13,47 @@ import {
 
 const FONT_SIZE = 12;
 
+const formatDate = (date: string | null | undefined) => {
+  if (!date) return '';
+  if (date.includes('.')) return date;
+  const [year, month, day] = date.split('-');
+  return `${day}.${month}.${year}`;
+};
+
 export const transformFormData = (
   formData: FormGroup<ExportJobDescriptionForm>,
   jobDescription: JobDescription
 ) => {
   const formValue = formData.value;
   const jobTasksTextSplitResult = jobTasksTextSplit(jobDescription.tasks);
+
   return {
     'f.dienst.10': formValue.department,
-    'f.ort_datum.1': formValue.location + ', ' + formValue.date,
+    'f.ort_datum.1': formValue.location + ', ' + formatDate(formValue.date),
     'f.sonstiges.1': formValue.sonstigesInput,
-    'f.datum.1': formValue.effectiveDate,
+    'f.datum.1': formatDate(formValue.effectiveDate),
     'f.dienstst.1': formValue.beschaftigungsdienststelle,
     'f.einheit.1': formValue.organisationseinheit,
     'f.dienstposten.1': formValue.dienstpostennr,
     'f.funktion.1': formValue.funktion,
     'f.vorn.1': formValue.employeeName,
-    'f.uebernahme.1': formValue.workplaceStartDate,
+    'f.uebernahme.1': formatDate(formValue.workplaceStartDate),
     'f.std.1': formValue.parttimeHours,
     'f.zeitraum.1':
-      formValue.periodStart +
+      formatDate(formValue.periodStart) +
       (formValue.periodType
         ? ' bis ' +
-          (formValue.periodType === 'today' ? 'heute' : formValue.periodEnd)
+          (formValue.periodType === 'today'
+            ? 'heute'
+            : formatDate(formValue.periodEnd))
         : ''),
     'f.zeitraum.2':
-      formValue.periodStart +
+      formatDate(formValue.periodStart) +
       (formValue.periodType
         ? ' bis ' +
-          (formValue.periodType === 'today' ? 'heute' : formValue.periodEnd)
+          (formValue.periodType === 'today'
+            ? 'heute'
+            : formatDate(formValue.periodEnd))
         : ''),
     'f.beschreibung.1': jobTasksTextSplitResult.group1,
     'f.beschreibung.2': jobTasksTextSplitResult.group2,
@@ -80,6 +92,8 @@ export const fillJobDescriptionForm = async (
 
   const formData = transformFormData(form, jobDescription);
 
+  fillCheckboxes(pdfDoc, pdfForm, form);
+
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
   setTextFieldFontSize(
     pdfForm.getTextField('f.dienstst.10').acroField,
@@ -87,8 +101,6 @@ export const fillJobDescriptionForm = async (
     'f.dienst.10',
     formData['f.dienst.10']
   );
-
-  fillCheckboxes(pdfDoc, pdfForm, form);
 
   pdfForm
     .getTextField('f.ort_datum.1')
@@ -227,9 +239,7 @@ export const fillJobDescriptionForm = async (
   );
 
   for (const field of formData.jdFormFields) {
-    console.log(field.value);
     const value = convertHtmlToText(field.value);
-    console.log(value);
     if (field.key === 'f.aufgabenbeschreibung.1') {
       pdfForm.getTextField('f.aufgabenbeschreibung.1').setText(value || '');
       setTextFieldFontSize(
@@ -296,6 +306,8 @@ export const fillJobDescriptionForm = async (
       );
     }
   }
+
+  pdfForm.updateFieldAppearances(courierFont);
 
   return await pdfDoc.save();
 };

@@ -62,25 +62,25 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         department: ['', Validators.required],
         location: ['', Validators.required],
         date: ['', Validators.required],
-        einstellung: [false, Validators.required],
-        versetzung: [false, Validators.required],
-        umsetzung: [false, Validators.required],
-        aufgabenaderung: [false, Validators.required],
-        sonstigesCheckbox: [false, Validators.required],
-        sonstigesInput: ['', Validators.required],
+        einstellung: [false],
+        versetzung: [false],
+        umsetzung: [false],
+        aufgabenaderung: [false],
+        sonstigesCheckbox: [false],
+        sonstigesInput: [''],
         effectiveDate: ['', Validators.required],
         beschaftigungsdienststelle: ['', Validators.required],
         organisationseinheit: ['', Validators.required],
-        dienstpostennr: ['', Validators.required],
+        dienstpostennr: [''],
         funktion: ['', Validators.required],
         employeeName: ['', Validators.required],
         workplaceStartDate: ['', Validators.required],
-        disabled: ['', Validators.required],
-        employmentScope: ['', Validators.required],
-        parttimeHours: ['', Validators.required],
+        disabled: [''],
+        employmentScope: [''],
+        parttimeHours: [''],
         periodStart: ['', Validators.required],
-        periodEnd: ['', Validators.required],
-        periodType: ['', Validators.required],
+        periodEnd: [''],
+        periodType: [''],
       },
       { validators: this.dateRangeValidator }
     );
@@ -106,30 +106,30 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       }
     );
   }
+  private formatFormData(formData: any) {
+    const dateFields = [
+      'date',
+      'effectiveDate',
+      'workplaceStartDate',
+      'periodStart',
+      'periodEnd',
+    ];
+
+    dateFields.forEach((fieldName) => {
+      if (formData[fieldName] && formData[fieldName].includes('-')) {
+        const [year, month, day] = formData[fieldName].split('-');
+        formData[fieldName] = `${day}.${month}.${year}`;
+      }
+    });
+
+    return formData;
+  }
+
   private saveFormData(formData: any) {
     try {
-      const formattedData = { ...formData };
-
-      // Remove the employeeName field from storage
+      const formattedData = this.formatFormData(formData);
       delete formattedData.employeeName;
 
-      const dateFields = [
-        'date',
-        'effectiveDate',
-        'workplaceStartDate',
-        'periodStart',
-        'periodEnd',
-      ];
-
-      dateFields.forEach((fieldName) => {
-        if (
-          formattedData[fieldName] &&
-          formattedData[fieldName].includes('-')
-        ) {
-          const [year, month, day] = formattedData[fieldName].split('-');
-          formattedData[fieldName] = `${day}.${month}.${year}`;
-        }
-      });
       sessionStorage.setItem(this.storageKey, JSON.stringify(formattedData));
     } catch (error) {
       console.warn('Failed to save form data to session storage:', error);
@@ -168,12 +168,11 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Validate form before export
-    // if (this.exportForm.invalid) {
-    //   this.showValidationErrors = true;
-    //   this.exportForm.markAllAsTouched();
-    //   return;
-    // }
+    if (this.exportForm.invalid) {
+      this.showValidationErrors = true;
+      this.exportForm.markAllAsTouched();
+      return;
+    }
 
     const currentJobDescriptionId = currentJobDescription.id;
     this.jobDescriptionsService
