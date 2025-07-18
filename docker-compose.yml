@@ -1,4 +1,17 @@
 services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.1
+    container_name: keycloak
+    command: start-dev
+    ports:
+      - "18080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    restart: always
+
   tdgen:
     build:
       context: .
@@ -13,3 +26,6 @@ services:
     user: "1000:1000"
     restart: always
     command: npm run start:prod
+
+volumes:
+  keycloak_data:
