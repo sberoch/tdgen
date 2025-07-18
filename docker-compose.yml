@@ -2,12 +2,16 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.1
     container_name: keycloak
-    command: start-dev --http-enabled=true --hostname-strict=false
+    command: start-dev
     ports:
       - "18080:8080"
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_PROXY=edge
     volumes:
       - keycloak_data:/opt/keycloak/data
     restart: always
