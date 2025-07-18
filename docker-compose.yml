@@ -2,7 +2,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.1
     container_name: keycloak
-    command: start-dev
+    command: start-dev --http-enabled=true --hostname-strict=false
     ports:
       - "18080:8080"
     environment:
