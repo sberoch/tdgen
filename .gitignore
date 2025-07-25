@@ -1,2 +1,5 @@
 storage/
 CLAUDE.md
+
+server/.env
+server/private.key

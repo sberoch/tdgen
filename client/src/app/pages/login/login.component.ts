@@ -7,4 +7,8 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './login.component.html',
 })
-export class LoginComponent {}
+export class LoginComponent {
+  onSamlLogin() {
+    window.location.href = '/api/auth/saml/login';
+  }
+}

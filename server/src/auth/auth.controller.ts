@@ -1,31 +1,21 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { LoginDto, RegisterDto } from './auth.dto';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
-  @Post('login')
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async login(@Body() body: LoginDto) {
-    console.log(body);
-    return {
-      message: 'Login successful',
-    };
-  }
+  @Get('saml/login')
+  @UseGuards(AuthGuard('saml'))
+  login() {}
 
-  @Post('register')
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async register(@Body() body: RegisterDto) {
-    console.log(body);
-    return {
-      message: 'Register successful',
-    };
-  }
-
-  @Post('logout')
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async logout() {
-    return {
-      message: 'Logout successful',
-    };
+  @Post('saml/callback')
+  @UseGuards(AuthGuard('saml'))
+  callback(@Req() req, @Res() res) {
+    try {
+      console.log('SAML login successful for user:', req.user);
+      res.redirect('/');
+    } catch (error) {
+      console.error(error);
+      res.redirect('/login');
+    }
   }
 }

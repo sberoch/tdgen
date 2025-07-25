@@ -9,35 +9,16 @@
         <img src="/logo.svg" alt="TDGen Logo" class="h-12" />
       </div>
 
-      <form class="mb-6 mt-4 space-y-4">
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Viererkennung"
-          class="mt-1 w-full px-3 py-2 border rounded-sm border-[#006fb4] focus:outline-none focus:ring-[#224d77] focus:border-[#224d77]"
-        />
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Passwort"
-          class="mt-1 w-full px-3 py-2 border rounded-sm border-[#006fb4] focus:outline-none focus:ring-[#224d77] focus:border-[#224d77]"
-        />
-        <div class="flex justify-end">
+      <div class="mb-6 mt-4">
+        <div class="flex justify-center">
           <button
-            type="submit"
-            class="inline-flex justify-center py-2 px-4 rounded-sm text-sm font-medium text-white bg-[#224d77] hover:bg-[#006fb4]"
+            (click)="onSamlLogin()"
+            class="inline-flex justify-center w-[200px] py-2 px-4 rounded-sm text-sm font-medium text-white bg-[#224d77] hover:bg-[#006fb4]"
           >
             Anmelden
           </button>
         </div>
-
-        <div class="text-red-600 text-sm !mt-8 text-center px-8">
-          Ungültige Viererkennung oder falsches Passwort. Bitte überprüfen Sie
-          Ihre Eingaben.
-        </div>
-      </form>
+      </div>
 
       <div class="mt-auto flex justify-center">
         <img
