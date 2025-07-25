@@ -23,6 +23,8 @@ services:
     container_name: tdgen
     ports:
       - "5200:5200"
+    env_file:
+      - server/.env
     environment:
       - DATABASE_URL=file:/storage/prod.db
     volumes:
