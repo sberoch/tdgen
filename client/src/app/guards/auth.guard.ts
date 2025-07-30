@@ -4,28 +4,40 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { UserJwt } from '../types/user';
+import { EnvironmentService } from '../services/environment.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private environmentService: EnvironmentService
+  ) {}
 
   canActivate(): Observable<boolean> {
-    return this.http.get<UserJwt>('/api/auth/profile', { withCredentials: true }).pipe(
-      map((user) => {
-        // Check if user has admin group
-        if (!user.groups.includes('admin')) {
-          this.router.navigate(['/denied']);
-          return false;
-        }
-        return true;
-      }),
-      catchError(() => {
-        // Redirect to SAML login if no valid auth
-        window.location.href = '/api/auth/saml/login';
-        return of(false);
-      })
-    );
+    return this.http
+      .get<UserJwt>('/api/auth/profile', { withCredentials: true })
+      .pipe(
+        map(() => true),
+        catchError((error) => {
+          // Check if it's a SAML-related error (401 with specific message)
+          if (error.status === 401 && error.error?.message?.includes('SAML')) {
+            this.router.navigate(['/denied']);
+            return of(false);
+          }
+
+          // Check for server errors that might indicate SAML service issues
+          if (error.status >= 500) {
+            this.router.navigate(['/denied']);
+            return of(false);
+          }
+
+          // Regular auth failure - redirect to SAML login
+          window.location.href = '/api/auth/saml/login';
+          return of(false);
+        })
+      );
   }
 }

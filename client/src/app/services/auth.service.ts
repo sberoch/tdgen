@@ -25,6 +25,18 @@ export class AuthService {
         error: (error) => {
           console.error('Error fetching user profile:', error);
           this.userSubject.next(null);
+          
+          // Handle SAML-specific errors
+          if (error.status === 401 && error.error?.message?.includes('SAML')) {
+            window.location.href = '/denied';
+            return;
+          }
+          
+          // Handle server errors that might indicate SAML service issues
+          if (error.status >= 500) {
+            window.location.href = '/denied';
+            return;
+          }
         },
       });
   }

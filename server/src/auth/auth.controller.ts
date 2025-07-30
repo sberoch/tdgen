@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService, SamlUser } from './auth.service';
@@ -15,19 +17,31 @@ export class AuthController {
   @UseGuards(AuthGuard('saml'))
   callback(@Req() req: Request & { user: SamlUser }, @Res() res: Response) {
     try {
+      if (!req.user) {
+        console.error('No user in SAML callback');
+        return res.redirect('/denied?error=saml_no_user');
+      }
+
       const token = this.authService.generateJwtToken(req.user);
 
       res.cookie('accessToken', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        maxAge: 12 * 60 * 60 * 1000, // 12 hours
       });
 
       res.redirect('/');
-    } catch (error) {
-      console.error(error);
-      res.redirect('/login');
+    } catch (error: any) {
+      console.error('SAML callback error:', error);
+
+      // Check if it's a SAML-specific error
+      if (error.message && error.message.startsWith('SAML_')) {
+        return res.redirect(`/denied?error=${error.message.toLowerCase()}`);
+      }
+
+      // Generic SAML error
+      res.redirect('/denied?error=saml_callback_error');
     }
   }
 

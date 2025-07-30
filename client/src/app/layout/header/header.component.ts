@@ -5,24 +5,23 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Router } from '@angular/router';
 import { AboutDialogComponent } from '../../components/about-dialog/about-dialog.component';
 import { CloseDescriptionDialogComponent } from '../../components/close-description-dialog/close-description-dialog.component';
 import { DeletedTasksWarningDialogComponent } from '../../components/deleted-tasks-warning-dialog/deleted-tasks-warning-dialog.component';
+import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
+import { ExportModalComponent } from '../../components/export-dialog/modal/export-modal.component';
 import { FlyoutPanelComponent } from '../../components/flyout-panel/flyout-panel.component';
 import { JobDescriptionTitleDialogComponent } from '../../components/job-descriptions/job-description-title-dialog/job-description-title-dialog.component';
 import { JdOverviewAccordionComponent } from '../../components/job-descriptions/overview-accordion/jd-overview-accordion.component';
 import { JtOverviewAccordionComponent } from '../../components/job-tasks/overview-accordion/jt-overview-accordion.component';
 import { OverlayModalComponent } from '../../components/overlay-modal/overlay-modal.component';
-import { CurrentWorkspaceService } from '../../services/current-workspace.service';
-import { JobDescriptionsService } from '../../services/job-descriptions.service';
-import { MiscService } from '../../services/misc.service';
 import { AuthService } from '../../services/auth.service';
-import { User } from '../../types/user';
+import { CurrentWorkspaceService } from '../../services/current-workspace.service';
+import { EnvironmentService } from '../../services/environment.service';
+import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { JobDescription } from '../../types/job-descriptions';
-import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
+import { User } from '../../types/user';
 import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
-import { ExportModalComponent } from '../../components/export-dialog/modal/export-modal.component';
 
 @Component({
   selector: 'app-header',
@@ -57,11 +56,10 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private router: Router,
     private currentWorkspaceService: CurrentWorkspaceService,
     private jobDescriptionsService: JobDescriptionsService,
-    private miscService: MiscService,
-    private authService: AuthService
+    private authService: AuthService,
+    private environmentService: EnvironmentService
   ) {}
 
   ngOnInit() {
@@ -76,6 +74,31 @@ export class HeaderComponent implements OnInit {
     this.authService.user$.subscribe((user) => {
       this.currentUser = user;
     });
+  }
+
+  getHigherHierarchyRoleName(): string {
+    if (
+      this.currentUser?.groups.includes(this.environmentService.adminRoleName)
+    ) {
+      return (
+        this.environmentService.adminRoleName.charAt(0).toUpperCase() +
+        this.environmentService.adminRoleName.slice(1)
+      );
+    } else if (
+      this.currentUser?.groups.includes(this.environmentService.userRoleName)
+    ) {
+      return (
+        this.environmentService.userRoleName.charAt(0).toUpperCase() +
+        this.environmentService.userRoleName.slice(1)
+      );
+    }
+    if (this.currentUser?.groups[0]) {
+      return (
+        this.currentUser?.groups[0].charAt(0).toUpperCase() +
+        this.currentUser?.groups[0].slice(1)
+      );
+    }
+    return '';
   }
 
   togglePanel() {
@@ -185,5 +208,13 @@ export class HeaderComponent implements OnInit {
 
   get allTagsText(): string {
     return this.tags.join(', ');
+  }
+
+  isUserAdmin(): boolean {
+    return (
+      this.currentUser?.groups.includes(
+        this.environmentService.adminRoleName
+      ) || false
+    );
   }
 }

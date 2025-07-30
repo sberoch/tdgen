@@ -47,7 +47,7 @@
         *ngIf="currentUser"
       >
         {{ currentUser.id }}
-        <span *ngIf="currentUser.groups.includes('admin')"> (Admin) </span>
+        ({{ getHigherHierarchyRoleName() }})
       </div>
       <button
         mat-icon-button
