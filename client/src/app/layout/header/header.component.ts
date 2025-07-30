@@ -17,6 +17,8 @@ import { OverlayModalComponent } from '../../components/overlay-modal/overlay-mo
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { MiscService } from '../../services/misc.service';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../types/user';
 import { JobDescription } from '../../types/job-descriptions';
 import { ExportDialogComponent } from '../../components/export-dialog/export-dialog.component';
 import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
@@ -49,6 +51,7 @@ export class HeaderComponent implements OnInit {
   isJobTaskModalOpen = false;
   isExportModalOpen = false;
   isWorkspaceSet: boolean = false;
+  currentUser: User | null = null;
   @ViewChild('jdAccordion') jdOverviewAccordion!: JdOverviewAccordionComponent;
   @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
 
@@ -57,7 +60,8 @@ export class HeaderComponent implements OnInit {
     private router: Router,
     private currentWorkspaceService: CurrentWorkspaceService,
     private jobDescriptionsService: JobDescriptionsService,
-    private miscService: MiscService
+    private miscService: MiscService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -68,6 +72,10 @@ export class HeaderComponent implements OnInit {
         this.tags = jobDescription?.tags.map((tag) => tag.name) || [];
       }
     );
+
+    this.authService.user$.subscribe((user) => {
+      this.currentUser = user;
+    });
   }
 
   togglePanel() {
@@ -165,12 +173,6 @@ export class HeaderComponent implements OnInit {
     this.dialog.open(AboutDialogComponent, {
       width: '600px',
     });
-  }
-
-  logout() {
-    // Here you would typically clear any authentication tokens or user data
-    // For now, we'll just navigate to the login page
-    this.router.navigate(['/login']);
   }
 
   get displayedTags(): string[] {

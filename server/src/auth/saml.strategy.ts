@@ -36,10 +36,10 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       firstName: profile.firstName || profile.givenName,
       lastName: profile.lastName || profile.sn,
       username: profile['urn:oid:0.9.2342.19200300.100.1.1'] || profile.uid,
+      groups: profile.groups,
       rawProfile: profile,
     };
     try {
-      console.log({ user, attributes: profile.attributes });
       done(null, user);
     } catch (error) {
       console.error(error);

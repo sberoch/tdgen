@@ -8,7 +8,7 @@
         <img src="/logo.svg" alt="Logo" class="h-6" />
       </a>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-4">
       <div class="flex flex-col items-center gap-1" *ngIf="jobDescription">
         <div class="flex items-center gap-2">
           <p class="font-bold">{{ jobDescription.title }}</p>
@@ -41,15 +41,26 @@
         </div>
       </div>
     </div>
-    <button
-      mat-icon-button
-      aria-label="Open side panel"
-      (click)="togglePanel()"
-      [disabled]="jobDescription === null"
-      class="disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <mat-icon>{{ isPanelOpen ? "chevron_right" : "chevron_left" }}</mat-icon>
-    </button>
+    <div class="flex items-center gap-2">
+      <div
+        class="text-sm text-zinc-500 translate-y-[3px] italic"
+        *ngIf="currentUser"
+      >
+        {{ currentUser.id }}
+        <span *ngIf="currentUser.groups.includes('admin')"> (Admin) </span>
+      </div>
+      <button
+        mat-icon-button
+        aria-label="Open side panel"
+        (click)="togglePanel()"
+        [disabled]="jobDescription === null"
+        class="disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <mat-icon>{{
+          isPanelOpen ? "chevron_right" : "chevron_left"
+        }}</mat-icon>
+      </button>
+    </div>
   </div>
 </header>
 

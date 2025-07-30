@@ -1,10 +1,9 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
-import { LoginComponent } from './pages/login/login.component';
 import { DeniedComponent } from './pages/denied/denied.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: 'login', component: LoginComponent },
+  { path: '', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'denied', component: DeniedComponent },
 ];
