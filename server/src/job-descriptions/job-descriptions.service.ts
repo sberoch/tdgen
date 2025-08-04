@@ -13,8 +13,7 @@ import {
   JobDescriptionsListResponse,
 } from './job-descriptions.dto';
 import { getWeightedPayGroupFromTasks } from './job-descriptions.utils';
-
-const USER_ID = '4016651';
+import { SamlUser } from '../auth/auth.service';
 
 @Injectable()
 export class JobDescriptionsService {
@@ -57,6 +56,14 @@ export class JobDescriptionsService {
           return { ...rest, weightedAverage: 0 };
         }
       },
+    );
+
+    console.log(
+      'jobDescriptionsWithWeightedAverage',
+      jobDescriptionsWithWeightedAverage.map((jobDescription) => ({
+        title: jobDescription.title,
+        createdById: jobDescription.createdById,
+      })),
     );
 
     return { jobDescriptions: jobDescriptionsWithWeightedAverage, totalCount };
@@ -106,7 +113,7 @@ export class JobDescriptionsService {
     return !!jobDescription;
   }
 
-  async create(data: CreateJobDescriptionDto) {
+  async create(data: CreateJobDescriptionDto, user: SamlUser) {
     const { tags, formFields, ...rest } = data;
     try {
       const jobDescription = await this.prisma.jobDescription.create({
@@ -121,7 +128,7 @@ export class JobDescriptionsService {
                 }))
               : undefined,
           },
-          createdBy: { connect: { userId: USER_ID } },
+          createdById: user.id,
         },
         include: {
           tasks: {
@@ -139,7 +146,7 @@ export class JobDescriptionsService {
     }
   }
 
-  async set(id: string, data: UpdateJobDescriptionDto) {
+  async set(id: string, data: UpdateJobDescriptionDto, user: SamlUser) {
     const jobDescription = await this.get(id);
     const { tags, formFields, ...rest } = data;
 
@@ -164,7 +171,7 @@ export class JobDescriptionsService {
                   })),
                 }
               : undefined,
-            updatedBy: { connect: { userId: USER_ID } },
+            updatedById: user.id,
           },
           include: {
             tasks: {
@@ -208,13 +215,13 @@ export class JobDescriptionsService {
     return await this.get(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, user: SamlUser): Promise<void> {
     const jobDescription = await this.get(id);
     await this.prisma.jobDescription.update({
       where: { id: jobDescription.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { userId: USER_ID } },
+        deletedById: user.id,
       },
     });
   }

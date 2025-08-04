@@ -55,42 +55,6 @@ const getRandomSentence = (minWords: number, maxWords: number) => {
 };
 
 async function main() {
-  const permissions = await prisma.permission.findMany();
-  if (permissions.length === 0) {
-    await prisma.permission.createMany({
-      data: [
-        { name: 'CREATE' },
-        { name: 'READ' },
-        { name: 'UPDATE' },
-        { name: 'DELETE' },
-      ],
-    });
-    console.log('Created permissions.');
-  }
-  const createdPermissions = await prisma.permission.findMany();
-
-  const users = await prisma.user.findMany();
-  if (users.length === 0) {
-    await prisma.user.create({
-      data: {
-        userId: '4016651',
-        email: 'markus.nix@polizei.bund.de',
-        firstName: 'Markus',
-        lastName: 'Nix',
-        isAdmin: true,
-        permissions: {
-          connect: createdPermissions.map((permission) => ({
-            id: permission.id,
-          })),
-        },
-      },
-    });
-    console.log('Created admin user.');
-  }
-  const createdUser = await prisma.user.findUnique({
-    where: { userId: '4016651' },
-  });
-
   const jobTasks = await prisma.jobTask.findMany();
   if (jobTasks.length === 0) {
     await prisma.jobTask.createMany({
@@ -100,7 +64,7 @@ async function main() {
         metadata: {
           paymentGroup: `EG ${Math.floor(Math.random() * 15) + 1}`,
         },
-        createdById: createdUser!.id,
+        createdById: '4016651',
       })),
     });
     console.log('Created job tasks.');

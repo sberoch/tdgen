@@ -8,6 +8,8 @@ import {
   Body,
   Query,
   Res,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { JobDescription } from '@prisma/client';
 import { JobDescriptionsService } from './job-descriptions.service';
@@ -18,10 +20,13 @@ import {
   UpdateJobDescriptionPercentagesDto,
   JobDescriptionsListResponse,
 } from './job-descriptions.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { join } from 'path';
+import { SamlUser } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('job-descriptions')
+@UseGuards(JwtAuthGuard)
 export class JobDescriptionsController {
   constructor(
     private readonly jobDescriptionsService: JobDescriptionsService,
@@ -63,16 +68,20 @@ export class JobDescriptionsController {
   }
 
   @Post()
-  async create(@Body() data: CreateJobDescriptionDto): Promise<JobDescription> {
-    return this.jobDescriptionsService.create(data);
+  async create(
+    @Body() data: CreateJobDescriptionDto,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<JobDescription> {
+    return this.jobDescriptionsService.create(data, req.user);
   }
 
   @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionDto,
+    @Req() req: Request & { user: SamlUser },
   ): Promise<JobDescription> {
-    return this.jobDescriptionsService.set(id, data);
+    return this.jobDescriptionsService.set(id, data, req.user);
   }
 
   @Patch(':id/percentages')
@@ -84,7 +93,10 @@ export class JobDescriptionsController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.jobDescriptionsService.delete(id);
+  async delete(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<void> {
+    return this.jobDescriptionsService.delete(id, req.user);
   }
 }

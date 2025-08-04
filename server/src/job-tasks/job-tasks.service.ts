@@ -7,8 +7,7 @@ import {
   JobTaskParams,
   JobTasksListResponse,
 } from './job-tasks.dto';
-
-const USER_ID = '4016651';
+import { SamlUser } from '../auth/auth.service';
 
 @Injectable()
 export class JobTasksService {
@@ -62,13 +61,13 @@ export class JobTasksService {
     return !!jobTask;
   }
 
-  async create(data: CreateJobTaskDto): Promise<JobTask> {
+  async create(data: CreateJobTaskDto, user: SamlUser): Promise<JobTask> {
     const { tags, ...rest } = data;
     return this.prisma.jobTask.create({
       data: {
         ...rest,
         tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
-        createdBy: { connect: { userId: USER_ID } },
+        createdById: user.id,
       },
       include: {
         tags: true,
@@ -76,7 +75,11 @@ export class JobTasksService {
     });
   }
 
-  async set(id: string, data: UpdateJobTaskDto): Promise<JobTask> {
+  async set(
+    id: string,
+    data: UpdateJobTaskDto,
+    user: SamlUser,
+  ): Promise<JobTask> {
     const jobTask = await this.get(id);
     const { tags, ...rest } = data;
     return this.prisma.jobTask.update({
@@ -86,7 +89,7 @@ export class JobTasksService {
         tags: tags
           ? { deleteMany: {}, create: tags.map((tag) => ({ name: tag })) }
           : undefined,
-        updatedBy: { connect: { userId: USER_ID } },
+        updatedById: user.id,
       },
       include: {
         tags: true,
@@ -106,13 +109,13 @@ export class JobTasksService {
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, user: SamlUser): Promise<void> {
     const jobTask = await this.get(id);
     await this.prisma.jobTask.update({
       where: { id: jobTask.id },
       data: {
         deletedAt: new Date(),
-        deletedBy: { connect: { userId: USER_ID } },
+        deletedById: user.id,
       },
     });
   }

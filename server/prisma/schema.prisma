@@ -10,30 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Permission {
-  id        Int        @id @default(autoincrement())
-  name      String
-  users      User[]
-}
-
-model User {
-  id        Int        @id @default(autoincrement())
-  userId    String @unique
-  email     String @unique
-  firstName String
-  lastName  String
-  isAdmin   Boolean  @default(false)
-  permissions Permission[]
-  createdJobDescriptions JobDescription[] @relation("JobDescriptionCreator")
-  updatedJobDescriptions JobDescription[] @relation("JobDescriptionUpdater")
-  deletedJobDescriptions JobDescription[] @relation("JobDescriptionDeleter")
-  createdJobTasks JobTask[] @relation("JobTaskCreator")
-  updatedJobTasks JobTask[] @relation("JobTaskUpdater")
-  deletedJobTasks JobTask[] @relation("JobTaskDeleter")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
-}
 
 model Tag {
   id        Int        @id @default(autoincrement())
@@ -50,14 +26,11 @@ model JobTask {
   tags      Tag[]
   jobDescriptions JobDescriptionTask[]
   createdAt DateTime @default(now())
-  createdBy User @relation("JobTaskCreator", fields: [createdById], references: [id])
-  createdById Int 
+  createdById String
   updatedAt DateTime @updatedAt
-  updatedBy User? @relation("JobTaskUpdater", fields: [updatedById], references: [id])
-  updatedById Int?
+  updatedById String?
   deletedAt DateTime?
-  deletedBy User? @relation("JobTaskDeleter", fields: [deletedById], references: [id])
-  deletedById Int?
+  deletedById String?
 } 
 
 model JobDescription {
@@ -68,14 +41,11 @@ model JobDescription {
   tags      Tag[]
   formFields JobDescriptionFormField[]
   createdAt DateTime @default(now())
-  createdBy User @relation("JobDescriptionCreator", fields: [createdById], references: [id])
-  createdById Int
+  createdById String
   updatedAt DateTime @updatedAt
-  updatedBy User? @relation("JobDescriptionUpdater", fields: [updatedById], references: [id])
-  updatedById Int?
+  updatedById String?
   deletedAt DateTime?
-  deletedBy User? @relation("JobDescriptionDeleter", fields: [deletedById], references: [id])
-  deletedById Int?
+  deletedById String?
 }
 
 model JobDescriptionFormField {

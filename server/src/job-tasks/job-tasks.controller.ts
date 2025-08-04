@@ -7,6 +7,8 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { JobTask } from '@prisma/client';
 import {
@@ -16,8 +18,12 @@ import {
   JobTasksListResponse,
 } from './job-tasks.dto';
 import { JobTasksService } from './job-tasks.service';
+import { Request } from 'express';
+import { SamlUser } from '../auth/auth.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('job-tasks')
+@UseGuards(JwtAuthGuard)
 export class JobTasksController {
   constructor(private readonly jobTasksService: JobTasksService) {}
 
@@ -49,20 +55,27 @@ export class JobTasksController {
   }
 
   @Post()
-  async create(@Body() data: CreateJobTaskDto): Promise<JobTask> {
-    return this.jobTasksService.create(data);
+  async create(
+    @Body() data: CreateJobTaskDto,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<JobTask> {
+    return this.jobTasksService.create(data, req.user);
   }
 
   @Patch(':id')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateJobTaskDto,
+    @Req() req: Request & { user: SamlUser },
   ): Promise<JobTask> {
-    return this.jobTasksService.set(id, data);
+    return this.jobTasksService.set(id, data, req.user);
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.jobTasksService.delete(id);
+  async delete(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<void> {
+    return this.jobTasksService.delete(id, req.user);
   }
 }
