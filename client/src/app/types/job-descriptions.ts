@@ -16,6 +16,7 @@ export type JobDescription = {
   tags: Tag[];
   formFields: JobDescriptionFormField[];
   createdAt?: string;
+  createdBy?: string;
   updatedAt?: string;
   deletedAt?: string;
 };

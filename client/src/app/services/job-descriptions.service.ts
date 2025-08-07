@@ -15,6 +15,7 @@ export interface JobDescriptionFilter {
   metadata?: Record<string, any>;
   includeDeleted?: boolean;
   search?: string;
+  createdById?: string;
 }
 
 @Injectable({
@@ -114,6 +115,10 @@ export class JobDescriptionsService {
 
     if (filter?.includeDeleted) {
       params = params.set('includeDeleted', 'true');
+    }
+
+    if (filter?.createdById) {
+      params = params.set('createdById', filter.createdById);
     }
 
     return params;

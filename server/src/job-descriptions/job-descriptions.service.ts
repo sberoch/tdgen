@@ -269,6 +269,11 @@ export class JobDescriptionsService {
     if (params?.metadata) {
       where.metadata = params.metadata;
     }
+
+    if (params?.createdById) {
+      where.createdById = params.createdById;
+    }
+
     return where;
   }
 }

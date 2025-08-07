@@ -9,6 +9,7 @@ export type JobTask = {
   tags: Tag[];
   jobDescriptions?: JobDescriptionTask[];
   createdAt?: string;
+  createdBy?: string;
   updatedAt?: string;
   deletedAt?: string;
 };

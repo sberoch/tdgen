@@ -15,6 +15,7 @@ export type JobDescriptionParams = {
   tags?: string[];
   includeDeleted?: boolean;
   search?: string;
+  createdById?: string;
 };
 
 export type UpdateJobDescriptionPercentagesDto = {

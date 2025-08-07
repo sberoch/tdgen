@@ -24,6 +24,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
+import { AuthService } from '../../../services/auth.service';
 import {
   JobDescriptionFilter,
   JobDescriptionsService,
@@ -75,6 +76,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   expandedItemId: number | null = null;
   tagInput: string = '';
   filter: JobDescriptionFilter = {};
+  showOwnEntriesOnly: boolean = false;
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
   totalJobDescriptionsCount: number = 0;
@@ -89,7 +91,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   constructor(
     private dialog: MatDialog,
     private jobDescriptionsService: JobDescriptionsService,
-    private currentWorkspaceService: CurrentWorkspaceService
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -187,6 +190,15 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   applyFilter(newFilter: Partial<JobDescriptionFilter>): void {
     this.filter = { ...this.filter, ...newFilter };
     this.loadJobDescriptions();
+  }
+
+  applyOwnEntriesFilter(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (this.showOwnEntriesOnly && currentUser?.id) {
+      this.applyFilter({ createdById: currentUser.id });
+    } else {
+      this.applyFilter({ createdById: undefined });
+    }
   }
 
   clearFilter(): void {
@@ -338,6 +350,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   resetFiltersAndInput(): void {
     this.filter = {};
+    this.showOwnEntriesOnly = false;
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
     }

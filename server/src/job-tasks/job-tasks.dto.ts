@@ -14,6 +14,7 @@ export type JobTaskParams = {
   tags?: string[];
   includeDeleted?: boolean;
   search?: string;
+  createdById?: string;
 };
 
 export type JobTasksListResponse = {

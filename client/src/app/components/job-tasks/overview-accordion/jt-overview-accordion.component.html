@@ -40,6 +40,19 @@
     <label for="showDeleted" class="text-sm text-gray-700">
       gelöschte Einträge einblenden
     </label>
+    <input
+      type="checkbox"
+      id="showOwnEntriesOnly"
+      class="!ml-8 h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary"
+      [checked]="showOwnEntriesOnly"
+      (change)="
+        showOwnEntriesOnly = $any($event.target).checked;
+        applyOwnEntriesFilter()
+      "
+    />
+    <label for="showOwnEntriesOnly" class="text-sm text-gray-700">
+      nur eigene Einträge anzeigen
+    </label>
   </div>
 
   <div

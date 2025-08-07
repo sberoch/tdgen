@@ -16,6 +16,7 @@ export interface JobTaskFilter {
   metadata?: Record<string, any>;
   includeDeleted?: boolean;
   search?: string;
+  createdById?: string;
 }
 
 @Injectable({
@@ -65,7 +66,9 @@ export class JobTasksService {
   }
 
   getAffectedJobDescriptionsCount(id: number): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/${id}/affected-job-descriptions-count`);
+    return this.http.get<number>(
+      `${this.apiUrl}/${id}/affected-job-descriptions-count`
+    );
   }
 
   private buildWhereClause(filter?: JobTaskFilter): HttpParams {
@@ -89,6 +92,10 @@ export class JobTasksService {
 
     if (filter?.includeDeleted) {
       params = params.set('includeDeleted', 'true');
+    }
+
+    if (filter?.createdById) {
+      params = params.set('createdById', filter.createdById);
     }
 
     return params;

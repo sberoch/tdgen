@@ -169,6 +169,10 @@ export class JobTasksService {
       where.metadata = params.metadata;
     }
 
+    if (params?.createdById) {
+      where.createdById = params.createdById;
+    }
+
     return where;
   }
 }

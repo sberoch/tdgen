@@ -34,6 +34,7 @@ import {
 import { Subscription } from 'rxjs';
 import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
+import { AuthService } from '../../../services/auth.service';
 import {
   JobTaskFilter,
   JobTasksService,
@@ -98,6 +99,7 @@ export class JtOverviewAccordionComponent
   private subscription: Subscription = new Subscription();
   filter: JobTaskFilter = {};
   showDeleted: boolean = false;
+  showOwnEntriesOnly: boolean = false;
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
   totalJobTasksCount: number = 0;
@@ -169,7 +171,8 @@ export class JtOverviewAccordionComponent
     private jobTasksService: JobTasksService,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -301,6 +304,15 @@ export class JtOverviewAccordionComponent
   applyFilter(newFilter: Partial<JobTaskFilter>): void {
     this.filter = { ...this.filter, ...newFilter };
     this.loadJobTasks();
+  }
+
+  applyOwnEntriesFilter(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (this.showOwnEntriesOnly && currentUser?.id) {
+      this.applyFilter({ createdById: currentUser.id });
+    } else {
+      this.applyFilter({ createdById: undefined });
+    }
   }
 
   clearFilter(): void {
@@ -609,6 +621,7 @@ export class JtOverviewAccordionComponent
   resetFiltersAndInput(): void {
     this.filter = {};
     this.showDeleted = false;
+    this.showOwnEntriesOnly = false;
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
     }
