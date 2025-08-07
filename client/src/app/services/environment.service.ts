@@ -1,23 +1,26 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class EnvironmentService {
+  constructor(private runtimeConfig: RuntimeConfigService) {}
   get adminRoleName(): string {
-    return environment.adminRoleName;
+    return this.runtimeConfig.adminRoleName;
   }
 
   get userRoleName(): string {
-    return environment.userRoleName;
+    return this.runtimeConfig.userRoleName;
   }
 
   get apiUrl(): string {
-    return environment.apiUrl;
+    const base = this.runtimeConfig.apiUrl || '';
+    if (!base) return '';
+    return base.endsWith('/') ? base : `${base}/`;
   }
 
   get isDevEnv(): boolean {
-    return environment.isDevEnv;
+    return this.runtimeConfig.isDevEnv;
   }
 }

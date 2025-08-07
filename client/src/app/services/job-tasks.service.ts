@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from './environment.service';
 import {
   CreateJobTask,
   JobTask,
@@ -24,11 +24,13 @@ export interface JobTaskFilter {
 })
 export class JobTasksService {
   private jobTasksSubject = new BehaviorSubject<JobTask[]>([]);
-  private apiUrl = `${environment.apiUrl}api/job-tasks`;
+  private apiUrl: string;
 
   jobTasks$ = this.jobTasksSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private env: EnvironmentService) {
+    this.apiUrl = `${this.env.apiUrl || '/'}api/job-tasks`;
+  }
 
   private loadJobTasks(
     filter?: JobTaskFilter

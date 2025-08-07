@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from './environment.service';
 import {
   CreateJobDescriptionTask,
   JobDescriptionTask,
@@ -22,11 +22,13 @@ export class JobDescriptionTasksService {
   private jobDescriptionTasksSubject = new BehaviorSubject<
     JobDescriptionTask[]
   >([]);
-  private apiUrl = `${environment.apiUrl}job-description-tasks`;
+  private apiUrl: string;
 
   jobDescriptionTasks$ = this.jobDescriptionTasksSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private env: EnvironmentService) {
+    this.apiUrl = `${this.env.apiUrl || '/'}api/job-description-tasks`;
+  }
 
   private loadJobDescriptionTasks(
     filter?: JobDescriptionTaskFilter

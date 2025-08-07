@@ -2,7 +2,7 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { EnvironmentService } from './environment.service';
 import { JobDescription } from '../types/job-descriptions';
 import { JobTask, JobTasksListResponse } from '../types/job-tasks';
 import { Card } from '../utils/card.utils';
@@ -15,7 +15,7 @@ export class CardService {
   private cardsSubject = new BehaviorSubject<Card[]>([]);
   private displayCardsSubject = new BehaviorSubject<Card[]>([]);
   private selectedCardSubject = new BehaviorSubject<Card | null>(null);
-  private apiUrl = `${environment.apiUrl}api`;
+  private apiUrl: string;
   currentJobDescription: JobDescription | null = null;
 
   cards$ = this.cardsSubject.asObservable();
@@ -25,8 +25,10 @@ export class CardService {
 
   constructor(
     private http: HttpClient,
-    private currentWorkspaceService: CurrentWorkspaceService
+    private currentWorkspaceService: CurrentWorkspaceService,
+    private env: EnvironmentService
   ) {
+    this.apiUrl = `${this.env.apiUrl || '/'}api`;
     this.initializeCards();
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {

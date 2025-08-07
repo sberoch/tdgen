@@ -7,6 +7,7 @@ import { JobDescriptionsModule } from './job-descriptions/job-descriptions.modul
 import { JobDescriptionTasksModule } from './job-description-tasks/job-description-tasks.module';
 import { AuthModule } from './auth/auth.module';
 import * as path from 'path';
+import { ConfigController } from './config/config.controller';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import * as path from 'path';
     JobDescriptionTasksModule,
     AuthModule,
   ],
-  controllers: [],
+  controllers: [ConfigController],
 })
 export class AppModule {}
