@@ -34,7 +34,7 @@
     >
       <div
         *ngFor="let card of backlogCards; trackBy: trackCardById"
-        class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none mx-2"
+        class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none mx-2 mb-[2px]"
         cdkDrag
         (cdkDragStarted)="onDragStarted($event, card)"
         [style.cursor]="isWorkspaceSet ? 'move' : 'not-allowed'"
@@ -103,7 +103,7 @@
       @if (displayCards.length > 0) { @for (card of displayCards; track
       card.jobTask.id) {
       <div
-        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent"
+        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent mb-[2px]"
         [class.!border-[#333]]="card === selectedCard"
         cdkDrag
         (cdkDragStarted)="onDragStarted($event, card)"
@@ -141,7 +141,7 @@
           [innerHTML]="card.text | truncateSafeHtml : 9999"
         ></p>
         <p
-          class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1"
+          class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-3"
           [class.line-through]="card.jobTask.deletedAt"
           [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
           [class.italic]="card.jobTask.deletedAt"
