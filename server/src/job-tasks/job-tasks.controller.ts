@@ -21,6 +21,7 @@ import { JobTasksService } from './job-tasks.service';
 import { Request } from 'express';
 import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('job-tasks')
 @UseGuards(JwtAuthGuard)
@@ -77,5 +78,23 @@ export class JobTasksController {
     @Req() req: Request & { user: SamlUser },
   ): Promise<void> {
     return this.jobTasksService.delete(id, req.user);
+  }
+
+  @Delete(':id/permanent')
+  @UseGuards(AdminGuard)
+  async permanentDeleteWithCleanup(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<void> {
+    return this.jobTasksService.permanentDeleteWithCleanup(id, req.user);
+  }
+
+  @Patch(':id/restore')
+  @UseGuards(AdminGuard)
+  async restore(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<JobTask> {
+    return this.jobTasksService.restore(id, req.user);
   }
 }

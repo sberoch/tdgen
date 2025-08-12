@@ -27,6 +27,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import {
   AngularEditorConfig,
   AngularEditorModule,
@@ -44,6 +45,7 @@ import { CreateJobTask, JobTask } from '../../../types/job-tasks';
 import { Tag } from '../../../types/tag';
 import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
 import { JobTaskDeleteConfirmationDialogComponent } from '../../job-task-delete-confirmation-dialog/job-task-delete-confirmation-dialog.component';
+import { JobTaskPermanentDeleteDialogComponent } from '../../job-task-permanent-delete-dialog/job-task-permanent-delete-dialog.component';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
@@ -57,6 +59,7 @@ interface ExpandableJobTask extends JobTask {
     CommonModule,
     MatIconModule,
     MatButtonModule,
+    MatMenuModule,
     FormsModule,
     AngularEditorModule,
   ],
@@ -573,6 +576,52 @@ export class JtOverviewAccordionComponent
       },
       error: (error) => {
         console.error('Error fetching affected job descriptions count:', error);
+      },
+    });
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  softDeleteItem(item: JobTask): void {
+    this.deleteItem(item);
+  }
+
+  permanentDeleteItemWithCleanup(item: JobTask): void {
+    this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
+      next: (affectedCount) => {
+        this.dialog.open(JobTaskPermanentDeleteDialogComponent, {
+          width: '500px',
+          data: {
+            jobTask: item,
+            affectedCount: affectedCount,
+            onConfirmCallback: () => {
+              this.jobTasksService.permanentDeleteJobTaskWithCleanup(item.id!).subscribe({
+                next: () => {
+                  this._handleSuccessfulUpdate({ reloadTasks: true });
+                },
+                error: (error) => {
+                  console.error('Error permanently deleting job task with cleanup:', error);
+                },
+              });
+            },
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error fetching affected job descriptions count:', error);
+      },
+    });
+  }
+
+  restoreItem(item: JobTask): void {
+    this.jobTasksService.restoreJobTask(item.id!).subscribe({
+      next: () => {
+        this._handleSuccessfulUpdate({ reloadTasks: true });
+      },
+      error: (error) => {
+        console.error('Error restoring job task:', error);
       },
     });
   }

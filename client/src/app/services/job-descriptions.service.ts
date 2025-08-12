@@ -81,6 +81,14 @@ export class JobDescriptionsService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  permanentDeleteJobDescription(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/permanent`);
+  }
+
+  restoreJobDescription(id: number): Observable<JobDescription> {
+    return this.http.patch<JobDescription>(`${this.apiUrl}/${id}/restore`, {});
+  }
+
   updateJobDescriptionPercentages(
     id: number,
     taskPercentages: { taskId: number; percentage: number }[]

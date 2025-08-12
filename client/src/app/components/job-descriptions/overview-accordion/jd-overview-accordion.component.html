@@ -134,18 +134,60 @@
             >
               <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
             </button>
-            <button
-              mat-icon-button
-              class="group"
-              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
-              [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
-              title="Löschen"
-              (click)="$event.stopPropagation(); deleteItem(item)"
-            >
-              <mat-icon class="text-lg -translate-y-1 group-hover:text-red-500">
-                delete
-              </mat-icon>
-            </button>
+            <!-- Admin users see three-dot menu -->
+            <div *ngIf="isAdmin(); else regularUserButton">
+              <button
+                mat-icon-button
+                [matMenuTriggerFor]="actionMenu"
+                class="text-gray-500 hover:text-secondary"
+                [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+                title="Aktionen"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-icon class="text-lg -translate-y-1">more_vert</mat-icon>
+              </button>
+              <mat-menu #actionMenu="matMenu">
+                <button
+                  mat-menu-item
+                  [disabled]="!!item.deletedAt"
+                  (click)="softDeleteItem(item)"
+                >
+                  <mat-icon>delete</mat-icon>
+                  <span>Löschen</span>
+                </button>
+                <button
+                  mat-menu-item
+                  (click)="permanentDeleteItem(item)"
+                >
+                  <mat-icon>delete_forever</mat-icon>
+                  <span>Permanent löschen</span>
+                </button>
+                <button
+                  mat-menu-item
+                  [disabled]="!item.deletedAt"
+                  (click)="restoreItem(item)"
+                >
+                  <mat-icon>restore</mat-icon>
+                  <span>Wiederherstellen</span>
+                </button>
+              </mat-menu>
+            </div>
+
+            <!-- Regular users see simple delete button -->
+            <ng-template #regularUserButton>
+              <button
+                mat-icon-button
+                class="group"
+                [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+                [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
+                title="Löschen"
+                (click)="$event.stopPropagation(); deleteItem(item)"
+              >
+                <mat-icon class="text-lg -translate-y-1 group-hover:text-red-500">
+                  delete
+                </mat-icon>
+              </button>
+            </ng-template>
           </div>
         </div>
 
@@ -180,7 +222,7 @@
                 </button>
               </div>
               <div class="text-zinc-600 text-sm mt-1">
-                Entgeltgruppe Ø: {{ item.weightedAverage.toFixed(2) }}
+                {{ getTaskCountDisplay(item) }}
               </div>
             </div>
             <div

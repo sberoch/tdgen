@@ -11,6 +11,7 @@ export type JobDescription = {
   id: number;
   title: string;
   weightedAverage: number;
+  taskCount: number;
   metadata: Record<string, any>;
   tasks: JobDescriptionTask[];
   tags: Tag[];

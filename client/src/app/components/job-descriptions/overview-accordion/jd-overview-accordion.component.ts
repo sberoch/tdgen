@@ -23,6 +23,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
 import {
@@ -44,7 +45,13 @@ interface ExpandableJobDescription extends JobDescription {
   selector: 'app-jd-overview-accordion',
   templateUrl: './jd-overview-accordion.component.html',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, FormsModule],
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    FormsModule,
+  ],
   providers: [DatePipe],
   animations: [
     trigger('expandCollapse', [
@@ -276,6 +283,17 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
   }
 
+  getTaskCountDisplay(item: JobDescription): string {
+    const taskCount = item.taskCount;
+    const weightedAverage = item.weightedAverage.toFixed(2);
+
+    if (taskCount === 1) {
+      return `Enthält einen Arbeitsvorgang (Entgeltgruppe Ø: ${weightedAverage}).`;
+    } else {
+      return `Enthält ${taskCount} Arbeitsvorgänge (Entgeltgruppe Ø: ${weightedAverage}).`;
+    }
+  }
+
   addTags(item: JobDescription): void {
     if (!this.tagInput.trim()) return;
 
@@ -331,6 +349,49 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             },
           });
         },
+      },
+    });
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  softDeleteItem(item: JobDescription): void {
+    this.deleteItem(item);
+  }
+
+  permanentDeleteItem(item: JobDescription): void {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eintrag permanent löschen?',
+        onConfirmCallback: () => {
+          this.jobDescriptionsService
+            .permanentDeleteJobDescription(item.id)
+            .subscribe({
+              next: () => {
+                this.loadJobDescriptions();
+              },
+              error: (error) => {
+                console.error(
+                  'Error permanently deleting job description:',
+                  error
+                );
+              },
+            });
+        },
+      },
+    });
+  }
+
+  restoreItem(item: JobDescription): void {
+    this.jobDescriptionsService.restoreJobDescription(item.id).subscribe({
+      next: () => {
+        this.loadJobDescriptions();
+      },
+      error: (error) => {
+        console.error('Error restoring job description:', error);
       },
     });
   }

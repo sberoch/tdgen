@@ -28,6 +28,7 @@ export type UpdateJobDescriptionPercentagesDto = {
 export type JobDescriptionsListResponse = {
   jobDescriptions: (Omit<JobDescription, 'tasks'> & {
     weightedAverage: number;
+    taskCount: number;
   })[];
   totalCount: number;
 };

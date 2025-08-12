@@ -24,6 +24,7 @@ import { Request, Response } from 'express';
 import { join } from 'path';
 import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('job-descriptions')
 @UseGuards(JwtAuthGuard)
@@ -98,5 +99,20 @@ export class JobDescriptionsController {
     @Req() req: Request & { user: SamlUser },
   ): Promise<void> {
     return this.jobDescriptionsService.delete(id, req.user);
+  }
+
+  @Delete(':id/permanent')
+  @UseGuards(AdminGuard)
+  async permanentDelete(@Param('id') id: string): Promise<void> {
+    return this.jobDescriptionsService.permanentDelete(id);
+  }
+
+  @Patch(':id/restore')
+  @UseGuards(AdminGuard)
+  async restore(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<JobDescription> {
+    return this.jobDescriptionsService.restore(id, req.user);
   }
 }

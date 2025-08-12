@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JobTask, Prisma } from '@prisma/client';
 import {
@@ -8,6 +12,7 @@ import {
   JobTasksListResponse,
 } from './job-tasks.dto';
 import { SamlUser } from '../auth/auth.service';
+import { calculateAdjustedPercentages } from '../job-description-tasks/job-description-tasks.utils';
 
 @Injectable()
 export class JobTasksService {
@@ -118,6 +123,122 @@ export class JobTasksService {
         deletedById: user.id,
       },
     });
+  }
+
+  async permanentDeleteWithCleanup(id: string, user: SamlUser): Promise<void> {
+    const jobTask = await this.prisma.jobTask.findUnique({
+      where: { id: Number(id) },
+      include: {
+        jobDescriptions: {
+          include: {
+            jobDescription: true,
+          },
+        },
+        tags: true,
+      },
+    });
+
+    if (!jobTask) {
+      throw new NotFoundException('Job task not found');
+    }
+
+    await this.prisma.$transaction(async (prismaTx) => {
+      // Get ALL affected job description IDs (including soft-deleted ones)
+      const affectedJobDescriptionIds = jobTask.jobDescriptions.map(
+        (jdt) => jdt.jobDescriptionId,
+      );
+
+      // Remove task from all job descriptions
+      await prismaTx.jobDescriptionTask.deleteMany({
+        where: { jobTaskId: jobTask.id },
+      });
+
+      // Recalculate percentages for ALL affected job descriptions
+      for (const jobDescriptionId of affectedJobDescriptionIds) {
+        const remainingTasks = await prismaTx.jobDescriptionTask.findMany({
+          where: { jobDescriptionId },
+          orderBy: { order: 'asc' },
+        });
+
+        if (remainingTasks.length > 0) {
+          // Get current percentages
+          const currentPercentages = remainingTasks.map(
+            (task) => task.percentage,
+          );
+
+          // Recalculate to sum to 100%
+          const adjustedPercentages = calculateAdjustedPercentages(
+            remainingTasks.length,
+            currentPercentages,
+          );
+
+          // Update each remaining task with new percentage
+          for (let i = 0; i < remainingTasks.length; i++) {
+            await prismaTx.jobDescriptionTask.update({
+              where: { id: remainingTasks[i].id },
+              data: { percentage: adjustedPercentages[i] },
+            });
+          }
+        }
+      }
+
+      // Update timestamps for ALL affected job descriptions
+      if (affectedJobDescriptionIds.length > 0) {
+        await prismaTx.jobDescription.updateMany({
+          where: { id: { in: affectedJobDescriptionIds } },
+          data: {
+            updatedAt: new Date(),
+            updatedById: user.id,
+          },
+        });
+      }
+
+      // Finally delete the job task
+      await prismaTx.jobTask.delete({
+        where: { id: jobTask.id },
+      });
+    });
+  }
+
+  async restore(id: string, user: SamlUser): Promise<JobTask> {
+    const jobTask = await this.prisma.jobTask.findUnique({
+      where: { id: Number(id) },
+      include: {
+        tags: true,
+        jobDescriptions: {
+          include: {
+            jobDescription: true,
+          },
+        },
+      },
+    });
+
+    if (!jobTask) {
+      throw new NotFoundException('Job task not found');
+    }
+
+    if (!jobTask.deletedAt) {
+      throw new BadRequestException('Job task is not deleted');
+    }
+
+    const restoredJobTask = await this.prisma.jobTask.update({
+      where: { id: jobTask.id },
+      data: {
+        deletedAt: null,
+        deletedById: null,
+        updatedById: user.id,
+      },
+      include: {
+        tags: true,
+        jobDescriptions: {
+          include: {
+            jobDescription: true,
+          },
+        },
+      },
+    });
+
+    return restoredJobTask;
   }
 
   private buildWhereClause(params?: JobTaskParams): Prisma.JobTaskWhereInput {

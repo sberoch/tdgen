@@ -63,6 +63,14 @@ export class JobTasksService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  permanentDeleteJobTaskWithCleanup(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/permanent`);
+  }
+
+  restoreJobTask(id: number): Observable<JobTask> {
+    return this.http.patch<JobTask>(`${this.apiUrl}/${id}/restore`, {});
+  }
+
   existsByTitle(title: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/exists?title=${title}`);
   }

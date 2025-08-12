@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { User, UserJwt } from '../types/user';
 import { HttpClient } from '@angular/common/http';
+import { RuntimeConfigService } from './runtime-config.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,7 @@ export class AuthService {
   private userSubject = new BehaviorSubject<UserJwt | null>(null);
   public user$ = this.userSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private runtimeConfig: RuntimeConfigService) {
     this.loadUserFromProfile();
   }
 
@@ -53,5 +54,11 @@ export class AuthService {
 
     const currentTime = Math.floor(Date.now() / 1000);
     return user.exp > currentTime;
+  }
+
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    const adminRoleName = this.runtimeConfig.adminRoleName;
+    return user?.groups?.includes(adminRoleName) || false;
   }
 }
