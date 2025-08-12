@@ -22,6 +22,10 @@ fullnameOverride: ""
 tdgen:
   appPort: 8080
   databaseURL: file:/storage/prod.db
+  userGroupName: user
+  adminGroupName: admin
+  jwtSecret: pleaseChangeMe
+  samlCert: dummy
 
 persistence:
   enabled: true

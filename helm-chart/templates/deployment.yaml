@@ -44,6 +44,14 @@ spec:
               value: {{ .Values.tdgen.appPort | quote }}
             - name: DATABASE_URL
               value: {{ .Values.tdgen.databaseURL | quote }}
+            - name: TDGEN_USER_ATTR_NAME
+              value: {{ .Values.tdgen.userGroupName | quote }}
+            - name: TDGEN_ADMIN_ATTR_NAME
+              value: {{ .Values.tdgen.adminGroupName | quote }}
+            - name: JWT_SECRET
+              value: {{ .Values.tdgen.jwtSecret | quote }}
+            - name: SAML_CERT
+              value: {{ .Values.tdgen.samlCert | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.tdgen.appPort }}
