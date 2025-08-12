@@ -216,21 +216,26 @@
                   Hinzufügen
                 </button>
               </div>
-              <select
-                [disabled]="!!item.deletedAt"
-                class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary disabled:opacity-50"
-                (change)="onEgSelected($any($event.target).value, item)"
-              >
-                <option value="">Auswählen...</option>
-                <option
-                  *ngFor="let eg of EG_OPTIONS"
-                  [selected]="
-                    item.metadata && item.metadata['paymentGroup'] === eg
-                  "
+              <div class="flex items-center">
+                <div class="text-zinc-600 text-sm mr-3">
+                  {{ getJobDescriptionCountDisplay(item) }}
+                </div>
+                <select
+                  [disabled]="!!item.deletedAt"
+                  class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary disabled:opacity-50"
+                  (change)="onEgSelected($any($event.target).value, item)"
                 >
-                  {{ eg }}
-                </option>
-              </select>
+                  <option value="">Auswählen...</option>
+                  <option
+                    *ngFor="let eg of EG_OPTIONS"
+                    [selected]="
+                      item.metadata && item.metadata['paymentGroup'] === eg
+                    "
+                  >
+                    {{ eg }}
+                  </option>
+                </select>
+              </div>
             </div>
             <div
               class="flex flex-wrap gap-2 mb-4"

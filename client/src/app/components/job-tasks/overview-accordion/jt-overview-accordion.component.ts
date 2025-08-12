@@ -254,6 +254,8 @@ export class JtOverviewAccordionComponent
                 task.title === this.initialCard.title),
           }));
 
+          console.log({ jobTasks: this.jobTasks });
+
           // If there's a newly created item or initial card, flag for scrolling and auto-expand it
           if (this.newlyCreatedTitle !== null || this.initialCard !== null) {
             this.shouldScrollToNew = true;
@@ -472,6 +474,16 @@ export class JtOverviewAccordionComponent
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
   }
 
+  getJobDescriptionCountDisplay(item: JobTask): string {
+    const count = item.jobDescriptions?.length || 0;
+    
+    if (count === 1) {
+      return 'In einer Tätigkeitsdarstellung enthalten.';
+    } else {
+      return `In ${count} Tätigkeitsdarstellungen enthalten.`;
+    }
+  }
+
   addTags(item: JobTask): void {
     if (!this.tagInput.trim()) return;
 
@@ -597,14 +609,19 @@ export class JtOverviewAccordionComponent
             jobTask: item,
             affectedCount: affectedCount,
             onConfirmCallback: () => {
-              this.jobTasksService.permanentDeleteJobTaskWithCleanup(item.id!).subscribe({
-                next: () => {
-                  this._handleSuccessfulUpdate({ reloadTasks: true });
-                },
-                error: (error) => {
-                  console.error('Error permanently deleting job task with cleanup:', error);
-                },
-              });
+              this.jobTasksService
+                .permanentDeleteJobTaskWithCleanup(item.id!)
+                .subscribe({
+                  next: () => {
+                    this._handleSuccessfulUpdate({ reloadTasks: true });
+                  },
+                  error: (error) => {
+                    console.error(
+                      'Error permanently deleting job task with cleanup:',
+                      error
+                    );
+                  },
+                });
             },
           },
         });
