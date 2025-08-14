@@ -24,11 +24,14 @@ export class AuthController {
 
       const token = this.authService.generateJwtToken(req.user);
 
+      const lifetimeStr = process.env.JWT_COOKIE_LIFETIME || '12h';
+      const { milliseconds } = this.authService.parseTimeString(lifetimeStr);
+
       res.cookie('accessToken', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 12 * 60 * 60 * 1000, // 12 hours
+        maxAge: milliseconds,
       });
 
       res.redirect('/');

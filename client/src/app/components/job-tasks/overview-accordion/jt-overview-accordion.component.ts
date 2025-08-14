@@ -254,8 +254,6 @@ export class JtOverviewAccordionComponent
                 task.title === this.initialCard.title),
           }));
 
-          console.log({ jobTasks: this.jobTasks });
-
           // If there's a newly created item or initial card, flag for scrolling and auto-expand it
           if (this.newlyCreatedTitle !== null || this.initialCard !== null) {
             this.shouldScrollToNew = true;
@@ -476,7 +474,7 @@ export class JtOverviewAccordionComponent
 
   getJobDescriptionCountDisplay(item: JobTask): string {
     const count = item.jobDescriptions?.length || 0;
-    
+
     if (count === 1) {
       return 'In einer Tätigkeitsdarstellung enthalten.';
     } else {

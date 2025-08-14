@@ -101,7 +101,6 @@ export function getWeightedPayGroupFromTasks(
     percentage: number;
   }>,
 ): number {
-  console.log({ jobDescriptionTasks });
   const payGroupData = extractPayGroupData(jobDescriptionTasks);
   return calculateWeightedPayGroupAverage(payGroupData);
 }

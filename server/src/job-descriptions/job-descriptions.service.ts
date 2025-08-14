@@ -59,14 +59,6 @@ export class JobDescriptionsService {
       },
     );
 
-    console.log(
-      'jobDescriptionsWithWeightedAverage',
-      jobDescriptionsWithWeightedAverage.map((jobDescription) => ({
-        title: jobDescription.title,
-        createdById: jobDescription.createdById,
-      })),
-    );
-
     return { jobDescriptions: jobDescriptionsWithWeightedAverage, totalCount };
   }
 
