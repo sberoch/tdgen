@@ -175,7 +175,9 @@
                 title="Löschen"
                 (click)="$event.stopPropagation(); deleteItem(item)"
               >
-                <mat-icon class="text-lg -translate-y-1 group-hover:text-red-500">
+                <mat-icon
+                  class="text-lg -translate-y-1 group-hover:text-red-500"
+                >
                   delete
                 </mat-icon>
               </button>
@@ -246,12 +248,18 @@
                 class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-xs"
               >
                 <button
-                  (click)="removeTag(item, tag)"
-                  class="w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700"
+                  (click)="!item.deletedAt ? removeTag(item, tag) : null"
+                  [class]="
+                    item.deletedAt
+                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-black/30 text-white opacity-50 cursor-not-allowed'
+                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700 cursor-pointer'
+                  "
                 >
                   <mat-icon class="text-xs mt-2">close</mat-icon>
                 </button>
-                <span>{{ tag.name }}</span>
+                <span [class.opacity-50]="!!item.deletedAt">
+                  {{ tag.name }}
+                </span>
               </div>
             </div>
             <div class="mt-2">

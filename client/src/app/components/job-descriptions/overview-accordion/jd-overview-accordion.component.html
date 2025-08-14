@@ -155,10 +155,7 @@
                   <mat-icon>delete</mat-icon>
                   <span>Löschen</span>
                 </button>
-                <button
-                  mat-menu-item
-                  (click)="permanentDeleteItem(item)"
-                >
+                <button mat-menu-item (click)="permanentDeleteItem(item)">
                   <mat-icon>delete_forever</mat-icon>
                   <span>Permanent löschen</span>
                 </button>
@@ -183,7 +180,9 @@
                 title="Löschen"
                 (click)="$event.stopPropagation(); deleteItem(item)"
               >
-                <mat-icon class="text-lg -translate-y-1 group-hover:text-red-500">
+                <mat-icon
+                  class="text-lg -translate-y-1 group-hover:text-red-500"
+                >
                   delete
                 </mat-icon>
               </button>
@@ -204,19 +203,22 @@
                     type="text"
                     placeholder="Tag hinzufügen"
                     [(ngModel)]="tagInput"
+                    [disabled]="!!item.deletedAt"
                     (keyup.enter)="handleKeyPress($any($event), item)"
                     class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic"
                   />
                   <button
-                    class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90"
+                    class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90 disabled:text-black/30 disabled:cursor-not-allowed"
                     (click)="tagInput = ''"
+                    [disabled]="!!item.deletedAt"
                   >
                     <mat-icon class="text-lg">backspace</mat-icon>
                   </button>
                 </div>
                 <button
                   (click)="addTags(item)"
-                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm"
+                  [disabled]="!!item.deletedAt"
+                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:bg-secondary/50 disabled:cursor-not-allowed"
                 >
                   Hinzufügen
                 </button>
@@ -234,12 +236,18 @@
                 class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-xs"
               >
                 <button
-                  (click)="removeTag(item, tag)"
-                  class="w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700"
+                  (click)="!item.deletedAt ? removeTag(item, tag) : null"
+                  [class]="
+                    item.deletedAt
+                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-black/30 text-white opacity-50 cursor-not-allowed'
+                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700 cursor-pointer'
+                  "
                 >
                   <mat-icon class="text-xs mt-2">close</mat-icon>
                 </button>
-                <span>{{ tag.name }}</span>
+                <span [class.opacity-50]="!!item.deletedAt">
+                  {{ tag.name }}
+                </span>
               </div>
             </div>
           </div>
