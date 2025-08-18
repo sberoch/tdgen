@@ -62,6 +62,7 @@ The following environment variables can be configured in `server/.env`:
 ### Security
 
 - `JWT_SECRET` - Secret key for JWT token signing
+- `JWT_COOKIE_LIFETIME` - Lifetime of the JWT cookie. Examples: "1h", "15m", "1d"
 
 ## How to build and run a container image
 
