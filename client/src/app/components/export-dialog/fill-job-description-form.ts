@@ -25,7 +25,8 @@ export const transformFormData = (
   jobDescription: JobDescription
 ) => {
   const formValue = formData.value;
-  const jobTasksTextSplitResult = jobTasksTextSplit(jobDescription.tasks);
+  const orderedTasks = jobDescription.tasks.sort((a, b) => a.order - b.order);
+  const jobTasksTextSplitResult = jobTasksTextSplit(orderedTasks);
 
   return {
     'f.dienst.10': formValue.department,

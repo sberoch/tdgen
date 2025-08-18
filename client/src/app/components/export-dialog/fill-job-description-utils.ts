@@ -289,10 +289,10 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
 
     // Combine parts according to the best split point
     const firstPart =
-      numbering[0] + '\n' + parts.slice(0, bestSplitIndex).join('\n\n');
+      numbering[0] + ' (' + value + ' %)\n' + parts.slice(0, bestSplitIndex).join('\n\n');
     const secondPart =
       numbering[0] +
-      ' (Fortsetzung)\n' +
+      ' (' + value + ' %) (Fortsetzung)\n' +
       parts.slice(bestSplitIndex).join('\n\n');
 
     return {
@@ -332,7 +332,7 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
       bestSplitIndex = i + 1;
     }
 
-    resArray[i][0] = numbering[i] + '\n' + resArray[i][0];
+    resArray[i][0] = numbering[i] + ' (' + resArray[i][1] + ' %)\n' + resArray[i][0];
     statsArray[i] = numbering[i] + ':\n' + resArray[i][1];
   }
 
