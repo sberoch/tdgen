@@ -7,7 +7,7 @@ COPY client client
 RUN npm install -g @nestjs/cli
 RUN npm install -g @angular/cli
 RUN cd server && npm install && nest build
-RUN cd client && npm install && ng build
+RUN cd client && npm install && npm run build
 
 
 FROM node:${NODE_VERSION}-alpine
