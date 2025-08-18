@@ -1,9 +1,10 @@
 ARG NODE_VERSION=22
 FROM node:${NODE_VERSION}-alpine AS build
 
+RUN apk add --no-cache git
+
 WORKDIR /usr/src/app
-COPY server server
-COPY client client
+COPY . .
 RUN npm install -g @nestjs/cli
 RUN npm install -g @angular/cli
 RUN cd server && npm install && nest build
