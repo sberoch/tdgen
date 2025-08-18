@@ -13,8 +13,8 @@ const FONT_SIZE = 12;
 
 const lengthThresholdsForFontSizeChange: Record<string, number> = {
   'f.aufgabenbeschreibung.1': 500,
-  'f.beschreibung.1': 1000,
-  'f.beschreibung.2': 1000,
+  'f.beschreibung.1': 900,
+  'f.beschreibung.2': 900,
   'f.eingliederung.1': 300,
   'f.beschaeftigter.1': 300,
   'f.beschaeftigter.2': 300,
@@ -289,10 +289,16 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
 
     // Combine parts according to the best split point
     const firstPart =
-      numbering[0] + ' (' + value + ' %)\n' + parts.slice(0, bestSplitIndex).join('\n\n');
+      numbering[0] +
+      ' (' +
+      value +
+      ' %)\n' +
+      parts.slice(0, bestSplitIndex).join('\n\n');
     const secondPart =
       numbering[0] +
-      ' (' + value + ' %) (Fortsetzung)\n' +
+      ' (' +
+      value +
+      ' %) (Fortsetzung)\n' +
       parts.slice(bestSplitIndex).join('\n\n');
 
     return {
@@ -332,7 +338,8 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
       bestSplitIndex = i + 1;
     }
 
-    resArray[i][0] = numbering[i] + ' (' + resArray[i][1] + ' %)\n' + resArray[i][0];
+    resArray[i][0] =
+      numbering[i] + ' (' + resArray[i][1] + ' %)\n' + resArray[i][0];
     statsArray[i] = numbering[i] + ':\n' + resArray[i][1];
   }
 

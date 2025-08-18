@@ -43,3 +43,6 @@ Thumbs.db
 
 .cursorrules
 .env
+
+# Generated files
+/src/assets/git-info.json

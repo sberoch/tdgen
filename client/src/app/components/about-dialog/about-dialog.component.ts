@@ -4,7 +4,7 @@ import {
   MatDialogRef,
   MatDialogContent,
 } from '@angular/material/dialog';
-import packageJson from '../../../../package.json';
+import gitInfo from '../../../assets/git-info.json';
 
 @Component({
   selector: 'app-about-dialog',
@@ -14,7 +14,7 @@ import packageJson from '../../../../package.json';
   styleUrls: ['./about-dialog.component.css'],
 })
 export class AboutDialogComponent {
-  version = packageJson.version ?? '1.0.0';
+  version = gitInfo.version ?? 'Development';
   year = new Date().getFullYear();
 
   constructor(private dialogRef: MatDialogRef<AboutDialogComponent>) {}
