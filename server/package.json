@@ -21,7 +21,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "npx prisma db seed"
+    "seed": "npx prisma db seed",
+    "generate-saml-metadata": "ts-node scripts/generate-saml-metadata.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -33,11 +34,13 @@
     "@nestjs/serve-static": "^5.0.3",
     "@prisma/client": "^6.5.0",
     "@types/cookie-parser": "^1.4.9",
+    "axios": "^1.11.0",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-saml": "^3.2.4",
+    "passport-saml-metadata": "^5.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
