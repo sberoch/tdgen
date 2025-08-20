@@ -6,7 +6,7 @@ Right now, this is just a slightly expanded version of [How To Use The MEAN Stac
 
 ## How to build and run
 
-### Prerequisits
+### Prerequisites
 
 - Recent version of Node.js
 - Angular CLI
