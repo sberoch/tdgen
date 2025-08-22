@@ -41,6 +41,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   exportForm: FormGroup<ExportJobDescriptionForm>;
   private formSubscription: Subscription = new Subscription();
   private readonly storageKey = 'export-dialog-form-data';
+  private lastEmployeeName = '';
   showValidationErrors = false;
 
   // Track which date inputs are focused to switch between text and date types
@@ -98,6 +99,11 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   private subscribeToFormChanges() {
     this.formSubscription = this.exportForm.valueChanges.subscribe(
       (formData) => {
+        // Track employee name in memory for security
+        if (formData.employeeName && formData.employeeName.trim()) {
+          this.lastEmployeeName = formData.employeeName.trim();
+        }
+        
         this.saveFormData(formData);
         // Hide validation errors if form becomes valid
         if (this.exportForm.valid && this.showValidationErrors) {
@@ -192,7 +198,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
           // Get form data for employee name
           const formData = this.exportForm.value;
-          const employeeName = formData.employeeName?.trim() || 'Unknown';
+          const employeeName = formData.employeeName?.trim() || this.lastEmployeeName || 'Unknown';
 
           // Get job description title
           const jobDescriptionTitle =
@@ -221,6 +227,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
   resetForm() {
     this.exportForm.reset();
     this.clearFormData();
+    this.lastEmployeeName = '';
     this.showValidationErrors = false;
     // Reset date input types to text
     Object.keys(this.dateInputTypes).forEach((key) => {
