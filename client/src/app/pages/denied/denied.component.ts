@@ -11,7 +11,6 @@ import { ActivatedRoute } from '@angular/router';
 export class DeniedComponent implements OnInit {
   errorCode: string | null = null;
   errorMessage: string | null = null;
-  showDebugInfo = false;
 
   private errorMessages: Record<string, string> = {
     saml_no_user: 'SAML authentication successful but no user data received',
@@ -29,9 +28,5 @@ export class DeniedComponent implements OnInit {
       this.errorCode = params['error'] || null;
       this.errorMessage = this.errorCode ? this.errorMessages[this.errorCode] || 'Unknown SAML error' : null;
     });
-  }
-
-  toggleDebugInfo(): void {
-    this.showDebugInfo = !this.showDebugInfo;
   }
 }
