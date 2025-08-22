@@ -64,34 +64,45 @@
   </div>
 </header>
 
-<mat-menu #menu="matMenu" class="custom-menu">
+<mat-menu #menu="matMenu" class="light-gray-menu">
   <button mat-menu-item (click)="openCreateDialog()">
-    Tätigkeitsdarstellung erstellen
+    <mat-icon>add</mat-icon>
+    <span>Tätigkeitsdarstellung erstellen</span>
   </button>
   <button
     mat-menu-item
     (click)="openCloseDescriptionDialog()"
     [disabled]="!isWorkspaceSet"
   >
-    Tätigkeitsdarstellung schließen
+    <mat-icon>close</mat-icon>
+    <span>Tätigkeitsdarstellung schließen</span>
   </button>
   <button
     mat-menu-item
     (click)="exportDescription()"
     [disabled]="!isWorkspaceSet"
   >
-    Tätigkeitsdarstellung exportieren
+    <mat-icon>download</mat-icon>
+    <span>Tätigkeitsdarstellung exportieren</span>
   </button>
   <mat-divider></mat-divider>
   <button mat-menu-item (click)="openJobDescriptionModal()">
-    Tätigkeitsdarstellungen verwalten
+    <mat-icon>description</mat-icon>
+    <span>Tätigkeitsdarstellungen verwalten</span>
   </button>
   <button mat-menu-item (click)="openJobTaskModal()">
-    Arbeitsvorgänge verwalten
+    <mat-icon>work</mat-icon>
+    <span>Arbeitsvorgänge verwalten</span>
   </button>
   <mat-divider></mat-divider>
-  <button mat-menu-item (click)="openInstructionPDF()">Anleitung öffnen</button>
-  <button mat-menu-item (click)="openAboutDialog()">Über TDGen</button>
+  <button mat-menu-item (click)="openInstructionPDF()">
+    <mat-icon>help_center</mat-icon>
+    <span>Anleitung öffnen</span>
+  </button>
+  <button mat-menu-item (click)="openAboutDialog()">
+    <mat-icon>info</mat-icon>
+    <span>Über TDGen</span>
+  </button>
 </mat-menu>
 
 <app-flyout-panel

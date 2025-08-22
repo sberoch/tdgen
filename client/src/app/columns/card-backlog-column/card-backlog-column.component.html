@@ -185,12 +185,14 @@
   </div>
 </div>
 
-<mat-menu #cardMenu="matMenu" class="custom-menu">
+<mat-menu #cardMenu="matMenu" class="light-gray-menu">
   <button mat-menu-item (click)="moveCardToTop(currentIndex)">
-    An den Anfang verschieben
+    <mat-icon>vertical_align_top</mat-icon>
+    <span>An den Anfang verschieben</span>
   </button>
   <button mat-menu-item (click)="moveCardToBottom(currentIndex)">
-    Ans Ende verschieben
+    <mat-icon>vertical_align_bottom</mat-icon>
+    <span>Ans Ende verschieben</span>
   </button>
   <mat-divider></mat-divider>
   <button
@@ -198,7 +200,8 @@
     (click)="openDialogWithCard(displayCards[currentIndex])"
     [disabled]="shouldDisableEditButton(displayCards[currentIndex])"
   >
-    Editieren
+    <mat-icon>edit</mat-icon>
+    <span>Editieren</span>
   </button>
   <mat-divider></mat-divider>
   <button
@@ -206,7 +209,8 @@
     (click)="removeFromDisplay(displayCards[currentIndex])"
     class="!text-red-500"
   >
-    Entfernen
+    <mat-icon>remove</mat-icon>
+    <span>Entfernen</span>
   </button>
 </mat-menu>
 

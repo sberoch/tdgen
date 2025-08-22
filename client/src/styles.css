@@ -205,6 +205,12 @@ angular-editor:has([contenteditable="false"]) .angular-editor-toolbar {
   border-color: #004371 !important;
 }
 
+.light-gray-menu {
+  .mat-mdc-menu-content {
+    background: #fafafa;
+  }
+}
+
 .angular-editor-textarea {
   ul {
     list-style-type: disc;
