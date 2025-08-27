@@ -95,7 +95,7 @@ export class CardBacklogColumnComponent implements OnInit {
   private _snackBar = inject(MatSnackBar);
   isJobTaskModalOpen = false;
   selectedCardToOpenModal: Card | null = null;
-  private currentDraggingCard: Card | undefined;
+  currentDraggingCard: Card | undefined;
   private currentSearchTerm: string = '';
   private destroy$ = new Subject<void>();
   leftWidth = this.loadColumnWidth();

@@ -91,7 +91,7 @@
 
   <div class="flex flex-col h-full" [style.width.%]="100 - leftWidth">
     <div
-      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden min-h-[200px] h-full p-2"
+      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden h-full p-2"
       cdkDropList
       #displayList="cdkDropList"
       id="display"
@@ -154,7 +154,7 @@
           </ng-template>
         </p>
       </div>
-      } } @else {
+      } } @else { @if (!currentDraggingCard) {
       <div class="flex flex-col justify-center items-center relative h-full">
         <img
           src="/empty_text_bg.svg"
@@ -180,7 +180,7 @@
         </p>
         }
       </div>
-      }
+      } }
     </div>
   </div>
 </div>

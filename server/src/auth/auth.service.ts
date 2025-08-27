@@ -26,10 +26,15 @@ export interface JwtPayload {
 export class AuthService {
   constructor(private jwtService: JwtService) {}
 
-  parseTimeString(timeStr: string): { milliseconds: number; jwtFormat: string } {
+  parseTimeString(timeStr: string): {
+    milliseconds: number;
+    jwtFormat: string;
+  } {
     const match = timeStr.match(/^(\d+)([smhd])$/);
     if (!match) {
-      throw new Error(`Invalid time format: ${timeStr}. Use format like: 30s, 15m, 2h, 1d`);
+      throw new Error(
+        `Invalid time format: ${timeStr}. Use format like: 30s, 15m, 2h, 1d`,
+      );
     }
 
     const value = parseInt(match[1]);
@@ -55,7 +60,7 @@ export class AuthService {
 
     return {
       milliseconds,
-      jwtFormat: timeStr
+      jwtFormat: timeStr,
     };
   }
 
