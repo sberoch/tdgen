@@ -148,19 +148,25 @@ export const fillCheckboxes = (
         }
 
         if (fieldName === 'f.kk.22') {
-          if (Math.abs(x - 311.8) < 1 && formData.value.disabled) {
+          if (Math.abs(x - 311.8) < 1 && formData.value.disabled === 'yes') {
             drawXInCheckbox(pdfDoc, widget, x, y, width, height);
-          } else if (Math.abs(x - 390.4) < 1 && !formData.value.disabled) {
+          } else if (
+            Math.abs(x - 390.4) < 1 &&
+            formData.value.disabled === 'no'
+          ) {
             drawXInCheckbox(pdfDoc, widget, x, y, width, height);
           }
         }
 
         if (fieldName === 'f.kk.23') {
-          if (Math.abs(x - 61.8) < 1 && formData.value.employmentScope) {
+          if (
+            Math.abs(x - 61.8) < 1 &&
+            formData.value.employmentScope === 'fulltime'
+          ) {
             drawXInCheckbox(pdfDoc, widget, x, y, width, height);
           } else if (
             Math.abs(x - 223.8) < 1 &&
-            !formData.value.employmentScope
+            formData.value.employmentScope === 'parttime'
           ) {
             drawXInCheckbox(pdfDoc, widget, x, y, width, height);
           }
@@ -172,6 +178,11 @@ export const fillCheckboxes = (
 
 export const convertHtmlToText = (html: string): string => {
   let result = html;
+  console.log({ html });
+
+  // Remove &nbsp; and \n
+  result = result.replace(/&nbsp;/g, ' ');
+  result = result.replace(/\n/g, ' ');
 
   // Handle unordered lists (<ul>)
   result = result.replace(
@@ -186,7 +197,7 @@ export const convertHtmlToText = (html: string): string => {
           return `• ${text}`;
         })
         .join('\n');
-      return listContent + '\n';
+      return '\n' + listContent + '\n';
     }
   );
 
@@ -203,9 +214,14 @@ export const convertHtmlToText = (html: string): string => {
           return `${index + 1}. ${text}`;
         })
         .join('\n');
-      return listContent + '\n';
+      return '\n' + listContent + '\n';
     }
   );
+
+  // Add newline before first <div>
+  result = result.replace(/<div[^>]*>/, (match: string) => {
+    return '\n' + match;
+  });
 
   // Handle div containers - replace with content followed by newline
   result = result.replace(
@@ -222,6 +238,7 @@ export const convertHtmlToText = (html: string): string => {
   // Clean up multiple consecutive newlines and trim
   result = result.replace(/\n{3,}/g, '\n\n').trim();
 
+  console.log({ result });
   return result;
 };
 
