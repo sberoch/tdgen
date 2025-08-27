@@ -149,9 +149,11 @@ export class JobDescriptionsService {
 
     const updatedJobDescription = await this.prisma.$transaction(
       async (prismaTx) => {
-        await prismaTx.jobDescriptionFormField.deleteMany({
-          where: { jobDescriptionId: jobDescription.id },
-        });
+        if (formFields) {
+          await prismaTx.jobDescriptionFormField.deleteMany({
+            where: { jobDescriptionId: jobDescription.id },
+          });
+        }
 
         return prismaTx.jobDescription.update({
           where: { id: jobDescription.id },
