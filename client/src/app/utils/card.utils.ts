@@ -11,17 +11,18 @@ export type Card = {
 };
 
 const pastelColors = [
-  // Harmonized lighter palette
-  '#fff5f7',
-  '#f5fbff',
-  '#fffff5',
-  '#f5fff5',
-  '#fcf8fc',
-  '#fff7f5',
-  '#f5fff7',
-  '#faf5ff',
-  '#fffaf5',
-  '#f5ffff',
+  // Optimized pastel palette: 10 colors evenly distributed at 36° intervals around the color wheel
+  // All colors normalized to 98% lightness and 60% saturation for maximum distinction while maintaining pastel quality
+  '#fdf7f7',
+  '#fdfbf7',
+  '#fcfdf7',
+  '#f8fdf7',
+  '#f7fdf9',
+  '#f7fdfd',
+  '#f7f9fd',
+  '#f8f7fd',
+  '#fcf7fd',
+  '#fdf7fb',
   
   /* Old values kept for reference
   '#ffebf0',
