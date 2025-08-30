@@ -11,6 +11,19 @@ export type Card = {
 };
 
 const pastelColors = [
+  // Harmonized lighter palette
+  '#fff5f7',
+  '#f5fbff',
+  '#fffff5',
+  '#f5fff5',
+  '#fcf8fc',
+  '#fff7f5',
+  '#f5fff7',
+  '#faf5ff',
+  '#fffaf5',
+  '#f5ffff',
+  
+  /* Old values kept for reference
   '#ffebf0',
   '#e6f5ff',
   '#ffffe6',
@@ -21,6 +34,7 @@ const pastelColors = [
   '#faf5ff',
   '#fff5eb',
   '#f0ffff',
+  */
 ];
 
 export const getNextPastelColor = (currentIndex: number): string => {
