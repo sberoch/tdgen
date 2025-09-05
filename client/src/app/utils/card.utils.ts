@@ -11,6 +11,20 @@ export type Card = {
 };
 
 const pastelColors = [
+  // Optimized pastel palette: 10 colors evenly distributed at 36° intervals around the color wheel
+  // All colors normalized to 98% lightness and 60% saturation for maximum distinction while maintaining pastel quality
+  '#fdf7f7',
+  '#fdfbf7',
+  '#fcfdf7',
+  '#f8fdf7',
+  '#f7fdf9',
+  '#f7fdfd',
+  '#f7f9fd',
+  '#f8f7fd',
+  '#fcf7fd',
+  '#fdf7fb',
+  
+  /* Old values kept for reference
   '#ffebf0',
   '#e6f5ff',
   '#ffffe6',
@@ -21,6 +35,7 @@ const pastelColors = [
   '#faf5ff',
   '#fff5eb',
   '#f0ffff',
+  */
 ];
 
 export const getNextPastelColor = (currentIndex: number): string => {
