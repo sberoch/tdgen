@@ -314,7 +314,12 @@
                   name="parttimeHours"
                   autocomplete="off"
                   formControlName="parttimeHours"
-                  class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary w-20 placeholder:italic"
+                  [class]="
+                    'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary w-20 placeholder:italic ' +
+                    (hasFieldError('parttimeHours')
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-[#e2e8f0] focus:border-secondary')
+                  "
                 />
                 <label>Stunden</label>
               </div>

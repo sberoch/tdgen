@@ -111,6 +111,26 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         }
       }
     );
+
+    // Subscribe to employment scope changes to handle Vollzeit/Teilzeit logic
+    this.formSubscription.add(
+      this.exportForm.get('employmentScope')?.valueChanges.subscribe((value) => {
+        const parttimeHoursControl = this.exportForm.get('parttimeHours');
+        
+        if (value === 'fulltime') {
+          // Clear parttimeHours when Vollzeit is selected
+          parttimeHoursControl?.setValue('');
+          // Remove validation requirement
+          parttimeHoursControl?.clearValidators();
+        } else if (value === 'parttime') {
+          // Add required validation when Teilzeit is selected
+          parttimeHoursControl?.setValidators([Validators.required]);
+        }
+        
+        // Update validation state
+        parttimeHoursControl?.updateValueAndValidity();
+      })
+    );
   }
   private formatFormData(formData: any) {
     const dateFields = [
@@ -229,6 +249,12 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     this.clearFormData();
     this.lastEmployeeName = '';
     this.showValidationErrors = false;
+    
+    // Clear parttimeHours validation when resetting
+    const parttimeHoursControl = this.exportForm.get('parttimeHours');
+    parttimeHoursControl?.clearValidators();
+    parttimeHoursControl?.updateValueAndValidity();
+    
     // Reset date input types to text
     Object.keys(this.dateInputTypes).forEach((key) => {
       this.dateInputTypes[key] = 'text';
