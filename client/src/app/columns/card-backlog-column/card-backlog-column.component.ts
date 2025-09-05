@@ -215,7 +215,10 @@ export class CardBacklogColumnComponent implements OnInit {
     ) {
       this.cardService.moveInDisplay(event.previousIndex, event.currentIndex);
     } else {
-      if (event.previousContainer.id === 'backlog') {
+      if (
+        event.previousContainer.id === 'backlog' &&
+        event.container.id === 'display'
+      ) {
         if (this.displayCards.length < MAX_DISPLAY_CARDS) {
           this.cardService.addToDisplay(
             this.currentDraggingCard,
@@ -228,7 +231,10 @@ export class CardBacklogColumnComponent implements OnInit {
           );
         }
       }
-      if (event.previousContainer.id === 'display') {
+      if (
+        event.previousContainer.id === 'display' &&
+        event.container.id === 'backlog'
+      ) {
         this.cardService.removeFromDisplay(this.currentDraggingCard);
       }
     }
