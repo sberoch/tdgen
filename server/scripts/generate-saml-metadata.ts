@@ -5,7 +5,7 @@ import { config } from 'dotenv';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-// import * as samlMetadata from 'passport-saml-metadata';
+import {toPassportConfig, MetadataReader} from 'passport-saml-metadata';
 
 config();
 
@@ -151,57 +151,6 @@ class SamlMetadataFetcher {
   }
 
   /**
-   * Parse metadata and extract useful information
-   */
-  static parseMetadata(metadataXml: string): any {
-    // Use manual parsing as primary method for better control
-    return this.parseMetadataManually(metadataXml);
-  }
-
-  /**
-   * Manually extract basic information from SAML metadata XML
-   */
-  private static parseMetadataManually(metadataXml: string): any {
-    try {
-      const entityIdMatch = metadataXml.match(/entityID="([^"]+)"/);
-      const ssoUrlMatch = metadataXml.match(
-        /<md:SingleSignOnService[^>]+Location="([^"]+)"/,
-      );
-      const sloUrlMatch = metadataXml.match(
-        /<md:SingleLogoutService[^>]+Location="([^"]+)"/,
-      );
-      const certMatch = metadataXml.match(
-        /<ds:X509Certificate>([^<]+)<\/ds:X509Certificate>/,
-      );
-
-      return {
-        entityID: entityIdMatch ? entityIdMatch[1] : null,
-        singleSignOnService: ssoUrlMatch ? { location: ssoUrlMatch[1] } : null,
-        singleLogoutService: sloUrlMatch ? { location: sloUrlMatch[1] } : null,
-        signingCert: certMatch ? certMatch[1] : null,
-      };
-    } catch (error) {
-      console.warn('Manual parsing also failed:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Get configuration that can be used with passport-saml
-   */
-  static async getPassportConfig(options: MetadataOptions = {}): Promise<any> {
-    const metadataXml = await this.fetchMetadata(options);
-    const parsed = this.parseMetadataManually(metadataXml);
-
-    return {
-      entryPoint: parsed?.singleSignOnService?.location,
-      cert: parsed?.signingCert,
-      issuer: parsed?.entityID,
-      logoutUrl: parsed?.singleLogoutService?.location,
-    };
-  }
-
-  /**
    * Save metadata XML to file
    */
   static saveMetadataToFile(metadataXml: string, filename?: string): string {
@@ -253,34 +202,9 @@ async function main() {
     console.log(metadataXml);
     console.log('='.repeat(50));
 
-    // Try to parse metadata for additional info
-    const parsedMetadata = SamlMetadataFetcher.parseMetadata(metadataXml);
-    if (parsedMetadata) {
-      console.log('\nParsed Metadata Information:');
-      console.log('- Entity ID:', parsedMetadata.entityID || 'Not found');
-      console.log(
-        '- SSO URL:',
-        parsedMetadata.singleSignOnService?.location || 'Not found',
-      );
-      console.log(
-        '- SLO URL:',
-        parsedMetadata.singleLogoutService?.location || 'Not found',
-      );
-      console.log(
-        '- Certificate:',
-        parsedMetadata.signingCert ? 'Present' : 'Not found',
-      );
-    }
-
-    // Try to get passport-saml compatible config
-    try {
-      const passportConfig =
-        await SamlMetadataFetcher.getPassportConfig(options);
+    const passportConfig = toPassportConfig(new MetadataReader(metadataXml))
       console.log('\nPassport-SAML Compatible Configuration:');
       console.log(JSON.stringify(passportConfig, null, 2));
-    } catch (error) {
-      console.warn('\nCould not generate passport-saml config:', error);
-    }
 
     console.log('\nMetadata fetch completed successfully!');
   } catch (error) {
