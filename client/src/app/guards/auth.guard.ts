@@ -5,6 +5,7 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { UserJwt } from '../types/user';
 import { EnvironmentService } from '../services/environment.service';
+import { DialogService } from '../services/dialog.service';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,8 @@ export class AuthGuard implements CanActivate {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private environmentService: EnvironmentService
+    private environmentService: EnvironmentService,
+    private dialogService: DialogService
   ) {}
 
   canActivate(): Observable<boolean> {
@@ -34,8 +36,8 @@ export class AuthGuard implements CanActivate {
             return of(false);
           }
 
-          // Regular auth failure - redirect to SAML login
-          window.location.href = '/api/auth/saml/login';
+          // Regular auth failure - show session expired dialog
+          this.dialogService.showSessionExpiredDialog();
           return of(false);
         })
       );

@@ -178,7 +178,6 @@ export const fillCheckboxes = (
 
 export const convertHtmlToText = (html: string): string => {
   let result = html;
-  console.log({ html });
 
   // Remove &nbsp; and \n
   result = result.replace(/&nbsp;/g, ' ');
@@ -238,7 +237,6 @@ export const convertHtmlToText = (html: string): string => {
   // Clean up multiple consecutive newlines and trim
   result = result.replace(/\n{3,}/g, '\n\n').trim();
 
-  console.log({ result });
   return result;
 };
 

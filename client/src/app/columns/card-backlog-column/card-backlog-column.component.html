@@ -91,7 +91,7 @@
 
   <div class="flex flex-col h-full" [style.width.%]="100 - leftWidth">
     <div
-      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden h-full p-2"
+      class="flex flex-col gap-2 overflow-y-scroll overflow-x-hidden h-full p-4 bg-[#fafafa]"
       cdkDropList
       #displayList="cdkDropList"
       id="display"
@@ -103,7 +103,7 @@
       @if (displayCards.length > 0) { @for (card of displayCards; track
       card.jobTask.id) {
       <div
-        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent mb-[2px]"
+        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent mb-2 last:mb-0"
         [class.!border-[#333]]="card === selectedCard"
         cdkDrag
         (cdkDragStarted)="onDragStarted($event, card)"
@@ -162,7 +162,7 @@
           class="absolute inset-0 w-auto h-[60%] mx-auto my-auto pointer-events-none top-0 left-0 z-10"
         />
         <div
-          class="absolute inset-0 w-[70%] h-20 bg-white border-y border-y-black/30 top-0 left-0 mx-auto my-auto z-10"
+          class="absolute inset-0 w-[70%] h-20 bg-[#fafafa] border-y border-y-black/30 top-0 left-0 mx-auto my-auto z-10"
         ></div>
         @if (isWorkspaceSet) {
         <p
