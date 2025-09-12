@@ -11,31 +11,19 @@ export type Card = {
 };
 
 const pastelColors = [
-  // Optimized pastel palette: 10 colors evenly distributed at 36° intervals around the color wheel
-  // All colors normalized to 98% lightness and 60% saturation for maximum distinction while maintaining pastel quality
-  '#fdf7f7',
-  '#fdfbf7',
-  '#fcfdf7',
-  '#f8fdf7',
-  '#f7fdf9',
-  '#f7fdfd',
-  '#f7f9fd',
-  '#f8f7fd',
-  '#fcf7fd',
-  '#fdf7fb',
-  
-  /* Old values kept for reference
-  '#ffebf0',
-  '#e6f5ff',
-  '#ffffe6',
-  '#ebffeb',
-  '#f5ebf5',
-  '#fff0eb',
-  '#ebfff0',
-  '#faf5ff',
-  '#fff5eb',
-  '#f0ffff',
-  */
+  /* Optimized pastel palette: 10 colors evenly distributed at 36° intervals around the color wheel
+     All colors normalized to 97% lightness and 60% saturation for maximum distinction 
+     while maintaining pastel quality */
+  '#fef0f0', // 0°   - Red
+  '#fef4f0', // 36°  - Orange
+  '#fefcf0', // 72°  - Yellow
+  '#f6fef0', // 108° - Yellow-Green
+  '#f0fef2', // 144° - Green
+  '#f0fefe', // 180° - Cyan
+  '#f0f6fe', // 216° - Light Blue
+  '#f2f0fe', // 252° - Blue
+  '#fcf0fe', // 288° - Purple
+  '#fef0f6'  // 324° - Magenta
 ];
 
 export const getNextPastelColor = (currentIndex: number): string => {
