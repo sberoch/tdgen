@@ -13,7 +13,7 @@ const FONT_SIZE = 12;
 
 const lengthThresholdsForFontSizeChange: Record<string, number> = {
   'f.aufgabenbeschreibung.1': 500,
-  'f.beschreibung.1': 900,
+  'f.beschreibung.1': 750,
   'f.beschreibung.2': 900,
   'f.eingliederung.1': 300,
   'f.beschaeftigter.1': 300,
