@@ -6,12 +6,33 @@ import { SessionExpiredDialogComponent } from '../components/session-expired-dia
   providedIn: 'root',
 })
 export class DialogService {
+  private sessionExpiredDialogOpen = false;
+  private isInitialLoad = true;
+
   constructor(private dialog: MatDialog) {}
 
   showSessionExpiredDialog(): void {
-    this.dialog.open(SessionExpiredDialogComponent, {
+    // Skip dialog during initial page load
+    if (this.isInitialLoad) {
+      return;
+    }
+
+    if (this.sessionExpiredDialogOpen) {
+      return;
+    }
+
+    this.sessionExpiredDialogOpen = true;
+    const dialogRef = this.dialog.open(SessionExpiredDialogComponent, {
       disableClose: true,
       width: '400px',
     });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.sessionExpiredDialogOpen = false;
+    });
+  }
+
+  notifyInitialAuthCompleted(): void {
+    this.isInitialLoad = false;
   }
 }

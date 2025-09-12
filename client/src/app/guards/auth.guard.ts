@@ -22,8 +22,15 @@ export class AuthGuard implements CanActivate {
     return this.http
       .get<UserJwt>('/api/auth/profile', { withCredentials: true })
       .pipe(
-        map(() => true),
+        map(() => {
+          // Successful authentication - mark initial load as complete
+          this.dialogService.notifyInitialAuthCompleted();
+          return true;
+        }),
         catchError((error) => {
+          // Mark initial auth as completed regardless of outcome
+          this.dialogService.notifyInitialAuthCompleted();
+
           // Check if it's a SAML-related error (401 with specific message)
           if (error.status === 401 && error.error?.message?.includes('SAML')) {
             this.router.navigate(['/denied']);
@@ -36,8 +43,8 @@ export class AuthGuard implements CanActivate {
             return of(false);
           }
 
-          // Regular auth failure - show session expired dialog
-          this.dialogService.showSessionExpiredDialog();
+          // Regular auth failure - redirect to SAML login
+          window.location.href = '/api/auth/saml/login';
           return of(false);
         })
       );
