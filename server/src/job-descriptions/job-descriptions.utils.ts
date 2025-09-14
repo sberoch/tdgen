@@ -20,9 +20,9 @@ export function calculateWeightedPayGroupAverage(
   // Process each entry
   for (const [payGroup, percentage] of payGroupArray) {
     // Validate pay group range
-    if (!Number.isInteger(payGroup) || payGroup < 1 || payGroup > 15) {
+    if (!Number.isInteger(payGroup) || payGroup < 0 || payGroup > 15) {
       throw new Error(
-        `Invalid pay group value: ${payGroup}. Expected integer between 1 and 15.`,
+        `Invalid pay group value: ${payGroup}. Expected integer between 0 and 15.`,
       );
     }
 
