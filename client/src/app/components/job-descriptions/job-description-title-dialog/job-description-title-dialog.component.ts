@@ -36,9 +36,9 @@ export class JobDescriptionTitleDialogComponent {
   errorMessage: string = '';
   isEditing: boolean = false;
 
-  private readonly titleRegex = /^[A-Za-z0-9\-\s().,]{1,100}$/;
+  private readonly titleRegex = /^[A-Za-zäöüÄÖÜß0-9\-\s().,/]{1,100}$/;
   private readonly invalidInputMessage =
-    'Ungültige Eingabe: Erlaubt sind maximal 100 Zeichen, bestehend aus Groß- und Kleinbuchstaben, Zahlen, Leerzeichen, Bindestrich (-), Punkt (.), Komma (,) sowie runden Klammern ().';
+    'Ungültige Eingabe: Erlaubt sind maximal 100 Zeichen, bestehend aus Groß- und Kleinbuchstaben, Zahlen, Leerzeichen, Bindestrich (-), Punkt (.), Komma (,), Schrägstrich (/) sowie runden Klammern ().';
 
   constructor(
     private dialogRef: MatDialogRef<JobDescriptionTitleDialogComponent>,

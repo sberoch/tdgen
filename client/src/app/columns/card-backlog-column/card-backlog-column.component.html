@@ -147,10 +147,16 @@
           [class.italic]="card.jobTask.deletedAt"
         >
           <ng-container *ngIf="card.tags.length > 0; else noTags">
-            {{ card.classification }} | Tags: {{ card.tags.join(", ") }}
+            <ng-container *ngIf="card.classification">
+              {{ card.classification }} |
+            </ng-container>
+            Tags: {{ card.tags.join(", ") }}
           </ng-container>
           <ng-template #noTags>
-            {{ card.classification }} | Tags: <i>keine</i>
+            <ng-container *ngIf="card.classification">
+              {{ card.classification }} |
+            </ng-container>
+            Tags: <i>keine</i>
           </ng-template>
         </p>
       </div>
