@@ -99,7 +99,7 @@ export const RAHMENDATEN_FORM_FIELDS: FormField[] = [
     validations: [
       {
         name: 'maxlength',
-        value: '1000',
+        value: '2000',
       },
     ],
   },
