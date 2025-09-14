@@ -68,7 +68,7 @@ export function extractPayGroupData(
   return jobDescriptionTasks.map((task) => {
     const metadata = task.jobTask.metadata as { paymentGroup: string };
     if (!metadata || !metadata.paymentGroup) {
-      throw new Error('Missing paymentGroup in task metadata');
+      return [0, task.percentage] as [number, number];
     }
 
     try {

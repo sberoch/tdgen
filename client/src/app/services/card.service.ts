@@ -2,11 +2,11 @@ import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { EnvironmentService } from './environment.service';
 import { JobDescription } from '../types/job-descriptions';
-import { JobTask, JobTasksListResponse } from '../types/job-tasks';
+import { JobTasksListResponse } from '../types/job-tasks';
 import { Card } from '../utils/card.utils';
 import { CurrentWorkspaceService } from './current-workspace.service';
+import { EnvironmentService } from './environment.service';
 
 @Injectable({
   providedIn: 'root',
