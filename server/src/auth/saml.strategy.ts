@@ -10,7 +10,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       callbackUrl: process.env.SAML_CALLBACK_URL as string,
       entryPoint: process.env.SAML_ENTRY_POINT as string,
       issuer: process.env.SAML_ISSUER as string,
-      cert: (process.env.SAML_CERT as string).replace(/\\n/g, '\n'),
+      cert: process.env.SAML_CERT as string,
       disableRequestedAuthnContext: true,
       wantAssertionsSigned: true,
       signatureAlgorithm: 'sha256',

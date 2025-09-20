@@ -22,7 +22,6 @@ RUN apk upgrade --no-cache && \
 WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/server .
 COPY --from=build /usr/src/app/client/dist/client/browser client
-RUN chown -R 1000:1000 /usr/src/app
 
 EXPOSE 5200
 
