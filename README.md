@@ -55,52 +55,13 @@ The following environment variables can be configured in `server/.env`:
 ### SAML Authentication
 
 - `SAML_CALLBACK_URL` - URL for SAML authentication callback (example: "https://localhost:5200/auth/saml/callback")
-- `SAML_ENTRY_POINT` - SAML identity provider entry point URL (example: "http://localhost:18080/realms/saml-test/protocol/saml")
 - `SAML_ISSUER` - SAML issuer identifier in the identity provider (example: "tdgen")
-- `SAML_CERT` - SAML certificate for validating responses. This value is WITHOUT the `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----` lines (example: "MIICoTC..")
+- `SAML_METADATA_URL` - SAML identity provider metadata URL (example: "http://localhost:18080/realms/saml-test/protocol/saml/descriptor")
 
 ### Security
 
 - `JWT_SECRET` - Secret key for JWT token signing
 - `JWT_COOKIE_LIFETIME` - Lifetime of the JWT cookie. Examples: "1h", "15m", "1d"
-
-## SAML Metadata Fetcher
-
-The server includes a script to fetch SAML identity provider metadata from any SAML 2.0 compliant IdP (Keycloak, ADFS, Azure AD, Okta, etc.).
-
-### Usage
-
-```bash
-cd server
-npm run generate-saml-metadata
-```
-
-### Environment Variables
-
-The script uses the following environment variables:
-
-- `SAML_ENTRY_POINT` - (Primary) SAML IdP entry point URL. The script will automatically construct metadata URLs for common IdP patterns
-- `SAML_METADATA_URL` - (Optional) Direct metadata endpoint URL if you want to bypass auto-detection
-
-### Features
-
-- **IdP Agnostic**: Works with any SAML 2.0 compliant identity provider
-- **Smart URL Detection**: Automatically constructs metadata URLs from entry points for:
-  - Keycloak: `/protocol/saml` → `/protocol/saml/descriptor`
-  - ADFS: `/adfs/services/trust` → `/federationmetadata/2007-06/federationmetadata.xml`
-  - Azure AD: Auto-detects tenant and constructs proper metadata URL
-  - Okta: `/app/metadata`
-- **XML File Output**: Saves metadata to `/server/scripts/saml-metadata-{timestamp}.xml`
-- **Configuration Export**: Provides passport-saml compatible configuration
-
-### Example Output
-
-The script will:
-
-1. Fetch the metadata XML from your IdP
-2. Save it to a timestamped file in the scripts folder
-3. Parse and display key information (Entity ID, SSO URL, Certificate, etc.)
-4. Generate a passport-saml compatible configuration object
 
 ## How to build and run a container image
 

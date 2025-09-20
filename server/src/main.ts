@@ -3,8 +3,15 @@ import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as cookieParser from 'cookie-parser';
+import { fetch, toPassportConfig } from 'passport-saml-metadata';
 
 async function bootstrap() {
+  await fetch({url: process.env.SAML_METADATA_URL})
+    .then((reader) => {
+      const config = toPassportConfig(reader);
+      process.env.SAML_CERT = config.idpCert;
+      process.env.SAML_ENTRY_POINT = config.entryPoint;
+    });
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.use(cookieParser());
