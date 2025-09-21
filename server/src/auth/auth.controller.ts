@@ -1,14 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService, SamlUser } from './auth.service';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { SamlStrategy } from './saml.strategy';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  samlStrategy: SamlStrategy;
+
+  constructor(private authService: AuthService, samlStrategy: SamlStrategy) {
+    this.samlStrategy = samlStrategy;
+  }
+
   @Get('saml/login')
   @UseGuards(AuthGuard('saml'))
   login() {}
@@ -58,5 +64,11 @@ export class AuthController {
   logout(@Res() res: Response) {
     res.clearCookie('accessToken');
     return res.json({ message: 'Logged out successfully' });
+  }
+
+  @Get('metadata')
+  @Header('content-type', 'text/xml')
+  getMetadata(@Res() res: Response) {
+    return res.send(this.samlStrategy.generateServiceProviderMetadata(null))
   }
 }
