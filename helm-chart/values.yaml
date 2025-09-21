@@ -25,7 +25,9 @@ tdgen:
   userGroupName: user
   adminGroupName: admin
   jwtSecret: pleaseChangeMe
-  samlCert: dummy
+  samlMetadataUrl: https://youridpsmetadata.url
+  samlCallbackUrl: https://yourcallback.url
+  samlIssuer: yourIssueriId
 
 persistence:
   enabled: true
