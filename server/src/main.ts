@@ -6,12 +6,15 @@ import * as cookieParser from 'cookie-parser';
 import { fetch, toPassportConfig } from 'passport-saml-metadata';
 
 async function bootstrap() {
-  await fetch({url: process.env.SAML_METADATA_URL})
-    .then((reader) => {
+  if (process.env.SAML_METADATA_URL) {
+    await fetch({ url: process.env.SAML_METADATA_URL }).then((reader) => {
       const config = toPassportConfig(reader);
-      process.env.SAML_CERT = config.idpCert;
-      process.env.SAML_ENTRY_POINT = config.entryPoint;
+      process.env.SAML_CERT = config.idpCert ? (config.idpCert as string) : '';
+      process.env.SAML_ENTRY_POINT = config.entryPoint
+        ? (config.entryPoint as string)
+        : '';
     });
+  }
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.use(cookieParser());

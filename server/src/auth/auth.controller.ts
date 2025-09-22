@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Get, Header, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService, SamlUser } from './auth.service';
 import { Response, Request } from 'express';
@@ -11,7 +19,10 @@ import { SamlStrategy } from './saml.strategy';
 export class AuthController {
   samlStrategy: SamlStrategy;
 
-  constructor(private authService: AuthService, samlStrategy: SamlStrategy) {
+  constructor(
+    private authService: AuthService,
+    samlStrategy: SamlStrategy,
+  ) {
     this.samlStrategy = samlStrategy;
   }
 
@@ -69,6 +80,6 @@ export class AuthController {
   @Get('metadata')
   @Header('content-type', 'text/xml')
   getMetadata(@Res() res: Response) {
-    return res.send(this.samlStrategy.generateServiceProviderMetadata(null))
+    return res.send(this.samlStrategy.generateServiceProviderMetadata(null));
   }
 }
