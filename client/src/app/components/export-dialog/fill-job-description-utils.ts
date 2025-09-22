@@ -241,15 +241,17 @@ export const convertHtmlToText = (html: string): string => {
 };
 
 export const getParagraphNumbering = (
-  textArray: [string, number][],
+  textArray: [string, number, string][],
   prefix = '4.'
 ) => {
-  return textArray.map((text, index) => `${prefix}${index + 1}`);
+  return textArray.map((item, index) => `${prefix}${index + 1}`);
 };
 
-function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
+function textSplit(
+  inputArray: [string, number, string][]
+): JobTasksTextSplitResult {
   let numbering;
-  let resArray: [string, number][] = [];
+  let resArray: [string, number, string][] = [];
   if (inputArray.length === 0)
     return {
       group1: '',
@@ -261,7 +263,7 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
   // Case 1: Single element array
   if (inputArray.length === 1) {
     numbering = getParagraphNumbering(inputArray);
-    const [text, value] = inputArray[0];
+    const [text, value, title] = inputArray[0];
 
     // Try to split by paragraphs first
     let parts = text.split(/\n\s*\n/);
@@ -305,13 +307,17 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
     // Combine parts according to the best split point
     const firstPart =
       numbering[0] +
-      ' (' +
+      ' [' +
+      title +
+      '] (' +
       value +
       ' %)\n' +
       parts.slice(0, bestSplitIndex).join('\n\n');
     const secondPart =
       numbering[0] +
-      ' (' +
+      ' [' +
+      title +
+      '] (' +
       value +
       ' %) (Fortsetzung)\n' +
       parts.slice(bestSplitIndex).join('\n\n');
@@ -329,11 +335,11 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
 
   // Calculate total text length and individual text lengths
   let totalLength = 0;
-  const items = inputArray.map(([text, value], index) => {
+  const items = inputArray.map(([text, value, title], index) => {
     const length = text.length;
     totalLength += length;
-    resArray[index] = [text, value];
-    return { text, value, length, index };
+    resArray[index] = [text, value, title];
+    return { text, value, title, length, index };
   });
 
   numbering = getParagraphNumbering(items as any[]);
@@ -354,7 +360,13 @@ function textSplit(inputArray: [string, number][]): JobTasksTextSplitResult {
     }
 
     resArray[i][0] =
-      numbering[i] + ' (' + resArray[i][1] + ' %)\n' + resArray[i][0];
+      numbering[i] +
+      ' [' +
+      resArray[i][2] +
+      '] (' +
+      resArray[i][1] +
+      ' %)\n' +
+      resArray[i][0];
     statsArray[i] = numbering[i] + ':\n' + resArray[i][1];
   }
 
@@ -390,7 +402,8 @@ export const jobTasksTextSplit = (tasks: JobDescriptionTask[]) => {
   const tasksArray = tasks.map((task) => [
     convertHtmlToText(task.jobTask.text),
     task.percentage,
-  ]) as [string, number][];
+    task.jobTask.title,
+  ]) as [string, number, string][];
   const result: JobTasksTextSplitResult = textSplit(tasksArray);
   return result;
 };
