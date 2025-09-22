@@ -34,7 +34,11 @@ export class JobDescriptionsService {
           formFields: true,
           tasks: {
             include: {
-              jobTask: true,
+              jobTask: {
+                include: {
+                  tags: true,
+                },
+              },
             },
           },
         },
@@ -130,7 +134,11 @@ export class JobDescriptionsService {
         include: {
           tasks: {
             include: {
-              jobTask: true,
+              jobTask: {
+                include: {
+                  tags: true,
+                },
+              },
             },
           },
           formFields: true,
@@ -175,7 +183,11 @@ export class JobDescriptionsService {
           include: {
             tasks: {
               include: {
-                jobTask: true,
+                jobTask: {
+                  include: {
+                    tags: true,
+                  },
+                },
               },
             },
             formFields: true,
@@ -266,7 +278,11 @@ export class JobDescriptionsService {
         formFields: true,
         tasks: {
           include: {
-            jobTask: true,
+            jobTask: {
+              include: {
+                tags: true,
+              },
+            },
           },
         },
       },
@@ -292,7 +308,11 @@ export class JobDescriptionsService {
         formFields: true,
         tasks: {
           include: {
-            jobTask: true,
+            jobTask: {
+              include: {
+                tags: true,
+              },
+            },
           },
         },
       },
