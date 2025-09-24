@@ -11,14 +11,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       entryPoint: process.env.SAML_ENTRY_POINT as string,
       issuer: process.env.SAML_ISSUER as string,
       cert: process.env.SAML_CERT as string,
-      disableRequestedAuthnContext: true,
-      wantAssertionsSigned: true,
-      signatureAlgorithm: 'sha256',
-      validateInResponseTo: false,
-      acceptedClockSkewMs: 5000,
-      additionalParams: {
-        debug: 'true',
-      },
+      identifierFormat: null,
     });
   }
 
@@ -27,6 +20,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
     done: (err: any, user?: any, info?: any) => void,
   ): void {
     try {
+      const groups = profile.groups as string[];
       const user = {
         id: profile.login || profile.nameID || profile.id || profile.username,
         email:
@@ -41,7 +35,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
         firstName: profile.firstName || profile.givenName,
         lastName: profile.lastName || profile.sn,
         username: profile['urn:oid:0.9.2342.19200300.100.1.1'] || profile.uid,
-        groups: profile.groups,
+        groups: groups.filter((group) => group == process.env.TDGEN_ADMIN_ATTR_NAME || group == process.env.TDGEN_USER_ATTR_NAME),
         rawProfile: profile,
       };
 
