@@ -128,6 +128,11 @@ export class LockService {
    */
   async breakLock(entityType: EntityType, entityId: number): Promise<boolean> {
     try {
+      const entity = await this.getEntity(entityType, entityId);
+      if (!entity) {
+        return false;
+      }
+
       await this.updateEntityLock(entityType, entityId, this.CLEANED_LOCK);
 
       this.logger.log(`Lock broken on ${entityType}:${entityId} by admin`);

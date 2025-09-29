@@ -18,7 +18,7 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
 
 ## Backend Implementation
 
-3. **Create LockService**
+3. ~~**Create LockService**~~ (DONE)
 
    - `acquireLock(entityType, entityId, userId, lockDuration)` - Acquire lock with timeout
    - `releaseLock(entityType, entityId, userId)` - Release lock (owner only)
