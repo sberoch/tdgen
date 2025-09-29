@@ -6,6 +6,7 @@ import { JobTasksModule } from './job-tasks/job-tasks.module';
 import { JobDescriptionsModule } from './job-descriptions/job-descriptions.module';
 import { JobDescriptionTasksModule } from './job-description-tasks/job-description-tasks.module';
 import { AuthModule } from './auth/auth.module';
+import { LockModule } from './lock/lock.module';
 import * as path from 'path';
 import { ConfigController } from './config/config.controller';
 
@@ -20,6 +21,7 @@ import { ConfigController } from './config/config.controller';
           : '/usr/src/app/client',
     }),
     PrismaModule,
+    LockModule,
     JobTasksModule,
     JobDescriptionsModule,
     JobDescriptionTasksModule,
