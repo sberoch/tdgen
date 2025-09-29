@@ -35,7 +35,11 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
         firstName: profile.firstName || profile.givenName,
         lastName: profile.lastName || profile.sn,
         username: profile['urn:oid:0.9.2342.19200300.100.1.1'] || profile.uid,
-        groups: groups.filter((group) => group == process.env.TDGEN_ADMIN_ATTR_NAME || group == process.env.TDGEN_USER_ATTR_NAME),
+        groups: groups.filter(
+          (group) =>
+            group == process.env.TDGEN_ADMIN_ATTR_NAME ||
+            group == process.env.TDGEN_USER_ATTR_NAME,
+        ),
         rawProfile: profile,
       };
 

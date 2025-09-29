@@ -31,6 +31,9 @@ model JobTask {
   updatedById String?
   deletedAt DateTime?
   deletedById String?
+  lockedAt DateTime?
+  lockedById String?
+  lockExpiry DateTime?
 } 
 
 model JobDescription {
@@ -46,6 +49,9 @@ model JobDescription {
   updatedById String?
   deletedAt DateTime?
   deletedById String?
+  lockedAt DateTime?
+  lockedById String?
+  lockExpiry DateTime?
 }
 
 model JobDescriptionFormField {
