@@ -51,15 +51,16 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       }
 
       // Validate required fields
-      if (!user.id) return done(new Error('SAML_MISSING_ID'), null);
+      if (!user.id) return done(null, false, { message: 'SAML_MISSING_ID' });
       if (!user.displayName)
-        return done(new Error('SAML_MISSING_DISPLAY_NAME'), null);
-      if (!user.groups) return done(new Error('SAML_MISSING_GROUPS'), null);
+        return done(null, false, { message: 'SAML_MISSING_DISPLAY_NAME' });
+      if (!user.groups || user.groups.length === 0)
+        return done(null, false, { message: 'SAML_MISSING_GROUPS' });
 
       done(null, user);
     } catch (error) {
       console.error('SAML validation error:', error);
-      done(new Error('SAML_VALIDATION_ERROR'), null);
+      done(null, false, { message: 'SAML_VALIDATION_ERROR' });
     }
   }
 }

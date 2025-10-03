@@ -8,7 +8,7 @@ import { Request } from 'express';
 import { SamlUser } from './auth.service';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
+export class UserGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context
       .switchToHttp()
@@ -20,10 +20,13 @@ export class AdminGuard implements CanActivate {
     }
 
     const adminRoleName = process.env.TDGEN_ADMIN_ATTR_NAME || 'admin';
-    const isAdmin = user.groups?.includes(adminRoleName);
+    const userRoleName = process.env.TDGEN_USER_ATTR_NAME || 'user';
 
-    if (!isAdmin) {
-      throw new ForbiddenException('Admin access required');
+    const isAdmin = user.groups?.includes(adminRoleName);
+    const isUser = user.groups?.includes(userRoleName);
+
+    if (!isAdmin && !isUser) {
+      throw new ForbiddenException('User access required');
     }
 
     return true;

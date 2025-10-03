@@ -25,9 +25,10 @@ import { join } from 'path';
 import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
+import { UserGuard } from '../auth/user.guard';
 
 @Controller('job-descriptions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UserGuard)
 export class JobDescriptionsController {
   constructor(
     private readonly jobDescriptionsService: JobDescriptionsService,

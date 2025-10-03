@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { JobDescriptionTasksService } from './job-description-tasks.service';
 import {
@@ -14,8 +15,11 @@ import {
   JobDescriptionTaskParams,
   UpdateJobDescriptionTaskDto,
 } from './job-description-tasks.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UserGuard } from '../auth/user.guard';
 
 @Controller('job-description-tasks')
+@UseGuards(JwtAuthGuard, UserGuard)
 export class JobDescriptionTasksController {
   constructor(
     private readonly jobDescriptionTasksService: JobDescriptionTasksService,

@@ -22,9 +22,10 @@ import { Request } from 'express';
 import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
+import { UserGuard } from '../auth/user.guard';
 
 @Controller('job-tasks')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, UserGuard)
 export class JobTasksController {
   constructor(private readonly jobTasksService: JobTasksService) {}
 

@@ -8,12 +8,14 @@ import {
   Req,
   Res,
   UseGuards,
+  UseFilters,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService, SamlUser } from './auth.service';
 import { Response, Request } from 'express';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { SamlStrategy } from './saml.strategy';
+import { SamlAuthGuard } from './saml-auth.guard';
+import { SamlExceptionFilter } from './saml-exception.filter';
 
 @Controller('auth')
 export class AuthController {
@@ -27,11 +29,13 @@ export class AuthController {
   }
 
   @Get('saml/login')
-  @UseGuards(AuthGuard('saml'))
+  @UseGuards(SamlAuthGuard)
+  @UseFilters(SamlExceptionFilter)
   login() {}
 
   @Post('saml/callback')
-  @UseGuards(AuthGuard('saml'))
+  @UseGuards(SamlAuthGuard)
+  @UseFilters(SamlExceptionFilter)
   callback(@Req() req: Request & { user: SamlUser }, @Res() res: Response) {
     try {
       if (!req.user) {
@@ -53,14 +57,10 @@ export class AuthController {
 
       res.redirect('/');
     } catch (error: any) {
-      console.error('SAML callback error:', error);
-
-      // Check if it's a SAML-specific error
       if (error.message && error.message.startsWith('SAML_')) {
         return res.redirect(`/denied?error=${error.message.toLowerCase()}`);
       }
 
-      // Generic SAML error
       res.redirect('/denied?error=saml_callback_error');
     }
   }
