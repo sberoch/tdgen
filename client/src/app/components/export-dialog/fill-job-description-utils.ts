@@ -111,8 +111,12 @@ const drawXInCheckbox = (
 export const fillCheckboxes = (
   pdfDoc: PDFDocument,
   pdfForm: PDFForm,
-  formData: FormGroup<ExportJobDescriptionForm>
+  formData: FormGroup<ExportJobDescriptionForm>,
+  bypassFormData: boolean = false
 ) => {
+  if (bypassFormData) {
+    return;
+  }
   const checkboxes = ['f.kk.1', 'f.kk.2', 'f.kk.21', 'f.kk.22', 'f.kk.23'];
   for (const checkbox of checkboxes) {
     const field = pdfForm.getCheckBox(checkbox);

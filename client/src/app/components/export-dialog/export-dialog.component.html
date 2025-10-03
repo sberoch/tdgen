@@ -402,20 +402,33 @@
     >
       Bitte füllen Sie alle Pflichtfelder aus.
     </div>
-  </form>
 
-  <div class="flex justify-end gap-2 mt-16">
-    <button
-      (click)="close()"
-      class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
-    >
-      Abbrechen
-    </button>
-    <button
-      (click)="export()"
-      class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
-    >
-      Exportieren
-    </button>
-  </div>
+    <div class="flex justify-end items-center gap-6 mt-16">
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="bypassFormData"
+          class="w-4 h-4"
+          formControlName="bypassFormData"
+        />
+        <label for="bypassFormData">Export ohne Formulardaten erzwingen</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="close()"
+          class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
+        >
+          Abbrechen
+        </button>
+        <button
+          type="button"
+          (click)="export()"
+          class="px-4 py-2 text-footer-primary hover:text-footer-primary/80"
+        >
+          Exportieren
+        </button>
+      </div>
+    </div>
+  </form>
 </div>

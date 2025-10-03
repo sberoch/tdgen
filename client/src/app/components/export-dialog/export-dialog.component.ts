@@ -82,6 +82,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         periodStart: ['', Validators.required],
         periodEnd: [''],
         periodType: [''],
+        bypassFormData: [false],
       },
       { validators: this.dateRangeValidator }
     );
@@ -194,7 +195,9 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.exportForm.invalid) {
+    const bypassFormData = this.exportForm.get('bypassFormData')?.value;
+
+    if (!bypassFormData && this.exportForm.invalid) {
       this.showValidationErrors = true;
       this.exportForm.markAllAsTouched();
       return;
@@ -209,7 +212,8 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
           const newArrayBuffer = await fillJobDescriptionForm(
             this.exportForm,
             currentJobDescription,
-            arrayBuffer
+            arrayBuffer,
+            bypassFormData || false
           );
           // Create a blob URL and trigger download
           const url = window.URL.createObjectURL(new Blob([newArrayBuffer]));
@@ -218,7 +222,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
           // Get form data for employee name
           const formData = this.exportForm.value;
-          const employeeName = formData.employeeName?.trim() || this.lastEmployeeName || 'Unknown';
+          const employeeName = bypassFormData ? 'Unknown' : (formData.employeeName?.trim() || this.lastEmployeeName || 'Unknown');
 
           // Get job description title
           const jobDescriptionTitle =
