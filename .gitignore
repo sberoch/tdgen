@@ -3,3 +3,4 @@ CLAUDE.md
 
 server/.env
 server/private.key
+deploy.sh

@@ -307,17 +307,17 @@ function textSplit(
     // Combine parts according to the best split point
     const firstPart =
       numbering[0] +
-      ' [' +
+      ' ' +
       title +
-      '] (' +
+      ' (' +
       value +
       ' %)\n' +
       parts.slice(0, bestSplitIndex).join('\n\n');
     const secondPart =
       numbering[0] +
-      ' [' +
+      ' ' +
       title +
-      '] (' +
+      ' (' +
       value +
       ' %) (Fortsetzung)\n' +
       parts.slice(bestSplitIndex).join('\n\n');
@@ -361,9 +361,9 @@ function textSplit(
 
     resArray[i][0] =
       numbering[i] +
-      ' [' +
+      ' ' +
       resArray[i][2] +
-      '] (' +
+      ' (' +
       resArray[i][1] +
       ' %)\n' +
       resArray[i][0];
