@@ -1,9 +1,5 @@
 # TDGen
 
-## Introduction
-
-Right now, this is just a slightly expanded version of [How To Use The MEAN Stack: Build A Web Application From Scratch | MongoDB](https://www.mongodb.com/resources/languages/mean-stack-tutorial).
-
 ## How to build and run
 
 ### Prerequisites
