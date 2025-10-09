@@ -65,6 +65,15 @@
 </header>
 
 <mat-menu #menu="matMenu" class="light-gray-menu">
+  <button mat-menu-item (click)="openJobDescriptionModal()">
+    <mat-icon>description</mat-icon>
+    <span>Tätigkeitsdarstellungen verwalten</span>
+  </button>
+  <button mat-menu-item (click)="openJobTaskModal()">
+    <mat-icon>category</mat-icon>
+    <span>Arbeitsvorgänge verwalten</span>
+  </button>
+  <mat-divider></mat-divider>
   <button mat-menu-item (click)="openCreateDialog()">
     <mat-icon>add</mat-icon>
     <span>Tätigkeitsdarstellung erstellen</span>
@@ -84,15 +93,6 @@
   >
     <mat-icon>save_alt</mat-icon>
     <span>Tätigkeitsdarstellung exportieren</span>
-  </button>
-  <mat-divider></mat-divider>
-  <button mat-menu-item (click)="openJobDescriptionModal()">
-    <mat-icon>description</mat-icon>
-    <span>Tätigkeitsdarstellungen verwalten</span>
-  </button>
-  <button mat-menu-item (click)="openJobTaskModal()">
-    <mat-icon>category</mat-icon>
-    <span>Arbeitsvorgänge verwalten</span>
   </button>
   <mat-divider></mat-divider>
   <!--
