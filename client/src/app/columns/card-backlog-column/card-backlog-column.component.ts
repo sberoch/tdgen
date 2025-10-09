@@ -167,14 +167,11 @@ export class CardBacklogColumnComponent implements OnInit {
     ) as HTMLElement;
 
     if (cardElement) {
-      const containerRect = container.getBoundingClientRect();
-      const cardRect = cardElement.getBoundingClientRect();
-
-      if (cardRect.top < containerRect.top) {
-        container.scrollTop -= containerRect.top - cardRect.top;
-      } else if (cardRect.bottom > containerRect.bottom) {
-        container.scrollTop += cardRect.bottom - containerRect.bottom;
-      }
+      cardElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest',
+      });
     }
   }
 

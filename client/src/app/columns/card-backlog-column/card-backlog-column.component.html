@@ -104,7 +104,9 @@
       card.jobTask.id) {
       <div
         class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent mb-2 last:mb-0"
-        [class.!border-[#333]]="card === selectedCard"
+        [class.!border-[#333]]="
+          card.classification === selectedCard?.classification
+        "
         cdkDrag
         (cdkDragStarted)="onDragStarted($event, card)"
         [style.backgroundColor]="$index | pastelColor"
