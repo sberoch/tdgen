@@ -26,6 +26,10 @@ import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { UserGuard } from '../auth/user.guard';
+import {
+  PessimisticLockGuard,
+  ValidateLock,
+} from '../lock/pessimistic-lock.guard';
 
 @Controller('job-descriptions')
 @UseGuards(JwtAuthGuard, UserGuard)
@@ -78,6 +82,8 @@ export class JobDescriptionsController {
   }
 
   @Patch(':id')
+  @UseGuards(PessimisticLockGuard)
+  @ValidateLock('JobDescription')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionDto,
@@ -87,6 +93,8 @@ export class JobDescriptionsController {
   }
 
   @Patch(':id/percentages')
+  @UseGuards(PessimisticLockGuard)
+  @ValidateLock('JobDescription')
   async updatePercentages(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionPercentagesDto,
@@ -95,6 +103,8 @@ export class JobDescriptionsController {
   }
 
   @Delete(':id')
+  @UseGuards(PessimisticLockGuard)
+  @ValidateLock('JobDescription')
   async delete(
     @Param('id') id: string,
     @Req() req: Request & { user: SamlUser },
