@@ -37,7 +37,11 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
      - Lock expiry timestamp
      - Whether current user owns the lock
 
-5. ~~**Add new API endpoint**~~ (DONE)
+5. ~~**Add new API endpoints**~~ (DONE)
+   - `POST /api/locks/acquire` - Acquire lock on entity (user)
+   - `POST /api/locks/release` - Release owned lock (user)
+   - `POST /api/locks/refresh` - Extend lock duration (user)
+   - `GET /api/locks/status` - Check lock status (user)
    - `POST /api/locks/break` - Force break lock (admin only)
      - Body: `{ entityType: 'JobTask' | 'JobDescription', entityId: number }`
      - Returns lock status after breaking
@@ -45,12 +49,14 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
 
 ## Frontend Implementation
 
-6. **Create LockService (Angular)**
+6. ~~**Create LockService (Angular)**~~ (DONE)
 
    - Track locked resources in memory
-   - Handle lock acquisition/release
-   - Auto-refresh locks for active editing sessions
-   - Handle lock conflicts and user notifications
+   - Handle lock acquisition/release via HTTP endpoints
+   - Auto-refresh locks for active editing sessions (5-minute heartbeat)
+   - Handle lock conflicts and user notifications (HTTP 423/412)
+   - Observable-based state management for reactive UI updates
+   - Auto-cleanup on service destruction
 
 7. **Update component behavior**
 

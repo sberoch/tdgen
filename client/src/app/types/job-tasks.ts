@@ -12,6 +12,9 @@ export type JobTask = {
   createdBy?: string;
   updatedAt?: string;
   deletedAt?: string;
+  lockedAt?: string;
+  lockedById?: string;
+  lockExpiry?: string;
 };
 
 export type CreateJobTask = {

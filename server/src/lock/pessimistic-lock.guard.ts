@@ -81,7 +81,7 @@ export class PessimisticLockGuard implements CanActivate {
             error: 'Locked',
             lockInfo: {
               isLocked: true,
-              lockedBy: lockInfo.lockedById,
+              lockedById: lockInfo.lockedById,
               lockedAt: lockInfo.lockedAt,
               lockExpiry: lockInfo.lockExpiry,
             },
