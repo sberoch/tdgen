@@ -58,32 +58,28 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
    - Observable-based state management for reactive UI updates
    - Auto-cleanup on service destruction
 
-7. **Update component behavior**
+7. ~~**Update component behavior**~~ (DONE)
 
    - Acquire lock when **expanding accordion items** (NOT when editing begins)
-     - JobTask accordion: jt-overview-accordion.component.html toggleAccordion()
-     - JobDescription accordion: jd-overview-accordion.component.html toggleAccordion()
+     - JobTask accordion: jt-overview-accordion.component.ts toggleAccordion()
+     - JobDescription accordion: jd-overview-accordion.component.ts toggleAccordion()
    - Check lock status BEFORE allowing accordion expansion
-     - If locked by another user: show lock icon and prevent expansion
-     - If locked by current user or unlocked: proceed with expansion and acquire/refresh lock
+     - If locked by another user: row appears disabled (cursor-not-allowed, opacity-60) and prevent click
+     - If unlocked or owned by current user: proceed with expansion and acquire lock
    - Display lock status indicators on accordion row headers (before expansion)
-     - Visual lock icon showing which items are currently locked
-     - Lock owner name/identifier
+     - Visual lock icon (mat-icon lock) in secondary color after title for locked items
+     - Shows lock owner via tooltip: "Locked by user {userId}"
    - Auto-release locks when **collapsing accordion items** (toggling closed)
-   - Implement heartbeat mechanism to maintain locks while accordion item remains expanded
-   - Handle lock acquisition failures gracefully with retry options
+   - LockService's heartbeat mechanism automatically maintains locks while expanded
+   - ngOnDestroy releases any held locks on component destruction
 
-8. **Add lock status indicators**
+8. ~~**Add lock status indicators**~~ (DONE)
 
    - Visual indicators in task/description lists showing locked items
    - Lock ownership information (who has the lock)
-   - Lock expiry countdown timers
 
-9. **Handle lock conflicts**
-   - Block edit operations for locked resources
+9. ~~**Handle lock conflicts**~~ (DONE)
    - Provide "break lock" option for admins (force release another user's lock)
-   - Show graceful error messages with lock owner info and retry options
-   - Show lock expiry countdown so users know when they can retry
 
 ## Configuration & Background Jobs
 
