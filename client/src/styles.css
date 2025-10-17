@@ -23,6 +23,10 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+#backlog div > br:first-child {
+  display: none !important;
+}
+
 .custom-menu {
   .mat-mdc-menu-content {
     background: #ffffff;

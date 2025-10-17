@@ -23,7 +23,7 @@ const pastelColors = [
   '#f0f6fe', // 216° - Light Blue
   '#f2f0fe', // 252° - Blue
   '#fcf0fe', // 288° - Purple
-  '#fef0f6'  // 324° - Magenta
+  '#fef0f6', // 324° - Magenta
 ];
 
 export const getNextPastelColor = (currentIndex: number): string => {
