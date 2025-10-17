@@ -163,7 +163,7 @@ export class CardBacklogColumnComponent implements OnInit {
 
     const container = this.scrollContainer.nativeElement;
     const cardElement = container.querySelector(
-      `[data-classification="${this.selectedCard.classification}"]`
+      `[data-title="${this.selectedCard.title}"]`
     ) as HTMLElement;
 
     if (cardElement) {

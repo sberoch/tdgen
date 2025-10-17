@@ -9,9 +9,7 @@
         class="h-full flex flex-col items-center justify-center cursor-pointer relative border border-transparent"
         [style.backgroundColor]="$index | pastelColor"
         (click)="selectCard(card)"
-        [class.!border-[#333]]="
-          card.classification === selectedCard?.classification
-        "
+        [class.!border-[#333]]="card.title === selectedCard?.title"
       >
         <p class="text-black/50 text-sm">
           {{ card.classification }}
