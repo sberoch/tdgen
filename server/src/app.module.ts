@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobTasksModule } from './job-tasks/job-tasks.module';
 import { JobDescriptionsModule } from './job-descriptions/job-descriptions.module';
@@ -13,6 +14,7 @@ import { ConfigController } from './config/config.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
       rootPath:
         process.env.CLIENT_DIST_DIR &&

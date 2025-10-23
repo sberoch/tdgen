@@ -212,15 +212,17 @@ export class LockService {
   }
 
   /**
-   * Cleanup expired locks (background job)
+   * Cleanup expired locks and orphaned lock states (background job)
+   * @returns total count of locks cleaned
    */
   async cleanupExpiredLocks(): Promise<number> {
     const now = new Date();
-    let count = 0;
+    let expiredCount = 0;
+    let orphanedCount = 0;
 
     try {
-      // Clean expired JobTask locks
-      const taskResult = await this.prisma.jobTask.updateMany({
+      // 1. Clean expired JobTask locks (lockExpiry <= now)
+      const expiredTasksResult = await this.prisma.jobTask.updateMany({
         where: {
           lockExpiry: {
             lte: now,
@@ -229,16 +231,12 @@ export class LockService {
             not: null,
           },
         },
-        data: {
-          lockedAt: null,
-          lockedById: null,
-          lockExpiry: null,
-        },
+        data: this.CLEANED_LOCK,
       });
-      count += taskResult.count;
+      expiredCount += expiredTasksResult.count;
 
-      // Clean expired JobDescription locks
-      const descResult = await this.prisma.jobDescription.updateMany({
+      // 2. Clean expired JobDescription locks (lockExpiry <= now)
+      const expiredDescResult = await this.prisma.jobDescription.updateMany({
         where: {
           lockExpiry: {
             lte: now,
@@ -247,21 +245,70 @@ export class LockService {
             not: null,
           },
         },
-        data: {
-          lockedAt: null,
-          lockedById: null,
+        data: this.CLEANED_LOCK,
+      });
+      expiredCount += expiredDescResult.count;
+
+      // 3. Clean orphaned JobTask locks (inconsistent states)
+      // Case: lockedById exists but lockExpiry is null
+      const orphanedTasks1 = await this.prisma.jobTask.updateMany({
+        where: {
+          lockedById: {
+            not: null,
+          },
           lockExpiry: null,
         },
+        data: this.CLEANED_LOCK,
       });
-      count += descResult.count;
+      orphanedCount += orphanedTasks1.count;
 
-      if (count > 0) {
-        this.logger.log(`Cleaned up ${count} expired locks`);
+      // Case: lockedAt exists but lockedById is null
+      const orphanedTasks2 = await this.prisma.jobTask.updateMany({
+        where: {
+          lockedAt: {
+            not: null,
+          },
+          lockedById: null,
+        },
+        data: this.CLEANED_LOCK,
+      });
+      orphanedCount += orphanedTasks2.count;
+
+      // 4. Clean orphaned JobDescription locks (inconsistent states)
+      // Case: lockedById exists but lockExpiry is null
+      const orphanedDesc1 = await this.prisma.jobDescription.updateMany({
+        where: {
+          lockedById: {
+            not: null,
+          },
+          lockExpiry: null,
+        },
+        data: this.CLEANED_LOCK,
+      });
+      orphanedCount += orphanedDesc1.count;
+
+      // Case: lockedAt exists but lockedById is null
+      const orphanedDesc2 = await this.prisma.jobDescription.updateMany({
+        where: {
+          lockedAt: {
+            not: null,
+          },
+          lockedById: null,
+        },
+        data: this.CLEANED_LOCK,
+      });
+      orphanedCount += orphanedDesc2.count;
+
+      // Log cleanup results
+      if (expiredCount > 0 || orphanedCount > 0) {
+        this.logger.log(
+          `Lock cleanup: ${expiredCount} expired, ${orphanedCount} orphaned/inconsistent`,
+        );
       }
 
-      return count;
+      return expiredCount + orphanedCount;
     } catch (error) {
-      this.logger.error('Failed to cleanup expired locks', error);
+      this.logger.error('Failed to cleanup locks', error);
       return 0;
     }
   }

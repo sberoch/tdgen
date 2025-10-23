@@ -96,21 +96,21 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
     - Frontend LockService fetches configuration from /api/config endpoint
     - Both services fall back to defaults if configuration unavailable
 
-11. **Schedule cleanup job**
+11. ~~**Schedule cleanup job**~~ (DONE)
     - Install `@nestjs/schedule` package for cron job support
-    - Create scheduled task service using `@Cron()` decorator
-    - Run cleanup job every 5 minutes (configurable)
-    - Enhance `cleanupExpiredLocks()` method to handle:
+    - Import `ScheduleModule.forRoot()` in AppModule
+    - Create `LockCleanupService` with `@Cron()` decorator
+    - Run cleanup job every 5 minutes
+    - Enhanced `cleanupExpiredLocks()` method to handle:
       - **Expired locks**: `lockExpiry <= now AND lockedById IS NOT NULL`
       - **Orphaned locks (inconsistent states)**:
         - `lockedById IS NOT NULL AND lockExpiry IS NULL` (missing expiry)
         - `lockedAt IS NOT NULL AND lockedById IS NULL` (missing owner)
-        - `lockedAt IS NOT NULL AND lockExpiry IS NULL` (partial lock)
     - Log cleanup activities with details:
       - Count of expired locks cleaned
       - Count of orphaned/inconsistent locks fixed
-      - Entity types affected
-    - Handle orphaned locks from crashed browser sessions or network failures
+      - Debug log when no locks need cleaning
+    - Handles orphaned locks from crashed browser sessions or network failures
 
 ## Error Handling & Edge Cases
 

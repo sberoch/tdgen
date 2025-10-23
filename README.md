@@ -59,6 +59,11 @@ The following environment variables can be configured in `server/.env`:
 - `JWT_SECRET` - Secret key for JWT token signing
 - `JWT_COOKIE_LIFETIME` - Lifetime of the JWT cookie. Examples: "1h", "15m", "1d"
 
+### Pessimistic Locking
+
+- `LOCK_DURATION_MS` - Lock timeout in milliseconds (default: 1800000 = 30 minutes)
+- `LOCK_REFRESH_INTERVAL_MS` - Client-side heartbeat interval in milliseconds (default: 300000 = 5 minutes)
+
 ## How to build and run a container image
 
 ### build
