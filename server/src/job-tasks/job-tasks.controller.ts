@@ -23,6 +23,10 @@ import { SamlUser } from '../auth/auth.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AdminGuard } from '../auth/admin.guard';
 import { UserGuard } from '../auth/user.guard';
+import {
+  PessimisticLockGuard,
+  ValidateLock,
+} from '../lock/pessimistic-lock.guard';
 
 @Controller('job-tasks')
 @UseGuards(JwtAuthGuard, UserGuard)
@@ -65,6 +69,8 @@ export class JobTasksController {
   }
 
   @Patch(':id')
+  @UseGuards(PessimisticLockGuard)
+  @ValidateLock('JobTask')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateJobTaskDto,
@@ -74,6 +80,8 @@ export class JobTasksController {
   }
 
   @Delete(':id')
+  @UseGuards(PessimisticLockGuard)
+  @ValidateLock('JobTask')
   async delete(
     @Param('id') id: string,
     @Req() req: Request & { user: SamlUser },

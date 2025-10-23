@@ -26,14 +26,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
+import { LockService } from '../../../services/lock.service';
 import {
   JobDescriptionFilter,
   JobDescriptionsService,
 } from '../../../services/job-descriptions.service';
+import { Subscription } from 'rxjs';
 import { JobDescription } from '../../../types/job-descriptions';
 import { Tag } from '../../../types/tag';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
+import { LockConflictDialogComponent } from '../../lock-conflict-dialog/lock-conflict-dialog.component';
 import { getTruncatedPlainText } from '../../../utils/card.utils';
 
 interface ExpandableJobDescription extends JobDescription {
@@ -94,16 +97,41 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   @Output() closeModal = new EventEmitter<void>();
 
   jobDescriptions: ExpandableJobDescription[] = [];
+  private subscription: Subscription = new Subscription();
 
   constructor(
     private dialog: MatDialog,
     private jobDescriptionsService: JobDescriptionsService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private lockService: LockService
   ) {}
 
   ngOnInit(): void {
     this.loadJobDescriptions();
+
+    // Subscribe to lock conflicts
+    this.subscription.add(
+      this.lockService.lockConflict$.subscribe((conflict) => {
+        this.dialog.open(LockConflictDialogComponent, {
+          width: '500px',
+          data: {
+            lockedById: conflict.lockInfo.lockedById || 'Unknown',
+            entityType: conflict.entityType,
+          },
+        });
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    // Release lock if currently holding one
+    if (this.expandedItemId) {
+      this.lockService
+        .releaseLock('JobDescription', this.expandedItemId)
+        .subscribe();
+    }
+    this.subscription.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -268,10 +296,53 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   toggleAccordion(id: number): void {
+    const currentUser = this.authService.getCurrentUser();
+    const itemToToggle = this.jobDescriptions.find((jd) => jd.id === id);
+
+    // Prevent toggling if locked by another user
+    if (itemToToggle?.lockedById && itemToToggle.lockedById !== currentUser?.id) {
+      return; // Do nothing, row should appear disabled
+    }
+
     if (this.expandedItemId === id) {
+      // Collapsing - release lock
+      this.lockService.releaseLock('JobDescription', id).subscribe({
+        next: () => {
+          // Update local state to reflect lock release
+          if (itemToToggle) {
+            itemToToggle.lockedById = undefined;
+            itemToToggle.lockedAt = undefined;
+            itemToToggle.lockExpiry = undefined;
+          }
+        },
+        error: (err) => console.error('Error releasing lock:', err),
+      });
       this.expandedItemId = null;
     } else {
-      this.expandedItemId = id;
+      // Expanding - acquire lock first
+      this.lockService.acquireLock('JobDescription', id).subscribe({
+        next: (success) => {
+          if (success) {
+            this.expandedItemId = id;
+            // Update local lock status
+            if (itemToToggle) {
+              itemToToggle.lockedById = currentUser?.id;
+              itemToToggle.lockedAt = new Date().toISOString();
+            }
+          } else {
+            this.dialog.open(LockConflictDialogComponent, {
+              width: '500px',
+              data: {
+                lockedById: itemToToggle?.lockedById || 'Unknown',
+                entityType: 'JobDescription',
+              },
+            });
+          }
+        },
+        error: (err) => {
+          console.error('Error acquiring lock:', err);
+        },
+      });
     }
   }
 
@@ -281,6 +352,11 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   getAccordionState(id: number): string {
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
+  }
+
+  isLockedByOtherUser(item: JobDescription): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !!item.lockedById && item.lockedById !== currentUser?.id;
   }
 
   getTaskCountDisplay(item: JobDescription): string {
@@ -393,6 +469,18 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
       error: (error) => {
         console.error('Error restoring job description:', error);
       },
+    });
+  }
+
+  breakLock(item: JobDescription): void {
+    this.lockService.breakLock('JobDescription', item.id!).subscribe({
+      next: (response) => {
+        // Update local state to clear lock fields
+        item.lockedById = undefined;
+        item.lockedAt = undefined;
+        item.lockExpiry = undefined;
+      },
+      error: (err) => console.error('Error breaking lock:', err),
     });
   }
 

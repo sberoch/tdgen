@@ -72,9 +72,11 @@
         <!-- Accordion header row -->
         <div
           #accordionItem
-          class="flex items-center cursor-pointer transition-colors"
+          class="flex items-center transition-colors"
           [ngClass]="{
-            'animate-flash': item.isNew
+            'animate-flash': item.isNew,
+            'cursor-pointer': !isLockedByOtherUser(item),
+            'cursor-not-allowed': isLockedByOtherUser(item)
           }"
           [style.background-color]="
             item.isNew
@@ -90,16 +92,34 @@
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg flex-1 flex items-center"
             [class.line-through]="item.deletedAt"
           >
-            <span class="mr-2 font-medium">
+            <span
+              class="mr-2 font-medium"
+              [style.cursor]="
+                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+              "
+              [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
+            >
               {{ truncate(item.title, 100) }}
             </span>
+            <mat-icon
+              *ngIf="isLockedByOtherUser(item)"
+              class="text-tertiary mr-2 text-lg"
+              title="Gesperrt von {{ item.lockedById }}"
+            >
+              lock
+            </mat-icon>
             <button
               mat-icon-button
               *ngIf="!item.deletedAt"
-              class="text-gray-500 hover:text-secondary"
+              class="text-gray-500 hover:text-secondary translate-y-[2px]"
               title="Umbenennen"
               (click)="openEditDialog(item, $event)"
               [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+              [disabled]="isLockedByOtherUser(item)"
+              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+              [style.cursor]="
+                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+              "
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
@@ -130,6 +150,11 @@
               title="Tätigkeitsdarstellung öffnen"
               (click)="
                 $event.stopPropagation(); loadJobDescriptionIntoWorkplace(item)
+              "
+              [disabled]="isLockedByOtherUser(item)"
+              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+              [style.cursor]="
+                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
               "
             >
               <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
@@ -167,6 +192,14 @@
                   <mat-icon>restore</mat-icon>
                   <span>Wiederherstellen</span>
                 </button>
+                <button
+                  mat-menu-item
+                  *ngIf="isLockedByOtherUser(item)"
+                  (click)="breakLock(item)"
+                >
+                  <mat-icon>lock_open</mat-icon>
+                  <span>Sperre aufheben</span>
+                </button>
               </mat-menu>
             </div>
 
@@ -179,6 +212,11 @@
                 [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
                 title="Löschen"
                 (click)="$event.stopPropagation(); deleteItem(item)"
+                [disabled]="isLockedByOtherUser(item)"
+                [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+                [style.cursor]="
+                  isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+                "
               >
                 <mat-icon
                   class="text-lg -translate-y-1 group-hover:text-red-500"

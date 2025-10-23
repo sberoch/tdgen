@@ -36,6 +36,7 @@ import { Subscription } from 'rxjs';
 import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
+import { LockService } from '../../../services/lock.service';
 import {
   JobTaskFilter,
   JobTasksService,
@@ -47,6 +48,7 @@ import { Card, getTruncatedPlainText } from '../../../utils/card.utils';
 import { JobTaskDeleteConfirmationDialogComponent } from '../../job-task-delete-confirmation-dialog/job-task-delete-confirmation-dialog.component';
 import { JobTaskPermanentDeleteDialogComponent } from '../../job-task-permanent-delete-dialog/job-task-permanent-delete-dialog.component';
 import { JobTaskTitleDialogComponent } from '../job-task-title-dialog/job-task-title-dialog.component';
+import { LockConflictDialogComponent } from '../../lock-conflict-dialog/lock-conflict-dialog.component';
 interface ExpandableJobTask extends JobTask {
   isNew?: boolean;
 }
@@ -175,7 +177,8 @@ export class JtOverviewAccordionComponent
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private lockService: LockService
   ) {}
 
   ngOnInit(): void {
@@ -184,6 +187,19 @@ export class JtOverviewAccordionComponent
       (jobDescription) => {
         this.currentJobDescription = jobDescription;
       }
+    );
+
+    // Subscribe to lock conflicts
+    this.subscription.add(
+      this.lockService.lockConflict$.subscribe((conflict) => {
+        this.dialog.open(LockConflictDialogComponent, {
+          width: '500px',
+          data: {
+            lockedById: conflict.lockInfo.lockedById || 'Unknown',
+            entityType: conflict.entityType,
+          },
+        });
+      })
     );
   }
 
@@ -225,6 +241,10 @@ export class JtOverviewAccordionComponent
   }
 
   ngOnDestroy(): void {
+    // Release lock if currently holding one
+    if (this.expandedItemId) {
+      this.lockService.releaseLock('JobTask', this.expandedItemId).subscribe();
+    }
     this.subscription.unsubscribe();
   }
 
@@ -399,6 +419,16 @@ export class JtOverviewAccordionComponent
 
   toggleAccordion(id: number): void {
     const previousExpandedItemId = this.expandedItemId;
+    const currentUser = this.authService.getCurrentUser();
+    const itemToToggle = this.jobTasks.find((jt) => jt.id === id);
+
+    // Prevent toggling if locked by another user
+    if (
+      itemToToggle?.lockedById &&
+      itemToToggle.lockedById !== currentUser?.id
+    ) {
+      return; // Do nothing, row should appear disabled
+    }
 
     // Save pending changes for the item being collapsed
     if (previousExpandedItemId) {
@@ -410,9 +440,6 @@ export class JtOverviewAccordionComponent
         if (previouslyExpandedItem.text !== this.htmlContent) {
           payloadToSave.text = this.htmlContent;
         }
-        // Include metadata if it can be changed directly in the editor view and needs saving.
-        // For now, assuming only text changes via htmlContent directly.
-        // payloadToSave.metadata = previouslyExpandedItem.metadata;
 
         if (Object.keys(payloadToSave).length > 0) {
           this.jobTasksService
@@ -422,7 +449,6 @@ export class JtOverviewAccordionComponent
             )
             .subscribe({
               next: (taskFromServer) => {
-                // Update local item that was just collapsed
                 this._handleSuccessfulUpdate({
                   updatedTaskFromServer: taskFromServer,
                 });
@@ -434,31 +460,68 @@ export class JtOverviewAccordionComponent
                 ),
             });
         }
+
+        // Release lock when collapsing
+        this.lockService
+          .releaseLock('JobTask', previousExpandedItemId)
+          .subscribe({
+            next: () => {
+              // Update local state to reflect lock release
+              if (previouslyExpandedItem) {
+                previouslyExpandedItem.lockedById = undefined;
+                previouslyExpandedItem.lockedAt = undefined;
+                previouslyExpandedItem.lockExpiry = undefined;
+                this.cdr.markForCheck();
+              }
+            },
+            error: (err) => console.error('Error releasing lock:', err),
+          });
       }
     }
 
     // Toggle expansion state
     if (this.expandedItemId === id) {
+      // Collapsing
       this.expandedItemId = null;
-      this.htmlContent = ''; // Clear content when collapsing
+      this.htmlContent = '';
       this.cdr.markForCheck();
     } else {
-      this.expandedItemId = id;
-      this.htmlContent = ''; // Clear previous content before loading new
-      this.jobTasksService.getJobTaskById(id).subscribe({
-        next: (task) => {
-          this.htmlContent = task.text || '';
-          // Optionally update the local task item if getJobTaskById returns more details
-          const currentItem = this.jobTasks.find((jt) => jt.id === id);
-          if (currentItem) {
-            currentItem.text = task.text; // Ensure local copy is also up-to-date
+      // Expanding - acquire lock first
+      this.lockService.acquireLock('JobTask', id).subscribe({
+        next: (success) => {
+          if (success) {
+            this.expandedItemId = id;
+            this.htmlContent = '';
+            this.jobTasksService.getJobTaskById(id).subscribe({
+              next: (task) => {
+                this.htmlContent = task.text || '';
+                const currentItem = this.jobTasks.find((jt) => jt.id === id);
+                if (currentItem) {
+                  currentItem.text = task.text;
+                  // Update local lock status
+                  currentItem.lockedById = currentUser?.id;
+                  currentItem.lockedAt = new Date().toISOString();
+                }
+                this.cdr.markForCheck();
+              },
+              error: (error) => {
+                console.error('Error loading task content:', error);
+                this.htmlContent = '';
+                this.cdr.markForCheck();
+              },
+            });
+          } else {
+            this.dialog.open(LockConflictDialogComponent, {
+              width: '500px',
+              data: {
+                lockedById: itemToToggle?.lockedById || 'Unbekannt',
+                entityType: 'JobTask',
+              },
+            });
           }
-          this.cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error loading task content:', error);
-          this.htmlContent = '';
-          this.cdr.markForCheck();
+        error: (err) => {
+          console.error('Error acquiring lock:', err);
         },
       });
     }
@@ -470,6 +533,11 @@ export class JtOverviewAccordionComponent
 
   getAccordionState(id: number): string {
     return this.isExpanded(id) ? 'expanded' : 'collapsed';
+  }
+
+  isLockedByOtherUser(item: JobTask): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !!item.lockedById && item.lockedById !== currentUser?.id;
   }
 
   getJobDescriptionCountDisplay(item: JobTask): string {
@@ -638,6 +706,19 @@ export class JtOverviewAccordionComponent
       error: (error) => {
         console.error('Error restoring job task:', error);
       },
+    });
+  }
+
+  breakLock(item: JobTask): void {
+    this.lockService.breakLock('JobTask', item.id!).subscribe({
+      next: (response) => {
+        // Update local state to clear lock fields
+        item.lockedById = undefined;
+        item.lockedAt = undefined;
+        item.lockExpiry = undefined;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error breaking lock:', err),
     });
   }
 

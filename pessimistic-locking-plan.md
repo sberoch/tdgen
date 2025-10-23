@@ -25,104 +25,102 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
    - `refreshLock(entityType, entityId, userId)` - Extend lock duration
    - `cleanupExpiredLocks()` - Background job to remove expired locks
 
-4. **Add lock interceptor/guard**
+4. ~~**Add lock validation interceptor/guard**~~ (DONE)
 
-   - Create `PessimisticLockGuard` for protecting update/delete endpoints
-   - Auto-acquire lock on GET operations for editing
-   - Validate lock ownership before modifications
-   - Return lock status in API responses
+   - Create `PessimisticLockGuard` to validate lock ownership on update/delete endpoints
+   - Verify that the requesting user holds a valid (non-expired) lock before allowing modifications
+   - Reject operations with HTTP 423 Locked if lock is not held by the requesting user
+   - Do NOT auto-acquire locks (lock acquisition is frontend-driven on accordion expansion)
+   - Return detailed lock metadata in API responses:
+     - Lock status (locked/unlocked)
+     - Lock owner ID and name
+     - Lock expiry timestamp
+     - Whether current user owns the lock
 
-5. **Update service methods**
-
-   - Modify JobTasksService.set() to check/acquire locks
-   - Modify JobTasksService.delete() to check/acquire locks
-   - Modify JobDescriptionsService.set() to check/acquire locks
-   - Modify JobDescriptionsService.setPercentages() to check/acquire locks
-   - Modify JobDescriptionsService.delete() to check/acquire locks
-
-6. **Add new API endpoints**
-   - `DELETE /api/job-tasks/:id/lock` - Release/break lock (owner can release, admin can break)
-   - `DELETE /api/job-descriptions/:id/lock` - Release/break lock (owner can release, admin can break)
+5. ~~**Add new API endpoints**~~ (DONE)
+   - `POST /api/locks/acquire` - Acquire lock on entity (user)
+   - `POST /api/locks/release` - Release owned lock (user)
+   - `POST /api/locks/refresh` - Extend lock duration (user)
+   - `GET /api/locks/status` - Check lock status (user)
+   - `POST /api/locks/break` - Force break lock (admin only)
+     - Body: `{ entityType: 'JobTask' | 'JobDescription', entityId: number }`
+     - Returns lock status after breaking
+     - Logs admin action for audit trail
 
 ## Frontend Implementation
 
-7. **Create LockService (Angular)**
+6. ~~**Create LockService (Angular)**~~ (DONE)
 
    - Track locked resources in memory
-   - Handle lock acquisition/release
-   - Auto-refresh locks for active editing sessions
-   - Handle lock conflicts and user notifications
+   - Handle lock acquisition/release via HTTP endpoints
+   - Auto-refresh locks for active editing sessions (5-minute heartbeat)
+   - Handle lock conflicts and user notifications (HTTP 423/412)
+   - Observable-based state management for reactive UI updates
+   - Auto-cleanup on service destruction
 
-8. **Update component behavior**
+7. ~~**Update component behavior**~~ (DONE)
 
-   - Acquire lock when opening edit forms/dialogs
-   - Display lock status indicators (locked by current user vs. others)
-   - Show warning messages when resource is locked by another user
-   - Auto-release locks when leaving edit mode
-   - Implement heartbeat mechanism to maintain locks during active editing
+   - Acquire lock when **expanding accordion items** (NOT when editing begins)
+     - JobTask accordion: jt-overview-accordion.component.ts toggleAccordion()
+     - JobDescription accordion: jd-overview-accordion.component.ts toggleAccordion()
+   - Check lock status BEFORE allowing accordion expansion
+     - If locked by another user: row appears disabled (cursor-not-allowed, opacity-60) and prevent click
+     - If unlocked or owned by current user: proceed with expansion and acquire lock
+   - Display lock status indicators on accordion row headers (before expansion)
+     - Visual lock icon (mat-icon lock) in secondary color after title for locked items
+     - Shows lock owner via tooltip: "Locked by user {userId}"
+   - Auto-release locks when **collapsing accordion items** (toggling closed)
+   - LockService's heartbeat mechanism automatically maintains locks while expanded
+   - ngOnDestroy releases any held locks on component destruction
 
-9. **Add lock status indicators**
+8. ~~**Add lock status indicators**~~ (DONE)
 
    - Visual indicators in task/description lists showing locked items
    - Lock ownership information (who has the lock)
-   - Lock expiry countdown timers
 
-10. **Handle lock conflicts**
-    - Block edit operations for locked resources
-    - Provide "break lock" option for admins (force release another user's lock)
-    - Show graceful error messages with lock owner info and retry options
-    - Show lock expiry countdown so users know when they can retry
+9. ~~**Handle lock conflicts**~~ (DONE)
+   - Provide "break lock" option for admins (force release another user's lock)
 
 ## Configuration & Background Jobs
 
-11. **Add configuration**
+10. ~~**Add configuration**~~ (DONE)
 
     - Lock timeout duration (default: 30 minutes)
     - Lock refresh interval (default: 5 minutes)
-    - Configure via environment variables
+    - Cleanup job interval (default: 5 minutes)
+    - Configure via environment variables (.env)
+      - `LOCK_DURATION_MS` - Lock timeout in milliseconds
+      - `LOCK_REFRESH_INTERVAL_MS` - Client-side heartbeat interval
+      - `LOCK_CLEANUP_INTERVAL_MS` - Server-side cleanup job interval
+    - Backend LockService loads configuration from ConfigService
+    - Frontend LockService fetches configuration from /api/config endpoint
+    - Both services fall back to defaults if configuration unavailable
 
-12. **Schedule cleanup job**
-    - Cron job to clean expired locks every 5 minutes
-    - Log lock cleanup activities
-    - Handle orphaned locks from crashed sessions
+11. ~~**Schedule cleanup job**~~ (DONE)
+    - Install `@nestjs/schedule` package for cron job support
+    - Import `ScheduleModule.forRoot()` in AppModule
+    - Create `LockCleanupService` with `@Cron()` decorator
+    - Run cleanup job every 5 minutes
+    - Enhanced `cleanupExpiredLocks()` method to handle:
+      - **Expired locks**: `lockExpiry <= now AND lockedById IS NOT NULL`
+      - **Orphaned locks (inconsistent states)**:
+        - `lockedById IS NOT NULL AND lockExpiry IS NULL` (missing expiry)
+        - `lockedAt IS NOT NULL AND lockedById IS NULL` (missing owner)
+    - Log cleanup activities with details:
+      - Count of expired locks cleaned
+      - Count of orphaned/inconsistent locks fixed
+      - Debug log when no locks need cleaning
+    - Handles orphaned locks from crashed browser sessions or network failures
 
 ## Error Handling & Edge Cases
 
-13. **Handle edge cases**
+12. **Handle edge cases**
 
     - Browser close/crash scenarios (heartbeat failure)
     - Network disconnections during editing
     - Concurrent lock requests
     - Lock inheritance for related entities (JobDescriptionTask updates)
 
-14. **Add appropriate error responses**
-    - HTTP 423 Locked for locked resources
+13. **Add appropriate error responses**
     - Detailed error messages with lock information
     - Retry mechanisms with exponential backoff
-
-## Testing
-
-15. **Write unit tests**
-
-    - LockService functionality
-    - Guard behavior
-    - Service method lock validation
-    - Lock expiry and cleanup
-
-16. **Write integration tests**
-    - Concurrent editing scenarios
-    - Lock acquisition/release flows
-    - Frontend-backend lock synchronization
-
-## Rollout Strategy
-
-17. **Feature flag implementation**
-
-    - Add feature toggle for pessimistic locking
-    - Gradual rollout with monitoring
-    - Fallback to current behavior if issues arise
-
-18. **Database migration**
-    - Run schema migration during maintenance window
-    - Verify lock fields are properly indexed
-    - Monitor performance impact
