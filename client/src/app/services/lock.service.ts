@@ -23,8 +23,8 @@ interface LockState {
 })
 export class LockService implements OnDestroy {
   private apiUrl: string;
-  private readonly DEFAULT_LOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes
-  private readonly REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  private DEFAULT_LOCK_DURATION_MS: number = 30 * 60 * 1000; // 30 minutes (default)
+  private REFRESH_INTERVAL_MS: number = 5 * 60 * 1000; // 5 minutes (default)
 
   // Track locks currently held by this client
   private locksMap = new Map<string, LockState>();
@@ -52,7 +52,28 @@ export class LockService implements OnDestroy {
     private authService: AuthService
   ) {
     this.apiUrl = `${this.env.apiUrl || '/'}api`;
-    this.startHeartbeat();
+    this.loadConfigAndStartHeartbeat();
+  }
+
+  /**
+   * Load configuration from server and start heartbeat
+   */
+  private loadConfigAndStartHeartbeat(): void {
+    this.http.get<any>(`${this.apiUrl}/config`).subscribe({
+      next: (config) => {
+        if (config.lockDurationMs) {
+          this.DEFAULT_LOCK_DURATION_MS = config.lockDurationMs;
+        }
+        if (config.lockRefreshIntervalMs) {
+          this.REFRESH_INTERVAL_MS = config.lockRefreshIntervalMs;
+        }
+        this.startHeartbeat();
+      },
+      error: (err) => {
+        console.error('Failed to load lock configuration, using defaults', err);
+        this.startHeartbeat();
+      },
+    });
   }
 
   ngOnDestroy(): void {

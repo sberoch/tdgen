@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type EntityType = 'JobTask' | 'JobDescription';
@@ -19,14 +20,21 @@ export interface LockUpdateDto {
 @Injectable()
 export class LockService {
   private readonly logger = new Logger(LockService.name);
-  private readonly DEFAULT_LOCK_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+  private readonly DEFAULT_LOCK_DURATION_MS: number;
   private readonly CLEANED_LOCK: LockUpdateDto = {
     lockedAt: null,
     lockedById: null,
     lockExpiry: null,
   };
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {
+    // Load lock duration from environment or use default (30 minutes)
+    this.DEFAULT_LOCK_DURATION_MS =
+      this.configService.get<number>('LOCK_DURATION_MS') || 30 * 60 * 1000;
+  }
 
   /**
    * Acquire a lock on an entity

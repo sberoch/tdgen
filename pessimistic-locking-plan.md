@@ -83,16 +83,34 @@ Implement pessimistic locking to prevent concurrent modifications of JobTask and
 
 ## Configuration & Background Jobs
 
-10. **Add configuration**
+10. ~~**Add configuration**~~ (DONE)
 
     - Lock timeout duration (default: 30 minutes)
     - Lock refresh interval (default: 5 minutes)
-    - Configure via environment variables
+    - Cleanup job interval (default: 5 minutes)
+    - Configure via environment variables (.env)
+      - `LOCK_DURATION_MS` - Lock timeout in milliseconds
+      - `LOCK_REFRESH_INTERVAL_MS` - Client-side heartbeat interval
+      - `LOCK_CLEANUP_INTERVAL_MS` - Server-side cleanup job interval
+    - Backend LockService loads configuration from ConfigService
+    - Frontend LockService fetches configuration from /api/config endpoint
+    - Both services fall back to defaults if configuration unavailable
 
 11. **Schedule cleanup job**
-    - Cron job to clean expired locks every 5 minutes
-    - Log lock cleanup activities
-    - Handle orphaned locks from crashed sessions
+    - Install `@nestjs/schedule` package for cron job support
+    - Create scheduled task service using `@Cron()` decorator
+    - Run cleanup job every 5 minutes (configurable)
+    - Enhance `cleanupExpiredLocks()` method to handle:
+      - **Expired locks**: `lockExpiry <= now AND lockedById IS NOT NULL`
+      - **Orphaned locks (inconsistent states)**:
+        - `lockedById IS NOT NULL AND lockExpiry IS NULL` (missing expiry)
+        - `lockedAt IS NOT NULL AND lockedById IS NULL` (missing owner)
+        - `lockedAt IS NOT NULL AND lockExpiry IS NULL` (partial lock)
+    - Log cleanup activities with details:
+      - Count of expired locks cleaned
+      - Count of orphaned/inconsistent locks fixed
+      - Entity types affected
+    - Handle orphaned locks from crashed browser sessions or network failures
 
 ## Error Handling & Edge Cases
 
