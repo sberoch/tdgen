@@ -12,6 +12,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       issuer: process.env.SAML_ISSUER as string,
       cert: process.env.SAML_CERT as string,
       identifierFormat: null,
+      disableRequestedAuthnContext: true,
     });
   }
 
