@@ -103,13 +103,6 @@
             >
               {{ truncate(item.title, 100) }}
             </span>
-            <mat-icon
-              *ngIf="isLockedByOtherUser(item)"
-              class="text-tertiary mr-2 text-lg -translate-y-[2px]"
-              title="Gesperrt von {{ item.lockedById }}"
-            >
-              lock
-            </mat-icon>
             <button
               mat-icon-button
               *ngIf="!item.deletedAt"
@@ -125,6 +118,13 @@
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
+            <mat-icon
+              *ngIf="isLockedByOtherUser(item)"
+              class="text-tertiary text-lg -translate-y-[2px]"
+              title="Gesperrt von {{ item.lockedById }}"
+            >
+              lock
+            </mat-icon>
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
@@ -159,7 +159,7 @@
               <mat-menu #actionMenu="matMenu" class="light-gray-menu">
                 <button
                   mat-menu-item
-                  [disabled]="!!item.deletedAt"
+                  [disabled]="!!item.deletedAt || isLockedByOtherUser(item)"
                   (click)="softDeleteItem(item)"
                 >
                   <mat-icon>delete</mat-icon>
@@ -167,6 +167,7 @@
                 </button>
                 <button
                   mat-menu-item
+                  [disabled]="isLockedByOtherUser(item)"
                   (click)="permanentDeleteItemWithCleanup(item)"
                 >
                   <mat-icon>delete_forever</mat-icon>
@@ -174,7 +175,7 @@
                 </button>
                 <button
                   mat-menu-item
-                  [disabled]="!item.deletedAt"
+                  [disabled]="!item.deletedAt || isLockedByOtherUser(item)"
                   (click)="restoreItem(item)"
                 >
                   <mat-icon>restore</mat-icon>

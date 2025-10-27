@@ -29,6 +29,7 @@ import { TruncateSafeHtmlPipe } from '../../pipes/truncate-safe-html-pipe';
 import { CardService } from '../../services/card.service';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { AuthService } from '../../services/auth.service';
 import { JobDescription } from '../../types/job-descriptions';
 import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
@@ -105,7 +106,8 @@ export class CardBacklogColumnComponent implements OnInit {
     private dialog: MatDialog,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -340,6 +342,16 @@ export class CardBacklogColumnComponent implements OnInit {
     );
     this.filteredBacklogCards = this.allBacklogCards.filter(
       (card) => !displayCardIds.has(card.jobTask.id)
+    );
+  }
+
+  isLockedByOtherUser(card: Card): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return (
+      card &&
+      card.jobTask &&
+      !!card.jobTask.lockedById &&
+      card.jobTask.lockedById !== currentUser?.id
     );
   }
 }

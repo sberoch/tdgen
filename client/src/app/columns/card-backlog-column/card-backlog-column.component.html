@@ -34,10 +34,13 @@
     >
       <div
         *ngFor="let card of backlogCards; trackBy: trackCardById"
-        class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 cursor-move select-none mx-2 mb-[2px]"
+        class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 select-none mx-2 mb-[2px]"
+        [class.cursor-move]="isWorkspaceSet && !isLockedByOtherUser(card)"
+        [class.cursor-not-allowed]="!isWorkspaceSet || isLockedByOtherUser(card)"
+        [class.opacity-60]="isLockedByOtherUser(card)"
         cdkDrag
+        [cdkDragDisabled]="!isWorkspaceSet || isLockedByOtherUser(card)"
         (cdkDragStarted)="onDragStarted($event, card)"
-        [style.cursor]="isWorkspaceSet ? 'move' : 'not-allowed'"
         [cardTooltip]="card"
       >
         <div
@@ -59,9 +62,18 @@
             {{ card.classification }}
           </p>
         </div>
-        <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
-          {{ card.title }}
-        </p>
+        <div class="flex items-center gap-1">
+          <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
+            {{ card.title }}
+          </p>
+          <mat-icon
+            *ngIf="isLockedByOtherUser(card)"
+            class="text-tertiary text-sm"
+            title="Gesperrt von {{ card.jobTask.lockedById }}"
+          >
+            lock
+          </mat-icon>
+        </div>
         <p
           class="text-xs 2xl:text-sm mt-1"
           [innerHTML]="card.text | truncateSafeHtml : 145"
@@ -74,6 +86,9 @@
             mat-icon-button
             class="text-gray-500 hover:text-secondary"
             (click)="openDialogWithCard(card)"
+            [disabled]="isLockedByOtherUser(card)"
+            [style.opacity]="isLockedByOtherUser(card) ? '0.5' : '1'"
+            [style.cursor]="isLockedByOtherUser(card) ? 'not-allowed' : 'pointer'"
           >
             <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
           </button>
@@ -103,9 +118,13 @@
       @if (displayCards.length > 0) { @for (card of displayCards; track
       card.jobTask.id) {
       <div
-        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 cursor-move select-none border border-transparent mb-2 last:mb-0"
+        class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 select-none border border-transparent mb-2 last:mb-0"
         [class.!border-[#333]]="card.title === selectedCard?.title"
+        [class.cursor-move]="!isLockedByOtherUser(card)"
+        [class.cursor-not-allowed]="isLockedByOtherUser(card)"
+        [class.opacity-60]="isLockedByOtherUser(card)"
         cdkDrag
+        [cdkDragDisabled]="isLockedByOtherUser(card)"
         (cdkDragStarted)="onDragStarted($event, card)"
         [style.backgroundColor]="$index | pastelColor"
         (click)="selectCard(card)"
@@ -116,14 +135,23 @@
           *cdkDragPlaceholder
         ></div>
         <div class="flex justify-between">
-          <p
-            class="font-bold text-xs 2xl:text-sm 3xl:text-base mt-1"
-            [class.line-through]="card.jobTask.deletedAt"
-            [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
-            [class.italic]="card.jobTask.deletedAt"
-          >
-            {{ $index + 1 }}. {{ card.title }}
-          </p>
+          <div class="flex items-center gap-1 mt-1">
+            <p
+              class="font-bold text-xs 2xl:text-sm 3xl:text-base"
+              [class.line-through]="card.jobTask.deletedAt"
+              [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+              [class.italic]="card.jobTask.deletedAt"
+            >
+              {{ $index + 1 }}. {{ card.title }}
+            </p>
+            <mat-icon
+              *ngIf="isLockedByOtherUser(card)"
+              class="text-tertiary text-sm"
+              title="Gesperrt von {{ card.jobTask.lockedById }}"
+            >
+              lock
+            </mat-icon>
+          </div>
           <button
             mat-icon-button
             class="compact-icon"
@@ -192,11 +220,19 @@
 </div>
 
 <mat-menu #cardMenu="matMenu" class="light-gray-menu">
-  <button mat-menu-item (click)="moveCardToTop(currentIndex)">
+  <button
+    mat-menu-item
+    (click)="moveCardToTop(currentIndex)"
+    [disabled]="isLockedByOtherUser(displayCards[currentIndex])"
+  >
     <mat-icon>vertical_align_top</mat-icon>
     <span>An den Anfang verschieben</span>
   </button>
-  <button mat-menu-item (click)="moveCardToBottom(currentIndex)">
+  <button
+    mat-menu-item
+    (click)="moveCardToBottom(currentIndex)"
+    [disabled]="isLockedByOtherUser(displayCards[currentIndex])"
+  >
     <mat-icon>vertical_align_bottom</mat-icon>
     <span>Ans Ende verschieben</span>
   </button>
@@ -204,7 +240,7 @@
   <button
     mat-menu-item
     (click)="openDialogWithCard(displayCards[currentIndex])"
-    [disabled]="shouldDisableEditButton(displayCards[currentIndex])"
+    [disabled]="shouldDisableEditButton(displayCards[currentIndex]) || isLockedByOtherUser(displayCards[currentIndex])"
   >
     <mat-icon>edit</mat-icon>
     <span>Editieren</span>
@@ -213,6 +249,7 @@
   <button
     mat-menu-item
     (click)="removeFromDisplay(displayCards[currentIndex])"
+    [disabled]="isLockedByOtherUser(displayCards[currentIndex])"
     class="!text-red-500"
   >
     <mat-icon>remove</mat-icon>

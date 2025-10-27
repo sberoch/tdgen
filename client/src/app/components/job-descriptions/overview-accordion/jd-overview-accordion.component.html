@@ -101,13 +101,6 @@
             >
               {{ truncate(item.title, 100) }}
             </span>
-            <mat-icon
-              *ngIf="isLockedByOtherUser(item)"
-              class="text-tertiary mr-2 text-lg"
-              title="Gesperrt von {{ item.lockedById }}"
-            >
-              lock
-            </mat-icon>
             <button
               mat-icon-button
               *ngIf="!item.deletedAt"
@@ -123,6 +116,13 @@
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
+            <mat-icon
+              *ngIf="isLockedByOtherUser(item)"
+              class="text-tertiary text-lg"
+              title="Gesperrt von {{ item.lockedById }}"
+            >
+              lock
+            </mat-icon>
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
@@ -174,19 +174,23 @@
               <mat-menu #actionMenu="matMenu" class="light-gray-menu">
                 <button
                   mat-menu-item
-                  [disabled]="!!item.deletedAt"
+                  [disabled]="!!item.deletedAt || isLockedByOtherUser(item)"
                   (click)="softDeleteItem(item)"
                 >
                   <mat-icon>delete</mat-icon>
                   <span>Löschen</span>
                 </button>
-                <button mat-menu-item (click)="permanentDeleteItem(item)">
+                <button
+                  mat-menu-item
+                  [disabled]="isLockedByOtherUser(item)"
+                  (click)="permanentDeleteItem(item)"
+                >
                   <mat-icon>delete_forever</mat-icon>
                   <span>Permanent löschen</span>
                 </button>
                 <button
                   mat-menu-item
-                  [disabled]="!item.deletedAt"
+                  [disabled]="!item.deletedAt || isLockedByOtherUser(item)"
                   (click)="restoreItem(item)"
                 >
                   <mat-icon>restore</mat-icon>

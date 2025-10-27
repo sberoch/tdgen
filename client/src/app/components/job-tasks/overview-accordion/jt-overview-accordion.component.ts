@@ -844,6 +844,31 @@ export class JtOverviewAccordionComponent
           });
       }
     }
+
+    // Release lock when overlay closes
+    if (this.expandedItemId) {
+      const itemToRelease = this.jobTasks.find(
+        (jt) => jt.id === this.expandedItemId
+      );
+
+      this.lockService
+        .releaseLock('JobTask', this.expandedItemId)
+        .subscribe({
+          next: () => {
+            // Update local state to reflect lock release
+            if (itemToRelease) {
+              itemToRelease.lockedById = undefined;
+              itemToRelease.lockedAt = undefined;
+              itemToRelease.lockExpiry = undefined;
+              this.cdr.markForCheck();
+            }
+          },
+          error: (err) => console.error('Error releasing lock on overlay close:', err),
+        });
+
+      // Reset expanded state
+      this.expandedItemId = null;
+    }
   }
 
   private _handleSuccessfulUpdate(
