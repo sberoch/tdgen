@@ -286,18 +286,7 @@ export class JtOverviewAccordionComponent
             );
 
             if (targetItem && targetItem.id) {
-              this.expandedItemId = targetItem.id;
-
-              // Load content for the expanded item
-              this.jobTasksService.getJobTaskById(targetItem.id).subscribe({
-                next: (task) => {
-                  this.htmlContent = task.text || '';
-                },
-                error: (error) => {
-                  console.error('Error loading task content:', error);
-                  this.htmlContent = '';
-                },
-              });
+              this.expandAndAcquireLock(targetItem.id);
             }
 
             // Remove the "new" flag after 3 seconds
@@ -486,44 +475,7 @@ export class JtOverviewAccordionComponent
       this.htmlContent = '';
       this.cdr.markForCheck();
     } else {
-      // Expanding - acquire lock first
-      this.lockService.acquireLock('JobTask', id).subscribe({
-        next: (success) => {
-          if (success) {
-            this.expandedItemId = id;
-            this.htmlContent = '';
-            this.jobTasksService.getJobTaskById(id).subscribe({
-              next: (task) => {
-                this.htmlContent = task.text || '';
-                const currentItem = this.jobTasks.find((jt) => jt.id === id);
-                if (currentItem) {
-                  currentItem.text = task.text;
-                  // Update local lock status
-                  currentItem.lockedById = currentUser?.id;
-                  currentItem.lockedAt = new Date().toISOString();
-                }
-                this.cdr.markForCheck();
-              },
-              error: (error) => {
-                console.error('Error loading task content:', error);
-                this.htmlContent = '';
-                this.cdr.markForCheck();
-              },
-            });
-          } else {
-            this.dialog.open(LockConflictDialogComponent, {
-              width: '500px',
-              data: {
-                lockedById: itemToToggle?.lockedById || 'Unbekannt',
-                entityType: 'JobTask',
-              },
-            });
-          }
-        },
-        error: (err) => {
-          console.error('Error acquiring lock:', err);
-        },
-      });
+      this.expandAndAcquireLock(id);
     }
   }
 
@@ -722,6 +674,48 @@ export class JtOverviewAccordionComponent
     });
   }
 
+  private expandAndAcquireLock(taskId: number): void {
+    const currentUser = this.authService.getCurrentUser();
+    const itemToExpand = this.jobTasks.find((jt) => jt.id === taskId);
+
+    this.lockService.acquireLock('JobTask', taskId).subscribe({
+      next: (success) => {
+        if (success) {
+          this.expandedItemId = taskId;
+          this.htmlContent = '';
+          this.jobTasksService.getJobTaskById(taskId).subscribe({
+            next: (task) => {
+              this.htmlContent = task.text || '';
+              const currentItem = this.jobTasks.find((jt) => jt.id === taskId);
+              if (currentItem) {
+                currentItem.text = task.text;
+                currentItem.lockedById = currentUser?.id;
+                currentItem.lockedAt = new Date().toISOString();
+              }
+              this.cdr.markForCheck();
+            },
+            error: (error) => {
+              console.error('Error loading task content:', error);
+              this.htmlContent = '';
+              this.cdr.markForCheck();
+            },
+          });
+        } else {
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: itemToExpand?.lockedById || 'Unbekannt',
+              entityType: 'JobTask',
+            },
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error acquiring lock:', err);
+      },
+    });
+  }
+
   trackById(index: number, item: JobTask): number {
     return item.id!;
   }
@@ -851,22 +845,18 @@ export class JtOverviewAccordionComponent
         (jt) => jt.id === this.expandedItemId
       );
 
-      this.lockService
-        .releaseLock('JobTask', this.expandedItemId)
-        .subscribe({
-          next: () => {
-            // Update local state to reflect lock release
-            if (itemToRelease) {
-              itemToRelease.lockedById = undefined;
-              itemToRelease.lockedAt = undefined;
-              itemToRelease.lockExpiry = undefined;
-              this.cdr.markForCheck();
-            }
-          },
-          error: (err) => console.error('Error releasing lock on overlay close:', err),
-        });
-
-      // Reset expanded state
+      this.lockService.releaseLock('JobTask', this.expandedItemId).subscribe({
+        next: () => {
+          if (itemToRelease) {
+            itemToRelease.lockedById = undefined;
+            itemToRelease.lockedAt = undefined;
+            itemToRelease.lockExpiry = undefined;
+            this.cdr.markForCheck();
+          }
+        },
+        error: (err) =>
+          console.error('Error releasing lock on overlay close:', err),
+      });
       this.expandedItemId = null;
     }
   }

@@ -204,7 +204,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             (jd) => jd.title === targetTitle
           );
           if (newItem && newItem.id) {
-            this.expandedItemId = newItem.id;
+            // Acquire lock and expand
+            this.expandAndAcquireLock(newItem.id);
           }
 
           setTimeout(() => {
@@ -323,29 +324,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
       this.expandedItemId = null;
     } else {
       // Expanding - acquire lock first
-      this.lockService.acquireLock('JobDescription', id).subscribe({
-        next: (success) => {
-          if (success) {
-            this.expandedItemId = id;
-            // Update local lock status
-            if (itemToToggle) {
-              itemToToggle.lockedById = currentUser?.id;
-              itemToToggle.lockedAt = new Date().toISOString();
-            }
-          } else {
-            this.dialog.open(LockConflictDialogComponent, {
-              width: '500px',
-              data: {
-                lockedById: itemToToggle?.lockedById || 'Unknown',
-                entityType: 'JobDescription',
-              },
-            });
-          }
-        },
-        error: (err) => {
-          console.error('Error acquiring lock:', err);
-        },
-      });
+      this.expandAndAcquireLock(id);
     }
   }
 
@@ -484,6 +463,35 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         item.lockExpiry = undefined;
       },
       error: (err) => console.error('Error breaking lock:', err),
+    });
+  }
+
+  private expandAndAcquireLock(descriptionId: number): void {
+    const currentUser = this.authService.getCurrentUser();
+    const itemToExpand = this.jobDescriptions.find((jd) => jd.id === descriptionId);
+
+    this.lockService.acquireLock('JobDescription', descriptionId).subscribe({
+      next: (success) => {
+        if (success) {
+          this.expandedItemId = descriptionId;
+          // Update local lock status
+          if (itemToExpand) {
+            itemToExpand.lockedById = currentUser?.id;
+            itemToExpand.lockedAt = new Date().toISOString();
+          }
+        } else {
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: itemToExpand?.lockedById || 'Unbekannt',
+              entityType: 'JobDescription',
+            },
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error acquiring lock:', err);
+      },
     });
   }
 
