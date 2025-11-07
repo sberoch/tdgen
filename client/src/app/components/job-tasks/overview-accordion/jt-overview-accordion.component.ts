@@ -128,8 +128,6 @@ export class JtOverviewAccordionComponent
         'justifyCenter',
         'justifyRight',
         'justifyFull',
-        'indent',
-        'outdent',
         'heading',
         'fontName',
       ],

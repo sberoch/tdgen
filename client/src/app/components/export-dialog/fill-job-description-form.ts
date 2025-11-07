@@ -247,6 +247,7 @@ export const fillJobDescriptionForm = async (
     xOffset: 3,
     yPositionOverride: 141.5,
     yOffset: -13,
+    maxWidth: 437,
   });
 
   drawTextOnField({
@@ -258,6 +259,7 @@ export const fillJobDescriptionForm = async (
     font: courierFont,
     xOffset: 3,
     yPositionOverride: 40.5,
+    maxWidth: 437,
   });
 
   pdfForm

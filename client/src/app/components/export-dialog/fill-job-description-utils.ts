@@ -139,6 +139,7 @@ export const fillCheckboxes = async (
       const widgets = field.acroField.getWidgets();
       widgets.forEach((field) => {
         const { x, y, width, height } = field.getRectangle();
+        console.log({ x, y, width, height, fieldName });
 
         // Draw a rectangle around the field
         const pageRef = field.P();
@@ -448,54 +449,131 @@ export const wrapText = (
   maxWidth: number,
   fontSize: number
 ): string => {
+  console.log({ text });
   // For Courier (monospaced) font, character width is approximately 0.6 * fontSize
   const charWidth = fontSize * 0.6;
   const maxCharsPerLine = Math.floor(maxWidth / charWidth);
 
-  const lines: string[] = [];
-  const paragraphs = text.split('\n');
+  if (!text || maxCharsPerLine <= 0) return text;
 
-  for (const paragraph of paragraphs) {
-    if (paragraph.length === 0) {
-      lines.push('');
-      continue;
-    }
+  // Split text into blocks (separated by double newlines)
+  const blocks = text.split(/\n\n+/);
+  const wrappedBlocks: string[] = [];
 
-    let currentLine = '';
-    const words = paragraph.split(' ');
+  for (const block of blocks) {
+    if (block.trim() === '') continue;
 
-    for (let i = 0; i < words.length; i++) {
-      const word = words[i];
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const lines = block.split('\n');
+    const wrappedLines: string[] = [];
 
-      if (testLine.length <= maxCharsPerLine) {
-        currentLine = testLine;
+    for (const line of lines) {
+      if (line.trim() === '') {
+        wrappedLines.push('');
+        continue;
+      }
+
+      // Check if this is a list item (bullet point •, dash -, or numbered list)
+      const bulletMatch = line.match(/^(•|-)\s/);
+      const numberedMatch = line.match(/^(\d+\.)\s/);
+      const isListItem = bulletMatch !== null || numberedMatch !== null;
+
+      if (isListItem) {
+        // Process list item
+        const prefix = bulletMatch ? bulletMatch[0] : numberedMatch![0]; // "• ", "- ", or "1. "
+        const content = line.substring(prefix.length);
+        const wrappedListItem = wrapListItem(content, maxCharsPerLine, prefix);
+        wrappedLines.push(...wrappedListItem);
       } else {
-        // If a single word is longer than max chars, we need to break it
-        if (word.length > maxCharsPerLine) {
-          if (currentLine) {
-            lines.push(currentLine);
-            currentLine = '';
-          }
-          // Break long word into chunks
-          for (let j = 0; j < word.length; j += maxCharsPerLine) {
-            lines.push(word.substring(j, j + maxCharsPerLine));
-          }
-        } else {
-          if (currentLine) {
-            lines.push(currentLine);
-          }
-          currentLine = word;
-        }
+        // Process normal text
+        const wrappedNormalText = wrapNormalText(line, maxCharsPerLine);
+        wrappedLines.push(...wrappedNormalText);
       }
     }
 
-    if (currentLine) {
-      lines.push(currentLine);
+    wrappedBlocks.push(wrappedLines.join('\n'));
+  }
+
+  return wrappedBlocks.join('\n\n');
+};
+
+// Helper function to wrap list items with indentation
+// Supports bullet points (•, -) and numbered lists (1., 2., etc.)
+const wrapListItem = (
+  content: string,
+  lineLength: number,
+  prefix: string
+): string[] => {
+  const availableLength = lineLength - prefix.length;
+  const words = content.split(/\s+/);
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+    if (testLine.length <= availableLength) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // Word is longer than available line - add it anyway
+        lines.push(word);
+        currentLine = '';
+      }
     }
   }
 
-  return lines.join('\n');
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  // First line gets prefix (bullet/number), subsequent lines get space indentation
+  const result: string[] = [];
+  const indent = ' '.repeat(prefix.length);
+
+  for (let i = 0; i < lines.length; i++) {
+    if (i === 0) {
+      result.push(prefix + lines[i]);
+    } else {
+      result.push(indent + lines[i]);
+    }
+  }
+
+  return result;
+};
+
+// Helper function to wrap normal text
+const wrapNormalText = (text: string, lineLength: number): string[] => {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+    if (testLine.length <= lineLength) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // Word is longer than line length - add it anyway
+        lines.push(word);
+        currentLine = '';
+      }
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
 };
 
 interface DrawTextOnFieldOptions {
@@ -505,6 +583,7 @@ interface DrawTextOnFieldOptions {
   fieldName: string;
   text: string;
   font: any; // PDFFont type
+  maxWidth?: number;
   xOffset?: number;
   yPositionOverride?: number;
   yOffset?: number;
@@ -518,6 +597,7 @@ export const drawTextOnField = ({
   fieldName,
   text,
   font,
+  maxWidth = 502,
   xOffset = 0,
   yPositionOverride,
   yOffset = 0,
@@ -525,7 +605,6 @@ export const drawTextOnField = ({
   if (drawMode) {
     const field = pdfForm.getTextField(fieldName);
     const widgets = field.acroField.getWidgets();
-    const MAX_WIDTH = 437;
     const BASE_FONT_SIZE = 12;
 
     // Calculate dynamic font size based on text length and thresholds
@@ -553,7 +632,7 @@ export const drawTextOnField = ({
       const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
 
       if (page && text) {
-        const wrappedText = wrapText(text, MAX_WIDTH, fontSize);
+        const wrappedText = wrapText(text, maxWidth, fontSize);
         page.setFont(font);
 
         const yPosition =

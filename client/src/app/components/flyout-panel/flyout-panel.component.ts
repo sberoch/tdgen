@@ -65,8 +65,6 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
         'justifyCenter',
         'justifyRight',
         'justifyFull',
-        'indent',
-        'outdent',
         'heading',
         'fontName',
       ],
