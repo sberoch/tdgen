@@ -9,6 +9,7 @@ import {
   jobTasksTextSplit,
   setTextFieldFontSize,
   convertHtmlToText,
+  drawTextOnField,
 } from './fill-job-description-utils';
 
 const FONT_SIZE = 12;
@@ -93,7 +94,8 @@ export const fillJobDescriptionForm = async (
   form: FormGroup<ExportJobDescriptionForm>,
   jobDescription: JobDescription,
   arrayBuffer: ArrayBuffer,
-  bypassFormData: boolean = false
+  bypassFormData: boolean = false,
+  drawMode: boolean = false
 ) => {
   const pdfDoc = await PDFDocument.load(arrayBuffer, {
     ignoreEncryption: true,
@@ -119,7 +121,7 @@ export const fillJobDescriptionForm = async (
 
   const formData = transformFormData(form, jobDescription, bypassFormData);
 
-  fillCheckboxes(pdfDoc, pdfForm, form, bypassFormData);
+  await fillCheckboxes(drawMode, pdfDoc, pdfForm, form, bypassFormData);
 
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
   setTextFieldFontSize(
@@ -235,15 +237,28 @@ export const fillJobDescriptionForm = async (
     formData['f.beschreibung.1']
   );
 
-  pdfForm
-    .getTextField('f.beschreibung.2')
-    .setText(formData['f.beschreibung.2'] || '');
-  setTextFieldFontSize(
-    pdfForm.getTextField('f.beschreibung.2').acroField,
-    FONT_SIZE,
-    'f.beschreibung.2',
-    formData['f.beschreibung.2']
-  );
+  drawTextOnField({
+    drawMode,
+    pdfDoc,
+    pdfForm,
+    fieldName: 'f.beschreibung.1',
+    text: formData['f.beschreibung.1'] || '',
+    font: courierFont,
+    xOffset: 3,
+    yPositionOverride: 141.5,
+    yOffset: -13,
+  });
+
+  drawTextOnField({
+    drawMode,
+    pdfDoc,
+    pdfForm,
+    fieldName: 'f.beschreibung.2',
+    text: formData['f.beschreibung.2'] || '',
+    font: courierFont,
+    xOffset: 3,
+    yPositionOverride: 40.5,
+  });
 
   pdfForm
     .getTextField('f.zeitanteil.1')
@@ -268,69 +283,93 @@ export const fillJobDescriptionForm = async (
   for (const field of formData.jdFormFields) {
     const value = convertHtmlToText(field.value);
     if (field.key === 'f.aufgabenbeschreibung.1') {
-      pdfForm.getTextField('f.aufgabenbeschreibung.1').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.aufgabenbeschreibung.1').acroField,
-        FONT_SIZE,
-        'f.aufgabenbeschreibung.1',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.aufgabenbeschreibung.1',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 40.5,
+      });
     } else if (field.key === 'f.eingliederung.1') {
-      pdfForm.getTextField('f.eingliederung.1').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.eingliederung.1').acroField,
-        FONT_SIZE,
-        'f.eingliederung.1',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.eingliederung.1',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 591.5,
+      });
     } else if (field.key === 'f.beschaeftigter.1') {
-      pdfForm.getTextField('f.beschaeftigter.1').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.1').acroField,
-        FONT_SIZE,
-        'f.beschaeftigter.1',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.beschaeftigter.1',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 456.5,
+      });
     } else if (field.key === 'f.beschaeftigter.2') {
-      pdfForm.getTextField('f.beschaeftigter.2').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.2').acroField,
-        FONT_SIZE,
-        'f.beschaeftigter.2',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.beschaeftigter.2',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 321.5,
+      });
     } else if (field.key === 'f.beschaeftigter.3') {
-      pdfForm.getTextField('f.beschaeftigter.3').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.3').acroField,
-        FONT_SIZE,
-        'f.beschaeftigter.3',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.beschaeftigter.3',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 185.5,
+      });
     } else if (field.key === 'f.beschaeftigter.4') {
-      pdfForm.getTextField('f.beschaeftigter.4').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.beschaeftigter.4').acroField,
-        FONT_SIZE,
-        'f.beschaeftigter.4',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.beschaeftigter.4',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 48.5,
+      });
     } else if (field.key === 'f.ausbildung.1') {
-      pdfForm.getTextField('f.ausbildung.1').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.ausbildung.1').acroField,
-        FONT_SIZE,
-        'f.ausbildung.1',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.ausbildung.1',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 539.5,
+      });
     } else if (field.key === 'f.fachkenntnisse.1') {
-      pdfForm.getTextField('f.fachkenntnisse.1').setText(value || '');
-      setTextFieldFontSize(
-        pdfForm.getTextField('f.fachkenntnisse.1').acroField,
-        FONT_SIZE,
-        'f.fachkenntnisse.1',
-        value
-      );
+      drawTextOnField({
+        drawMode,
+        pdfDoc,
+        pdfForm,
+        fieldName: 'f.fachkenntnisse.1',
+        text: value || '',
+        font: courierFont,
+        xOffset: 3,
+        yPositionOverride: 323.5,
+      });
     }
   }
 

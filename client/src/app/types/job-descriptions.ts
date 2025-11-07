@@ -62,5 +62,6 @@ export type ExportJobDescriptionForm = {
   periodStart: FormControl<string | null>;
   periodEnd: FormControl<string | null>;
   periodType: FormControl<string | null>;
+  drawMode: FormControl<boolean | null>;
   bypassFormData: FormControl<boolean | null>;
 };

@@ -124,7 +124,9 @@
             class="w-4 h-4 flex-shrink-0"
             formControlName="sonstigesCheckbox"
           />
-          <label for="sonstigesCheckbox" class="flex-shrink-0">Sonstiges:</label>
+          <label for="sonstigesCheckbox" class="flex-shrink-0"
+            >Sonstiges:</label
+          >
           <input
             type="text"
             name="sonstigesInput"
@@ -404,6 +406,15 @@
     </div>
 
     <div class="flex justify-end items-center gap-6 mt-16">
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="drawMode"
+          class="w-4 h-4"
+          formControlName="drawMode"
+        />
+        <label for="drawMode">Anzeige optimieren (nicht editierbar)</label>
+      </div>
       <div class="flex items-center gap-2">
         <input
           type="checkbox"

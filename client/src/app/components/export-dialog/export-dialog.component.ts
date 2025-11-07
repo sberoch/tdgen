@@ -82,6 +82,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         periodStart: ['', Validators.required],
         periodEnd: [''],
         periodType: [''],
+        drawMode: [false],
         bypassFormData: [false],
       },
       { validators: this.dateRangeValidator }
@@ -104,7 +105,7 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
         if (formData.employeeName && formData.employeeName.trim()) {
           this.lastEmployeeName = formData.employeeName.trim();
         }
-        
+
         this.saveFormData(formData);
         // Hide validation errors if form becomes valid
         if (this.exportForm.valid && this.showValidationErrors) {
@@ -115,22 +116,24 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
     // Subscribe to employment scope changes to handle Vollzeit/Teilzeit logic
     this.formSubscription.add(
-      this.exportForm.get('employmentScope')?.valueChanges.subscribe((value) => {
-        const parttimeHoursControl = this.exportForm.get('parttimeHours');
-        
-        if (value === 'fulltime') {
-          // Clear parttimeHours when Vollzeit is selected
-          parttimeHoursControl?.setValue('');
-          // Remove validation requirement
-          parttimeHoursControl?.clearValidators();
-        } else if (value === 'parttime') {
-          // Add required validation when Teilzeit is selected
-          parttimeHoursControl?.setValidators([Validators.required]);
-        }
-        
-        // Update validation state
-        parttimeHoursControl?.updateValueAndValidity();
-      })
+      this.exportForm
+        .get('employmentScope')
+        ?.valueChanges.subscribe((value) => {
+          const parttimeHoursControl = this.exportForm.get('parttimeHours');
+
+          if (value === 'fulltime') {
+            // Clear parttimeHours when Vollzeit is selected
+            parttimeHoursControl?.setValue('');
+            // Remove validation requirement
+            parttimeHoursControl?.clearValidators();
+          } else if (value === 'parttime') {
+            // Add required validation when Teilzeit is selected
+            parttimeHoursControl?.setValidators([Validators.required]);
+          }
+
+          // Update validation state
+          parttimeHoursControl?.updateValueAndValidity();
+        })
     );
   }
   private formatFormData(formData: any) {
@@ -204,6 +207,8 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     }
 
     const currentJobDescriptionId = currentJobDescription.id;
+    const drawMode = this.exportForm.get('drawMode')?.value || false;
+
     this.jobDescriptionsService
       .downloadJobDescriptionPdf(currentJobDescriptionId)
       .subscribe({
@@ -213,16 +218,23 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
             this.exportForm,
             currentJobDescription,
             arrayBuffer,
-            bypassFormData || false
+            bypassFormData || false,
+            drawMode
           );
           // Create a blob URL and trigger download
-          const url = window.URL.createObjectURL(new Blob([newArrayBuffer]));
+          const url = window.URL.createObjectURL(
+            new Blob([newArrayBuffer as any])
+          );
           const link = document.createElement('a');
           link.href = url;
 
           // Get form data for employee name
           const formData = this.exportForm.value;
-          const employeeName = bypassFormData ? 'Unknown' : (formData.employeeName?.trim() || this.lastEmployeeName || 'Unknown');
+          const employeeName = bypassFormData
+            ? 'Unknown'
+            : formData.employeeName?.trim() ||
+              this.lastEmployeeName ||
+              'Unknown';
 
           // Get job description title
           const jobDescriptionTitle =
@@ -253,12 +265,12 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
     this.clearFormData();
     this.lastEmployeeName = '';
     this.showValidationErrors = false;
-    
+
     // Clear parttimeHours validation when resetting
     const parttimeHoursControl = this.exportForm.get('parttimeHours');
     parttimeHoursControl?.clearValidators();
     parttimeHoursControl?.updateValueAndValidity();
-    
+
     // Reset date input types to text
     Object.keys(this.dateInputTypes).forEach((key) => {
       this.dateInputTypes[key] = 'text';

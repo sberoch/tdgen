@@ -11,17 +11,18 @@ import { ExportJobDescriptionForm } from '../../types/job-descriptions';
 
 const FONT_SIZE = 12;
 
-const lengthThresholdsForFontSizeChange: Record<string, number> = {
-  'f.aufgabenbeschreibung.1': 500,
-  'f.beschreibung.1': 750,
-  'f.beschreibung.2': 900,
-  'f.eingliederung.1': 300,
-  'f.beschaeftigter.1': 300,
-  'f.beschaeftigter.2': 300,
-  'f.beschaeftigter.3': 300,
-  'f.beschaeftigter.4': 300,
-  'f.ausbildung.1': 500,
-  'f.ausbildung.2': 500,
+const lengthThresholdsForFontSizeChange: Record<string, number[]> = {
+  'f.aufgabenbeschreibung.1': [500, 750],
+  'f.beschreibung.1': [750, 900],
+  'f.beschreibung.2': [900, 1050],
+  'f.eingliederung.1': [300, 450],
+  'f.beschaeftigter.1': [300, 450],
+  'f.beschaeftigter.2': [300, 450],
+  'f.beschaeftigter.3': [300, 450],
+  'f.beschaeftigter.4': [300, 450],
+  'f.ausbildung.1': [500, 625, 750],
+  'f.ausbildung.2': [500, 625, 750],
+  'f.fachkenntnisse.1': [600, 750, 900, 1100, 1500],
 };
 
 // Helper function to set font size for a PDF text field
@@ -37,7 +38,11 @@ export const setTextFieldFontSize = (
   // The DA string format is like: "/FontName 12 Tf" where 12 is the font size
   let newDA;
 
-  if (value && value.length > lengthThresholdsForFontSizeChange[label]) {
+  if (
+    value &&
+    lengthThresholdsForFontSizeChange[label] &&
+    value.length > lengthThresholdsForFontSizeChange[label][0]
+  ) {
     fontSize = 0; // Automatically adjust font size to fit the text
     acroField.setDefaultAppearance(`/Courier ${fontSize} Tf`);
     return;
@@ -108,7 +113,8 @@ const drawXInCheckbox = (
 };
 // Fill checkboxes with an "X". We need to do this instead of checking them because PDF is misconfigured and all
 // checkboxes have the same name but different exportvalue, making it impossible to check them using pdf-lib.
-export const fillCheckboxes = (
+export const fillCheckboxes = async (
+  drawMode: boolean,
   pdfDoc: PDFDocument,
   pdfForm: PDFForm,
   formData: FormGroup<ExportJobDescriptionForm>,
@@ -127,6 +133,31 @@ export const fillCheckboxes = (
   const allFields = pdfForm.getFields();
   allFields.forEach((field) => {
     const fieldName = field.acroField.getFullyQualifiedName();
+
+    if (fieldName && drawMode) {
+      field.enableReadOnly();
+      const widgets = field.acroField.getWidgets();
+      widgets.forEach((field) => {
+        const { x, y, width, height } = field.getRectangle();
+
+        // Draw a rectangle around the field
+        const pageRef = field.P();
+        const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
+        if (page) {
+          page.drawRectangle({
+            x: x,
+            y:
+              fieldName && fieldName.toLowerCase().includes('f.beschreibung.1')
+                ? 141.8
+                : y,
+            width: Math.abs(width),
+            height: Math.abs(height),
+            color: rgb(1, 1, 1),
+          });
+        }
+      });
+    }
+
     if (fieldName && checkboxes.includes(fieldName)) {
       const widgets = field.acroField.getWidgets();
       widgets.forEach((widget) => {
@@ -410,4 +441,141 @@ export const jobTasksTextSplit = (tasks: JobDescriptionTask[]) => {
   ]) as [string, number, string][];
   const result: JobTasksTextSplitResult = textSplit(tasksArray);
   return result;
+};
+
+export const wrapText = (
+  text: string,
+  maxWidth: number,
+  fontSize: number
+): string => {
+  // For Courier (monospaced) font, character width is approximately 0.6 * fontSize
+  const charWidth = fontSize * 0.6;
+  const maxCharsPerLine = Math.floor(maxWidth / charWidth);
+
+  const lines: string[] = [];
+  const paragraphs = text.split('\n');
+
+  for (const paragraph of paragraphs) {
+    if (paragraph.length === 0) {
+      lines.push('');
+      continue;
+    }
+
+    let currentLine = '';
+    const words = paragraph.split(' ');
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+      if (testLine.length <= maxCharsPerLine) {
+        currentLine = testLine;
+      } else {
+        // If a single word is longer than max chars, we need to break it
+        if (word.length > maxCharsPerLine) {
+          if (currentLine) {
+            lines.push(currentLine);
+            currentLine = '';
+          }
+          // Break long word into chunks
+          for (let j = 0; j < word.length; j += maxCharsPerLine) {
+            lines.push(word.substring(j, j + maxCharsPerLine));
+          }
+        } else {
+          if (currentLine) {
+            lines.push(currentLine);
+          }
+          currentLine = word;
+        }
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+  }
+
+  return lines.join('\n');
+};
+
+interface DrawTextOnFieldOptions {
+  drawMode: boolean;
+  pdfDoc: PDFDocument;
+  pdfForm: any; // PDFForm type
+  fieldName: string;
+  text: string;
+  font: any; // PDFFont type
+  xOffset?: number;
+  yPositionOverride?: number;
+  yOffset?: number;
+}
+
+// Draw text directly on a PDF page at the field's position
+export const drawTextOnField = ({
+  drawMode,
+  pdfDoc,
+  pdfForm,
+  fieldName,
+  text,
+  font,
+  xOffset = 0,
+  yPositionOverride,
+  yOffset = 0,
+}: DrawTextOnFieldOptions): void => {
+  if (drawMode) {
+    const field = pdfForm.getTextField(fieldName);
+    const widgets = field.acroField.getWidgets();
+    const MAX_WIDTH = 437;
+    const BASE_FONT_SIZE = 12;
+
+    // Calculate dynamic font size based on text length and thresholds
+    let fontSize = BASE_FONT_SIZE;
+    const thresholds = lengthThresholdsForFontSizeChange[fieldName];
+
+    if (thresholds && text) {
+      const textLength = text.length;
+      // Count how many thresholds are exceeded
+      let thresholdsExceeded = 0;
+      for (const threshold of thresholds) {
+        if (textLength > threshold) {
+          thresholdsExceeded++;
+        } else {
+          break; // Thresholds should be in ascending order
+        }
+      }
+      // Decrease font size by 2 for each threshold exceeded
+      fontSize = BASE_FONT_SIZE - thresholdsExceeded * 1;
+    }
+
+    widgets.forEach((widget: any) => {
+      const { x, y, height } = widget.getRectangle();
+      const pageRef = widget.P();
+      const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
+
+      if (page && text) {
+        const wrappedText = wrapText(text, MAX_WIDTH, fontSize);
+        page.setFont(font);
+
+        const yPosition =
+          yPositionOverride !== undefined
+            ? yPositionOverride + Math.abs(height) + yOffset
+            : y;
+
+        page.drawText(wrappedText, {
+          x: x + xOffset,
+          y: yPosition,
+          size: fontSize,
+          lineHeight: fontSize,
+        });
+      }
+    });
+  } else {
+    pdfForm.getTextField(fieldName).setText(text || '');
+    setTextFieldFontSize(
+      pdfForm.getTextField(fieldName).acroField,
+      FONT_SIZE,
+      fieldName,
+      text
+    );
+  }
 };

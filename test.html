@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Wrapper Function</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        font-family: Arial, sans-serif;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: #fafafa;
+      }
+      .test-title {
+        font-weight: bold;
+        color: #0066cc;
+        margin-bottom: 10px;
+        font-family: Arial, sans-serif;
+      }
+      .input,
+      .output {
+        margin: 10px 0;
+      }
+      .label {
+        font-weight: bold;
+        color: #666;
+        font-family: Arial, sans-serif;
+      }
+      pre {
+        background: #f8f8f8;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        margin: 5px 0;
+      }
+      .input pre {
+        background: #e8f4fd;
+      }
+      .output pre {
+        background: #f0f8e8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smart Text Wrapper with List Support</h1>
+
+      <div id="results"></div>
+    </div>
+
+    <script>
+      function wrapText(text, lineLength) {
+        if (!text || lineLength <= 0) return text;
+
+        // Split text into blocks (separated by double newlines)
+        const blocks = text.split(/\n\n+/);
+        const wrappedBlocks = [];
+
+        for (const block of blocks) {
+          if (block.trim() === "") continue;
+
+          const lines = block.split("\n");
+          const wrappedLines = [];
+
+          for (const line of lines) {
+            if (line.trim() === "") {
+              wrappedLines.push("");
+              continue;
+            }
+
+            // Check if this is a list item
+            const isListItem = /^-\s/.test(line);
+
+            if (isListItem) {
+              // Process list item
+              const content = line.substring(2); // Remove "- "
+              const wrappedListItem = wrapListItem(content, lineLength);
+              wrappedLines.push(...wrappedListItem);
+            } else {
+              // Process normal text
+              const wrappedNormalText = wrapNormalText(line, lineLength);
+              wrappedLines.push(...wrappedNormalText);
+            }
+          }
+
+          wrappedBlocks.push(wrappedLines.join("\n"));
+        }
+
+        return wrappedBlocks.join("\n\n");
+      }
+
+      function wrapListItem(content, lineLength) {
+        const availableLength = lineLength - 2; // 2 characters for "- "
+        const words = content.split(/\s+/);
+        const lines = [];
+        let currentLine = "";
+
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const testLine = currentLine ? currentLine + " " + word : word;
+
+          if (testLine.length <= availableLength) {
+            currentLine = testLine;
+          } else {
+            if (currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              // Word is longer than available line - add it anyway
+              lines.push(word);
+              currentLine = "";
+            }
+          }
+        }
+
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+
+        // First line gets "- " prefix, subsequent lines get "  " indentation
+        const result = [];
+        for (let i = 0; i < lines.length; i++) {
+          if (i === 0) {
+            result.push("- " + lines[i]);
+          } else {
+            result.push("  " + lines[i]);
+          }
+        }
+
+        return result;
+      }
+
+      function wrapNormalText(text, lineLength) {
+        const words = text.split(/\s+/);
+        const lines = [];
+        let currentLine = "";
+
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const testLine = currentLine ? currentLine + " " + word : word;
+
+          if (testLine.length <= lineLength) {
+            currentLine = testLine;
+          } else {
+            if (currentLine) {
+              lines.push(currentLine);
+              currentLine = word;
+            } else {
+              // Word is longer than line length - add it anyway
+              lines.push(word);
+              currentLine = "";
+            }
+          }
+        }
+
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+
+        return lines;
+      }
+
+      // Test suite
+      function runTests() {
+        const tests = [
+          {
+            title: "Simple text without lists",
+            input:
+              "This is a simple text that is longer than 30 characters and should therefore be wrapped appropriately.",
+            lineLength: 30,
+          },
+          {
+            title: "Text with shopping list",
+            input:
+              "Here is a shopping list:\n\n- Buy apples from the supermarket around the corner\n- Get bread from the bakery, preferably whole grain bread\n- Don't forget the milk",
+            lineLength: 40,
+          },
+          {
+            title: "Mixed text with paragraphs and lists",
+            input:
+              "This is the first paragraph with normal text that should be wrapped properly.\n\nHere comes a list:\n- First very long list item that definitely needs to be wrapped\n- Second bullet point\n- Third point with even more text than the first one\n\nAnd here is normal text again after the list.",
+            lineLength: 35,
+          },
+          {
+            title: "Short line length test",
+            input:
+              "- Super long list entry\n- Another very long entry\n\nNormal text in between.\n\n- Additional list point",
+            lineLength: 20,
+          },
+          {
+            title: "Multiple paragraphs",
+            input:
+              "First paragraph with longer sentences that need to be wrapped properly.\n\nSecond paragraph with different content.\n\nThird paragraph for testing purposes.",
+            lineLength: 25,
+          },
+        ];
+
+        const resultsDiv = document.getElementById("results");
+
+        tests.forEach((test, index) => {
+          const result = wrapText(test.input, test.lineLength);
+
+          const testDiv = document.createElement("div");
+          testDiv.className = "test-section";
+          testDiv.innerHTML = `
+                    <div class="test-title">Test ${index + 1}: ${
+            test.title
+          }</div>
+                    <div class="label">Line length: ${test.lineLength}</div>
+                    <div class="input">
+                        <div class="label">Input:</div>
+                        <pre>${escapeHtml(test.input)}</pre>
+                    </div>
+                    <div class="output">
+                        <div class="label">Output:</div>
+                        <pre>${escapeHtml(result)}</pre>
+                    </div>
+                `;
+
+          resultsDiv.appendChild(testDiv);
+        });
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Run tests when page loads
+      runTests();
+    </script>
+  </body>
+</html>
