@@ -1,6 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-@import url("https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap");
-
 @import "styles/roboto.scss";
 @import "styles/material-icons.scss";
 
@@ -275,10 +273,6 @@ angular-editor:has([contenteditable="false"]) .angular-editor-toolbar {
   background-color: #f8f8f8 !important;
   opacity: 0.6 !important;
   pointer-events: none !important;
-}
-
-.angular-editor-textarea {
-  font-family: "Courier New", Courier, monospace;
 }
 
 /* Ensure disabled editor content is clearly distinguishable */
