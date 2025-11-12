@@ -8,8 +8,8 @@ import {
   fillCheckboxes,
   jobTasksTextSplit,
   setTextFieldFontSize,
-  convertHtmlToText,
   drawTextOnField,
+  htmlToText,
 } from './fill-job-description-utils';
 
 const FONT_SIZE = 12;
@@ -283,7 +283,7 @@ export const fillJobDescriptionForm = async (
   );
 
   for (const field of formData.jdFormFields) {
-    const value = convertHtmlToText(field.value);
+    const value = htmlToText(field.value, new DOMParser());
     if (field.key === 'f.aufgabenbeschreibung.1') {
       drawTextOnField({
         drawMode,

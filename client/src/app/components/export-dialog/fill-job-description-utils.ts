@@ -212,69 +212,133 @@ export const fillCheckboxes = async (
   });
 };
 
-export const convertHtmlToText = (html: string): string => {
-  let result = html;
+/**
+ * Generates the appropriate list item prefix (bullet or number) based on
+ * the list type and nesting level.
+ * @param context The current list processing context.
+ * @returns The string prefix for the list item (e.g., "• ", "a. ").
+ */
+function getListPrefix(context: {
+  indentLevel: number;
+  listType: 'ul' | 'ol' | null;
+  listCounter: number;
+}): string {
+  if (context.listType === 'ul') {
+    // Cycle between • and - for unordered lists based on nesting depth
+    return context.indentLevel % 2 === 1 ? '• ' : '- ';
+  }
 
-  // Remove &nbsp; and \n
-  result = result.replace(/&nbsp;/g, ' ');
-  result = result.replace(/\n/g, ' ');
-
-  // Handle unordered lists (<ul>)
-  result = result.replace(
-    /<ul[^>]*>(.*?)<\/ul>/gis,
-    (match: string, content: string) => {
-      const items = content.match(/<li[^>]*>(.*?)<\/li>/gis) || [];
-      const listContent = items
-        .map((item: string) => {
-          let text = item.replace(/<li[^>]*>(.*?)<\/li>/is, '$1');
-          // Strip any remaining HTML tags and trim whitespace
-          text = text.replace(/<[^>]*>/g, '').trim();
-          return `• ${text}`;
-        })
-        .join('\n');
-      return '\n' + listContent + '\n';
+  if (context.listType === 'ol') {
+    // Level 1: 1., 2., 3.
+    // Level 2: a., b., c.
+    // Level 3+: Revert to numbers
+    if (context.indentLevel === 2) {
+      // Convert number to a lowercase letter. 97 is the char code for 'a'.
+      // This works for list counters 1-26.
+      const letter = String.fromCharCode(96 + context.listCounter);
+      return `${letter}. `;
     }
-  );
+    // Default to standard numbering for all other levels
+    return `${context.listCounter}. `;
+  }
 
-  // Handle ordered lists (<ol>)
-  result = result.replace(
-    /<ol[^>]*>(.*?)<\/ol>/gis,
-    (match: string, content: string) => {
-      const items = content.match(/<li[^>]*>(.*?)<\/li>/gis) || [];
-      const listContent = items
-        .map((item: string, index: number) => {
-          let text = item.replace(/<li[^>]*>(.*?)<\/li>/is, '$1');
-          // Strip any remaining HTML tags and trim whitespace
-          text = text.replace(/<[^>]*>/g, '').trim();
-          return `${index + 1}. ${text}`;
-        })
-        .join('\n');
-      return '\n' + listContent + '\n';
+  return ''; // Should not happen in a list item
+}
+
+/**
+ * Recursively traverses a DOM node and its children to generate plain text.
+ */
+function processNode(
+  node: Node,
+  context: {
+    indentLevel: number;
+    listType: 'ul' | 'ol' | null;
+    listCounter: number;
+  }
+): string {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent?.replace(/\s+/g, ' ') || '';
+  }
+
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    const element = node as HTMLElement;
+    let text = '';
+    const tagName = element.tagName.toLowerCase();
+
+    switch (tagName) {
+      case 'ul':
+      case 'ol':
+        const listContext = {
+          indentLevel: context.indentLevel + 1,
+          listType: tagName as 'ul' | 'ol',
+          listCounter: 1,
+        };
+        text += '\n';
+        for (const child of Array.from(element.childNodes)) {
+          text += processNode(child, listContext);
+        }
+        text += '\n';
+        break;
+
+      case 'li':
+        const indentation = '  '.repeat(
+          context.indentLevel > 0 ? context.indentLevel - 1 : 0
+        );
+        const prefix = getListPrefix(context);
+        if (context.listType === 'ol') {
+          context.listCounter++;
+        }
+        text += '\n' + indentation + prefix;
+        for (const child of Array.from(element.childNodes)) {
+          text += processNode(child, context);
+        }
+        break;
+
+      case 'p':
+      case 'div':
+        text += '\n';
+        for (const child of Array.from(element.childNodes)) {
+          text += processNode(child, context);
+        }
+        text += '\n';
+        break;
+
+      case 'br':
+        text += '\n';
+        break;
+
+      default:
+        for (const child of Array.from(element.childNodes)) {
+          text += processNode(child, context);
+        }
+        break;
     }
-  );
+    return text;
+  }
 
-  // Add newline before first <div>
-  result = result.replace(/<div[^>]*>/, (match: string) => {
-    return '\n' + match;
-  });
+  return '';
+}
 
-  // Handle div containers - replace with content followed by newline
-  result = result.replace(
-    /<div[^>]*>(.*?)<\/div>/gis,
-    (match: string, content: string) => {
-      // Trim the content and add a newline
-      return content.trim() + '\n';
-    }
-  );
+/**
+ * Main function to convert an HTML string to formatted plain text.
+ * @param html The HTML string to convert.
+ * @param domParser A DOMParser instance (required for browser/jsdom).
+ * @returns The formatted plain text string.
+ */
+export function htmlToText(html: string, domParser: DOMParser): string {
+  const sanitizedHtml = html.replace(/\n/g, '').replace(/>\s+</g, '><');
+  const doc = domParser.parseFromString(sanitizedHtml, 'text/html');
 
-  // Strip any remaining HTML tags
-  result = result.replace(/<[^>]*>/g, '');
+  const initialContext = { indentLevel: 0, listType: null, listCounter: 1 };
+  let result = processNode(doc.body, initialContext);
 
-  // Clean up multiple consecutive newlines and trim
-  result = result.replace(/\n{3,}/g, '\n\n').trim();
+  result = result
+    .replace(/ \n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 
   return result;
-};
+}
 
 export const getParagraphNumbering = (
   textArray: [string, number, string][],
@@ -296,22 +360,17 @@ function textSplit(
       stats2: '',
     };
 
-  // Case 1: Single element array
   if (inputArray.length === 1) {
     numbering = getParagraphNumbering(inputArray);
     const [text, value, title] = inputArray[0];
 
-    // Try to split by paragraphs first
     let parts = text.split(/\n\s*\n/);
 
     if (parts.length === 1) {
-      // No paragraphs, try to split by sentences
       parts = text.split(/(?<=[.!?])\s+/);
 
       if (parts.length === 1) {
-        // No sentences, split in half
         const midpoint = Math.floor(text.length / 2);
-        // Try to find a space near the midpoint
         let splitIndex = text.indexOf(' ', midpoint);
         if (splitIndex === -1 || splitIndex > midpoint * 1.5) {
           splitIndex = midpoint;
@@ -436,7 +495,7 @@ export const jobTasksTextSplit = (tasks: JobDescriptionTask[]) => {
       stats2: '',
     };
   const tasksArray = tasks.map((task) => [
-    convertHtmlToText(task.jobTask.text),
+    htmlToText(task.jobTask.text, new DOMParser()),
     task.percentage,
     task.jobTask.title,
   ]) as [string, number, string][];
@@ -444,85 +503,49 @@ export const jobTasksTextSplit = (tasks: JobDescriptionTask[]) => {
   return result;
 };
 
-export const wrapText = (
-  text: string,
-  maxWidth: number,
-  fontSize: number
-): string => {
-  console.log({ text });
-  // For Courier (monospaced) font, character width is approximately 0.6 * fontSize
-  const charWidth = fontSize * 0.6;
-  const maxCharsPerLine = Math.floor(maxWidth / charWidth);
-
-  if (!text || maxCharsPerLine <= 0) return text;
-
-  // Split text into blocks (separated by double newlines)
-  const blocks = text.split(/\n\n+/);
-  const wrappedBlocks: string[] = [];
-
-  for (const block of blocks) {
-    if (block.trim() === '') continue;
-
-    const lines = block.split('\n');
-    const wrappedLines: string[] = [];
-
-    for (const line of lines) {
-      if (line.trim() === '') {
-        wrappedLines.push('');
-        continue;
-      }
-
-      // Check if this is a list item (bullet point •, dash -, or numbered list)
-      const bulletMatch = line.match(/^(•|-)\s/);
-      const numberedMatch = line.match(/^(\d+\.)\s/);
-      const isListItem = bulletMatch !== null || numberedMatch !== null;
-
-      if (isListItem) {
-        // Process list item
-        const prefix = bulletMatch ? bulletMatch[0] : numberedMatch![0]; // "• ", "- ", or "1. "
-        const content = line.substring(prefix.length);
-        const wrappedListItem = wrapListItem(content, maxCharsPerLine, prefix);
-        wrappedLines.push(...wrappedListItem);
-      } else {
-        // Process normal text
-        const wrappedNormalText = wrapNormalText(line, maxCharsPerLine);
-        wrappedLines.push(...wrappedNormalText);
-      }
-    }
-
-    wrappedBlocks.push(wrappedLines.join('\n'));
-  }
-
-  return wrappedBlocks.join('\n\n');
-};
-
-// Helper function to wrap list items with indentation
-// Supports bullet points (•, -) and numbered lists (1., 2., etc.)
+/**
+ * Wraps a single list item's content, creating a hanging indent for subsequent lines.
+ * @param content The text content of the list item (after the marker).
+ * @param lineLength The maximum number of characters per line.
+ * @param indentation The whitespace prefix before the marker (e.g., "  ").
+ * @param marker The list marker itself (e.g., "•", "a.").
+ * @returns An array of strings representing the wrapped list item.
+ */
 const wrapListItem = (
   content: string,
   lineLength: number,
-  prefix: string
+  indentation: string,
+  marker: string
 ): string[] => {
-  const availableLength = lineLength - prefix.length;
+  // The prefix for the first line (e.g., "  • ")
+
+  const firstLinePrefix = `${indentation}${marker} `;
+  // The hanging indent for subsequent lines (e.g., "    ")
+  const hangingIndent = `${indentation}${' '.repeat(marker.length)} `;
+
+  const availableLength = lineLength - firstLinePrefix.length;
+  // If the available space is zero or less, wrapping is impossible.
+  // We'll just put each word on its own line to avoid infinite loops.
+  if (availableLength <= 0) {
+    const veryLongResult = content.split(/\s+/).map((word, i) => {
+      return i === 0 ? firstLinePrefix + word : hangingIndent + word;
+    });
+    return veryLongResult;
+  }
+
   const words = content.split(/\s+/);
   const lines: string[] = [];
   let currentLine = '';
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
+  for (const word of words) {
+    // Prevent adding a leading space on a new line
     const testLine = currentLine ? `${currentLine} ${word}` : word;
 
     if (testLine.length <= availableLength) {
       currentLine = testLine;
     } else {
-      if (currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        // Word is longer than available line - add it anyway
-        lines.push(word);
-        currentLine = '';
-      }
+      lines.push(currentLine);
+      currentLine = word;
     }
   }
 
@@ -530,42 +553,33 @@ const wrapListItem = (
     lines.push(currentLine);
   }
 
-  // First line gets prefix (bullet/number), subsequent lines get space indentation
-  const result: string[] = [];
-  const indent = ' '.repeat(prefix.length);
-
-  for (let i = 0; i < lines.length; i++) {
-    if (i === 0) {
-      result.push(prefix + lines[i]);
-    } else {
-      result.push(indent + lines[i]);
-    }
-  }
-
-  return result;
+  // Format the lines with the correct prefixes
+  return lines.map((line, index) => {
+    return index === 0 ? firstLinePrefix + line : hangingIndent + line;
+  });
 };
 
-// Helper function to wrap normal text
+/**
+ * Wraps a normal line of text without any special indentation.
+ * @param text The text to wrap.
+ * @param lineLength The maximum number of characters per line.
+ * @returns An array of strings representing the wrapped text.
+ */
 const wrapNormalText = (text: string, lineLength: number): string[] => {
+  if (text.length <= lineLength) return [text];
+
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let currentLine = '';
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
+  for (const word of words) {
     const testLine = currentLine ? `${currentLine} ${word}` : word;
 
     if (testLine.length <= lineLength) {
       currentLine = testLine;
     } else {
-      if (currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        // Word is longer than line length - add it anyway
-        lines.push(word);
-        currentLine = '';
-      }
+      lines.push(currentLine);
+      currentLine = word;
     }
   }
 
@@ -574,6 +588,96 @@ const wrapNormalText = (text: string, lineLength: number): string[] => {
   }
 
   return lines;
+};
+
+/**
+ * Takes structured plain text and wraps it into lines of a maximum width,
+ * correctly handling hanging indents for nested lists.
+ * @param text The structured plain text from the htmlToText function.
+ * @param maxWidth The maximum width of the text area (e.g., in pixels).
+ * @param fontSize The font size.
+ * @returns An array of strings, where each string is a formatted line.
+ */
+export const wrapTextIntoLines = (
+  text: string,
+  maxWidth: number,
+  fontSize: number
+): string[] => {
+  // A common approximation for average character width of a monospace font.
+  // For proportional fonts, this is less accurate but a decent heuristic.
+  const charWidth = fontSize * 0.6;
+  const maxCharsPerLine = Math.floor(maxWidth / charWidth);
+
+  if (!text || maxCharsPerLine <= 0) return text ? [text] : [];
+
+  // This single regex handles all our list item cases, including indentation.
+  // Breakdown:
+  // ^(\s*)       - Group 1: Capture any leading whitespace (our indentation).
+  // (•|-|        - Group 2: Start capturing the marker. Can be '•', '-',
+  // \d+\.|      - or one or more digits followed by a dot,
+  // [a-z]+\.)    - or one or more letters followed by a dot.
+  // \s+          - Matches the space(s) after the marker.
+  const listItemRegex = /^(\s*)(•|-|\d+\.|[a-z]+\.)\s+/;
+
+  const allLines = text.split('\n');
+  const wrappedLines: string[] = [];
+
+  for (const line of allLines) {
+    if (line.trim() === '') {
+      wrappedLines.push('');
+      continue;
+    }
+
+    const match = line.match(listItemRegex);
+
+    if (match) {
+      // It's a list item (nested or not)
+      let indentation = match[1]; // e.g., "" or "  "
+      const marker = match[2]; // e.g., "•" or "1." or "a."
+
+      // The full prefix including the space after, to find where content starts
+      const fullPrefix = match[0];
+      const content = line.substring(fullPrefix.length);
+
+      if (/^[a-z]+\./.test(marker)) {
+        indentation += ' ';
+      }
+
+      const wrappedItem = wrapListItem(
+        content,
+        maxCharsPerLine,
+        indentation,
+        marker
+      );
+
+      wrappedLines.push(...wrappedItem);
+    } else {
+      // It's a normal line of text (a paragraph)
+      const wrappedText = wrapNormalText(line, maxCharsPerLine);
+      wrappedLines.push(...wrappedText);
+    }
+  }
+
+  return wrappedLines;
+};
+
+const getFontSize = (text: string, fieldName: string) => {
+  let fontSize = FONT_SIZE;
+  const thresholds = lengthThresholdsForFontSizeChange[fieldName];
+
+  if (thresholds && text) {
+    const textLength = text.length;
+    let thresholdsExceeded = 0;
+    for (const threshold of thresholds) {
+      if (textLength > threshold) {
+        thresholdsExceeded++;
+      } else {
+        break;
+      }
+    }
+    fontSize = FONT_SIZE - thresholdsExceeded * 1;
+  }
+  return fontSize;
 };
 
 interface DrawTextOnFieldOptions {
@@ -605,26 +709,7 @@ export const drawTextOnField = ({
   if (drawMode) {
     const field = pdfForm.getTextField(fieldName);
     const widgets = field.acroField.getWidgets();
-    const BASE_FONT_SIZE = 12;
-
-    // Calculate dynamic font size based on text length and thresholds
-    let fontSize = BASE_FONT_SIZE;
-    const thresholds = lengthThresholdsForFontSizeChange[fieldName];
-
-    if (thresholds && text) {
-      const textLength = text.length;
-      // Count how many thresholds are exceeded
-      let thresholdsExceeded = 0;
-      for (const threshold of thresholds) {
-        if (textLength > threshold) {
-          thresholdsExceeded++;
-        } else {
-          break; // Thresholds should be in ascending order
-        }
-      }
-      // Decrease font size by 2 for each threshold exceeded
-      fontSize = BASE_FONT_SIZE - thresholdsExceeded * 1;
-    }
+    const fontSize = getFontSize(text, fieldName);
 
     widgets.forEach((widget: any) => {
       const { x, y, height } = widget.getRectangle();
@@ -632,20 +717,27 @@ export const drawTextOnField = ({
       const page = pdfDoc.getPages().find((page) => page.ref === pageRef);
 
       if (page && text) {
-        const wrappedText = wrapText(text, maxWidth, fontSize);
         page.setFont(font);
+        const lines = wrapTextIntoLines(text, maxWidth, fontSize);
 
-        const yPosition =
+        let yPosition =
           yPositionOverride !== undefined
             ? yPositionOverride + Math.abs(height) + yOffset
             : y;
 
-        page.drawText(wrappedText, {
-          x: x + xOffset,
-          y: yPosition,
-          size: fontSize,
-          lineHeight: fontSize,
-        });
+        for (const line of lines) {
+          if (line.trim() === '') {
+            yPosition -= fontSize * 0.75;
+          } else {
+            page.drawText(line, {
+              x: x + xOffset,
+              y: yPosition,
+              size: fontSize,
+              lineHeight: fontSize,
+            });
+            yPosition -= fontSize;
+          }
+        }
       }
     });
   } else {
