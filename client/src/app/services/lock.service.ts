@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, Subject, interval, of } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { EnvironmentService } from './environment.service';
 import { AuthService } from './auth.service';
+import { SseService } from './sse.service';
 import {
   EntityType,
   LockInfo,
@@ -49,10 +50,12 @@ export class LockService implements OnDestroy {
   constructor(
     private http: HttpClient,
     private env: EnvironmentService,
-    private authService: AuthService
+    private authService: AuthService,
+    private sseService: SseService
   ) {
     this.apiUrl = `${this.env.apiUrl || '/'}api`;
     this.loadConfigAndStartHeartbeat();
+    this.subscribeToSseEvents();
   }
 
   /**
@@ -80,6 +83,51 @@ export class LockService implements OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.releaseAllLocks();
+  }
+
+  /**
+   * Subscribe to SSE lock events
+   */
+  private subscribeToSseEvents(): void {
+    this.sseService.lockEvents
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        this.handleLockEvent(event);
+      });
+  }
+
+  /**
+   * Handle incoming SSE lock events
+   */
+  private handleLockEvent(event: any): void {
+    const { type, data } = event;
+    const lockKey = `${data.entityType}:${data.entityId}`;
+
+    console.log(`Received lock event: ${type} for ${lockKey}`);
+
+    switch (type) {
+      case 'lock:acquired':
+        // Update local lock state
+        this.locksMap.set(lockKey, {
+          entityType: data.entityType,
+          entityId: data.entityId,
+          lockInfo: {
+            isLocked: true,
+            lockedById: data.lockedById,
+            lockExpiry: new Date(data.lockExpiry).toISOString(),
+          },
+          lastRefreshed: new Date(),
+        });
+        this.lockStateSubject.next(new Map(this.locksMap));
+        break;
+
+      case 'lock:released':
+      case 'lock:broken':
+        // Remove from local lock state
+        this.locksMap.delete(lockKey);
+        this.lockStateSubject.next(new Map(this.locksMap));
+        break;
+    }
   }
 
   /**

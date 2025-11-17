@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { EnvironmentService } from './environment.service';
+import { SseService } from './sse.service';
 import {
   CreateJobDescription,
   JobDescription,
@@ -27,9 +28,50 @@ export class JobDescriptionsService {
 
   jobDescriptions$ = this.jobDescriptionsSubject.asObservable();
 
-  constructor(private http: HttpClient, private env: EnvironmentService) {
+  constructor(
+    private http: HttpClient,
+    private env: EnvironmentService,
+    private sseService: SseService
+  ) {
     this.apiUrl = `${this.env.apiUrl || '/'}api/job-descriptions`;
     this.loadJobDescriptions();
+
+    // Subscribe to lock events to update job description lock state
+    this.sseService.lockEvents.subscribe((event) => {
+      this.handleLockEvent(event);
+    });
+  }
+
+  private handleLockEvent(event: any): void {
+    if (event.data.entityType !== 'JobDescription') {
+      return; // Not a job description lock
+    }
+
+    const descriptionId = event.data.entityId;
+    const currentDescriptions = this.jobDescriptionsSubject.value;
+    const descriptionIndex = currentDescriptions.findIndex(
+      (d) => d.id === descriptionId
+    );
+
+    if (descriptionIndex === -1) {
+      return; // Description not in current list
+    }
+
+    const updatedDescriptions = [...currentDescriptions];
+    const description = { ...updatedDescriptions[descriptionIndex] };
+
+    if (event.type === 'lock:acquired') {
+      description.lockedById = event.data.lockedById;
+      description.lockedAt = new Date(event.data.lockExpiry).toISOString();
+      description.lockExpiry = new Date(event.data.lockExpiry).toISOString();
+    } else if (event.type === 'lock:released' || event.type === 'lock:broken') {
+      description.lockedById = undefined;
+      description.lockedAt = undefined;
+      description.lockExpiry = undefined;
+    }
+
+    updatedDescriptions[descriptionIndex] = description;
+    this.jobDescriptionsSubject.next(updatedDescriptions);
   }
 
   private loadJobDescriptions(

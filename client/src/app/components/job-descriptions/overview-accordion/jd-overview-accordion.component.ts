@@ -8,6 +8,7 @@ import {
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   AfterViewChecked,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -27,6 +28,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
 import { LockService } from '../../../services/lock.service';
+import { SseService } from '../../../services/sse.service';
 import {
   JobDescriptionFilter,
   JobDescriptionsService,
@@ -98,13 +100,16 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   jobDescriptions: ExpandableJobDescription[] = [];
   private subscription: Subscription = new Subscription();
+  private loadJobDescriptionsSubscription?: Subscription;
 
   constructor(
     private dialog: MatDialog,
     private jobDescriptionsService: JobDescriptionsService,
     private currentWorkspaceService: CurrentWorkspaceService,
     private authService: AuthService,
-    private lockService: LockService
+    private lockService: LockService,
+    private sseService: SseService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -122,6 +127,19 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         });
       })
     );
+
+    // Subscribe to jobDescriptions$ observable for real-time updates
+    this.subscription.add(
+      this.jobDescriptionsService.jobDescriptions$.subscribe((descriptions) => {
+        // Update local descriptions array when service emits new data
+        this.jobDescriptions = descriptions.map((desc) => ({
+          ...desc,
+          expanded: false,
+          isNew: false,
+        })) as ExpandableJobDescription[];
+        this.cdr.markForCheck();
+      })
+    );
   }
 
   ngOnDestroy(): void {
@@ -130,6 +148,9 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
       this.lockService
         .releaseLock('JobDescription', this.expandedItemId)
         .subscribe();
+    }
+    if (this.loadJobDescriptionsSubscription) {
+      this.loadJobDescriptionsSubscription.unsubscribe();
     }
     this.subscription.unsubscribe();
   }
@@ -176,51 +197,57 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   }
 
   loadJobDescriptions(): void {
-    this.jobDescriptionsService.getJobDescriptions(this.filter).subscribe({
-      next: (data) => {
-        this.totalJobDescriptionsCount = data.totalCount;
-        this.filteredJobDescriptionsCount = data.jobDescriptions.length;
-        this.jobDescriptions = data.jobDescriptions.map((jd) => ({
-          ...jd,
-          expanded:
-            this.newlyCreatedTitle !== null &&
-            jd.title === this.newlyCreatedTitle,
-          isNew:
-            (this.newlyCreatedTitle !== null &&
-              jd.title === this.newlyCreatedTitle) ||
-            (this.initialJobDescription !== null &&
-              jd.title === this.initialJobDescription.title),
-        }));
+    if (this.loadJobDescriptionsSubscription) {
+      this.loadJobDescriptionsSubscription.unsubscribe();
+    }
 
-        if (
-          this.newlyCreatedTitle !== null ||
-          this.initialJobDescription !== null
-        ) {
-          this.shouldScrollToNew = true;
+    this.loadJobDescriptionsSubscription = this.jobDescriptionsService
+      .getJobDescriptions(this.filter)
+      .subscribe({
+        next: (data) => {
+          this.totalJobDescriptionsCount = data.totalCount;
+          this.filteredJobDescriptionsCount = data.jobDescriptions.length;
+          this.jobDescriptions = data.jobDescriptions.map((jd) => ({
+            ...jd,
+            expanded:
+              this.newlyCreatedTitle !== null &&
+              jd.title === this.newlyCreatedTitle,
+            isNew:
+              (this.newlyCreatedTitle !== null &&
+                jd.title === this.newlyCreatedTitle) ||
+              (this.initialJobDescription !== null &&
+                jd.title === this.initialJobDescription.title),
+          }));
 
-          const targetTitle =
-            this.initialJobDescription?.title || this.newlyCreatedTitle;
-          const newItem = this.jobDescriptions.find(
-            (jd) => jd.title === targetTitle
-          );
-          if (newItem && newItem.id) {
-            // Acquire lock and expand
-            this.expandAndAcquireLock(newItem.id);
+          if (
+            this.newlyCreatedTitle !== null ||
+            this.initialJobDescription !== null
+          ) {
+            this.shouldScrollToNew = true;
+
+            const targetTitle =
+              this.initialJobDescription?.title || this.newlyCreatedTitle;
+            const newItem = this.jobDescriptions.find(
+              (jd) => jd.title === targetTitle
+            );
+            if (newItem && newItem.id) {
+              // Acquire lock and expand
+              this.expandAndAcquireLock(newItem.id);
+            }
+
+            setTimeout(() => {
+              this.newlyCreatedTitle = null;
+              this.jobDescriptions = this.jobDescriptions.map((jd) => ({
+                ...jd,
+                isNew: false,
+              }));
+            }, 100);
           }
-
-          setTimeout(() => {
-            this.newlyCreatedTitle = null;
-            this.jobDescriptions = this.jobDescriptions.map((jd) => ({
-              ...jd,
-              isNew: false,
-            }));
-          }, 100);
-        }
-      },
-      error: (error) => {
-        console.error('Error loading job descriptions:', error);
-      },
-    });
+        },
+        error: (error) => {
+          console.error('Error loading job descriptions:', error);
+        },
+      });
   }
 
   applyFilter(newFilter: Partial<JobDescriptionFilter>): void {

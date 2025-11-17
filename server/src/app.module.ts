@@ -8,6 +8,7 @@ import { JobDescriptionsModule } from './job-descriptions/job-descriptions.modul
 import { JobDescriptionTasksModule } from './job-description-tasks/job-description-tasks.module';
 import { AuthModule } from './auth/auth.module';
 import { LockModule } from './lock/lock.module';
+import { EventsModule } from './events/events.module';
 import * as path from 'path';
 import { ConfigController } from './config/config.controller';
 
@@ -23,6 +24,7 @@ import { ConfigController } from './config/config.controller';
           : '/usr/src/app/client',
     }),
     PrismaModule,
+    EventsModule,
     LockModule,
     JobTasksModule,
     JobDescriptionsModule,

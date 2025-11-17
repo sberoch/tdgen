@@ -37,6 +37,7 @@ import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
 import { LockService } from '../../../services/lock.service';
+import { SseService } from '../../../services/sse.service';
 import {
   JobTaskFilter,
   JobTasksService,
@@ -102,6 +103,7 @@ export class JtOverviewAccordionComponent
   currentJobDescription: JobDescription | null = null;
   jobTasks: ExpandableJobTask[] = [];
   private subscription: Subscription = new Subscription();
+  private loadJobTasksSubscription?: Subscription;
   filter: JobTaskFilter = {};
   showDeleted: boolean = false;
   showOwnEntriesOnly: boolean = false;
@@ -176,7 +178,8 @@ export class JtOverviewAccordionComponent
     private currentWorkspaceService: CurrentWorkspaceService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private lockService: LockService
+    private lockService: LockService,
+    private sseService: SseService
   ) {}
 
   ngOnInit(): void {
@@ -197,6 +200,20 @@ export class JtOverviewAccordionComponent
             entityType: conflict.entityType,
           },
         });
+      })
+    );
+
+    // Subscribe to jobTasks$ observable for real-time updates
+    this.subscription.add(
+      this.jobTasksService.jobTasks$.subscribe((tasks) => {
+        console.log('jobTasks$ emitted, task count:', tasks.length);
+        // Update local tasks array when service emits new data
+        this.jobTasks = tasks.map((task) => ({
+          ...task,
+          isNew: false, // Don't mark as new on updates
+        })) as ExpandableJobTask[];
+        console.log('Updated this.jobTasks, calling detectChanges');
+        this.cdr.detectChanges(); // Force immediate change detection instead of markForCheck
       })
     );
   }
@@ -243,6 +260,9 @@ export class JtOverviewAccordionComponent
     if (this.expandedItemId) {
       this.lockService.releaseLock('JobTask', this.expandedItemId).subscribe();
     }
+    if (this.loadJobTasksSubscription) {
+      this.loadJobTasksSubscription.unsubscribe();
+    }
     this.subscription.unsubscribe();
   }
 
@@ -253,13 +273,13 @@ export class JtOverviewAccordionComponent
   }
 
   loadJobTasks(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      this.subscription = new Subscription();
+    if (this.loadJobTasksSubscription) {
+      this.loadJobTasksSubscription.unsubscribe();
     }
 
-    this.subscription.add(
-      this.jobTasksService.getJobTasks(this.filter).subscribe({
+    this.loadJobTasksSubscription = this.jobTasksService
+      .getJobTasks(this.filter)
+      .subscribe({
         next: (jobTasksListResponse) => {
           this.totalJobTasksCount = jobTasksListResponse.totalCount;
           this.filteredJobTasksCount = jobTasksListResponse.tasks.length;
@@ -307,8 +327,7 @@ export class JtOverviewAccordionComponent
         error: (error) => {
           console.error('Error loading job tasks:', error);
         },
-      })
-    );
+      });
   }
 
   applyFilter(newFilter: Partial<JobTaskFilter>): void {

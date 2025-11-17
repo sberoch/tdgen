@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EnvironmentService } from './environment.service';
+import { SseService } from './sse.service';
 import {
   CreateJobTask,
   JobTask,
@@ -28,8 +29,47 @@ export class JobTasksService {
 
   jobTasks$ = this.jobTasksSubject.asObservable();
 
-  constructor(private http: HttpClient, private env: EnvironmentService) {
+  constructor(
+    private http: HttpClient,
+    private env: EnvironmentService,
+    private sseService: SseService
+  ) {
     this.apiUrl = `${this.env.apiUrl || '/'}api/job-tasks`;
+
+    // Subscribe to lock events to update job task lock state
+    this.sseService.lockEvents.subscribe((event) => {
+      this.handleLockEvent(event);
+    });
+  }
+
+  private handleLockEvent(event: any): void {
+    if (event.data.entityType !== 'JobTask') {
+      return; // Not a job task lock
+    }
+
+    const taskId = event.data.entityId;
+    const currentTasks = this.jobTasksSubject.value;
+    const taskIndex = currentTasks.findIndex((t) => t.id === taskId);
+
+    if (taskIndex === -1) {
+      return; // Task not in current list
+    }
+
+    const updatedTasks = [...currentTasks];
+    const task = { ...updatedTasks[taskIndex] };
+
+    if (event.type === 'lock:acquired') {
+      task.lockedById = event.data.lockedById;
+      task.lockedAt = new Date(event.data.lockExpiry).toISOString();
+      task.lockExpiry = new Date(event.data.lockExpiry).toISOString();
+    } else if (event.type === 'lock:released' || event.type === 'lock:broken') {
+      task.lockedById = undefined;
+      task.lockedAt = undefined;
+      task.lockExpiry = undefined;
+    }
+
+    updatedTasks[taskIndex] = task;
+    this.jobTasksSubject.next(updatedTasks);
   }
 
   private loadJobTasks(

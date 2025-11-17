@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { EventsService } from '../events/events.service';
 
 export type EntityType = 'JobTask' | 'JobDescription';
 
@@ -30,6 +31,7 @@ export class LockService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private eventsService: EventsService,
   ) {
     // Load lock duration from environment or use default (30 minutes)
     this.DEFAULT_LOCK_DURATION_MS =
@@ -83,6 +85,20 @@ export class LockService {
       this.logger.debug(
         `Lock acquired on ${entityType}:${entityId} by ${userId}`,
       );
+
+      // Emit lock acquired event
+      this.eventsService.broadcastEvent({
+        type: 'lock:acquired',
+        data: {
+          entityType,
+          entityId,
+          lockedById: userId,
+          lockExpiry: lockExpiry.toISOString(),
+        },
+        userId,
+        timestamp: new Date().toISOString(),
+      });
+
       return true;
     } catch (error) {
       this.logger.error(
@@ -121,6 +137,18 @@ export class LockService {
       this.logger.debug(
         `Lock released on ${entityType}:${entityId} by ${userId}`,
       );
+
+      // Emit lock released event
+      this.eventsService.broadcastEvent({
+        type: 'lock:released',
+        data: {
+          entityType,
+          entityId,
+        },
+        userId,
+        timestamp: new Date().toISOString(),
+      });
+
       return true;
     } catch (error) {
       this.logger.error(
@@ -141,9 +169,22 @@ export class LockService {
         return false;
       }
 
+      const lockedById = entity.lockedById;
       await this.updateEntityLock(entityType, entityId, this.CLEANED_LOCK);
 
       this.logger.log(`Lock broken on ${entityType}:${entityId} by admin`);
+
+      // Emit lock broken event
+      this.eventsService.broadcastEvent({
+        type: 'lock:broken',
+        data: {
+          entityType,
+          entityId,
+          formerLockedById: lockedById,
+        },
+        timestamp: new Date().toISOString(),
+      });
+
       return true;
     } catch (error) {
       this.logger.error(
