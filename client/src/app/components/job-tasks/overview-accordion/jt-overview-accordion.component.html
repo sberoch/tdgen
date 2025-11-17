@@ -277,21 +277,25 @@
             >
               <div
                 *ngFor="let tag of item.tags"
-                class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-xs"
+                class="flex items-center gap-1 pl-2 pr-[0.325rem] py-1 rounded-full text-xs"
+                [style.background-color]="
+                  item.deletedAt ? '#cccccc' : '#888888'
+                "
+                [style.color]="'#ffffff'"
               >
+                <span>
+                  {{ tag.name }}
+                </span>
                 <button
                   (click)="!item.deletedAt ? removeTag(item, tag) : null"
                   [class]="
                     item.deletedAt
-                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-black/30 text-white opacity-50 cursor-not-allowed'
-                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-black/80 text-white hover:bg-red-700 cursor-pointer'
+                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white/30 text-white opacity-50 cursor-not-allowed'
+                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-red-700 cursor-pointer'
                   "
                 >
                   <mat-icon class="text-xs mt-2">close</mat-icon>
                 </button>
-                <span [class.opacity-50]="!!item.deletedAt">
-                  {{ tag.name }}
-                </span>
               </div>
             </div>
             <div class="mt-2">
