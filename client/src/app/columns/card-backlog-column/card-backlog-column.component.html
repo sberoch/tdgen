@@ -168,25 +168,25 @@
           [class.italic]="card.jobTask.deletedAt"
           [innerHTML]="card.text | truncateSafeHtml : 9999"
         ></p>
-        <p
-          class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-3"
-          [class.line-through]="card.jobTask.deletedAt"
-          [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
-          [class.italic]="card.jobTask.deletedAt"
-        >
-          <ng-container *ngIf="card.tags.length > 0; else noTags">
-            <ng-container *ngIf="card.classification">
-              {{ card.classification }} |
-            </ng-container>
-            Tags: {{ card.tags.join(", ") }}
-          </ng-container>
-          <ng-template #noTags>
-            <ng-container *ngIf="card.classification">
-              {{ card.classification }} |
-            </ng-container>
-            Tags: <i>keine</i>
-          </ng-template>
-        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <p
+            *ngIf="card.classification"
+            class="text-xs 2xl:text-sm 3xl:text-base text-black/50"
+            [class.line-through]="card.jobTask.deletedAt"
+            [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+            [class.italic]="card.jobTask.deletedAt"
+          >
+            {{ card.classification }}
+          </p>
+          <div
+            *ngFor="let tag of card.tags"
+            class="flex items-center px-3 py-1 rounded-full text-xs"
+            [style.background-color]="card.jobTask.deletedAt ? '#cccccc' : '#888888'"
+            [style.color]="'#ffffff'"
+          >
+            <span>{{ tag }}</span>
+          </div>
+        </div>
       </div>
       } } @else { @if (!currentDraggingCard) {
       <div class="flex flex-col justify-center items-center relative h-full">

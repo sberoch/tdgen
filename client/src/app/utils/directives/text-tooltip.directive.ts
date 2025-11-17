@@ -16,6 +16,7 @@ import {
 export class TextTooltipDirective implements OnInit, OnDestroy {
   @Input('textTooltip') text!: string;
   @Input() tooltipTitle?: string;
+  @Input() renderAsTags?: boolean;
   private tooltipElement: HTMLElement | null = null;
   private showTimeout: any = null;
   private documentClickListener: Function | null = null;
@@ -163,15 +164,42 @@ export class TextTooltipDirective implements OnInit, OnDestroy {
       this.renderer.appendChild(this.tooltipElement, titleElement);
     }
 
-    // Create text element
-    const textElement = this.renderer.createElement('p');
-    this.renderer.addClass(textElement, 'text-xs');
-    this.renderer.addClass(textElement, '2xl:text-sm');
-    const textContent = this.renderer.createText(this.text);
-    this.renderer.appendChild(textElement, textContent);
+    // Create content based on renderAsTags flag
+    if (this.renderAsTags) {
+      // Create container for tag pills
+      const tagsContainer = this.renderer.createElement('div');
+      this.renderer.addClass(tagsContainer, 'flex');
+      this.renderer.addClass(tagsContainer, 'flex-wrap');
+      this.renderer.addClass(tagsContainer, 'gap-2');
 
-    // Append text element to tooltip
-    this.renderer.appendChild(this.tooltipElement, textElement);
+      // Split tags by comma and create pills
+      const tags = this.text.split(',').map(tag => tag.trim());
+      tags.forEach(tag => {
+        const tagPill = this.renderer.createElement('div');
+        this.renderer.addClass(tagPill, 'flex');
+        this.renderer.addClass(tagPill, 'items-center');
+        this.renderer.addClass(tagPill, 'px-3');
+        this.renderer.addClass(tagPill, 'py-1');
+        this.renderer.addClass(tagPill, 'rounded-full');
+        this.renderer.addClass(tagPill, 'text-xs');
+        this.renderer.setStyle(tagPill, 'background-color', '#888888');
+        this.renderer.setStyle(tagPill, 'color', '#ffffff');
+
+        const tagText = this.renderer.createText(tag);
+        this.renderer.appendChild(tagPill, tagText);
+        this.renderer.appendChild(tagsContainer, tagPill);
+      });
+
+      this.renderer.appendChild(this.tooltipElement, tagsContainer);
+    } else {
+      // Create text element (original behavior)
+      const textElement = this.renderer.createElement('p');
+      this.renderer.addClass(textElement, 'text-xs');
+      this.renderer.addClass(textElement, '2xl:text-sm');
+      const textContent = this.renderer.createText(this.text);
+      this.renderer.appendChild(textElement, textContent);
+      this.renderer.appendChild(this.tooltipElement, textElement);
+    }
 
     // Add tooltip to body
     this.renderer.appendChild(document.body, this.tooltipElement);

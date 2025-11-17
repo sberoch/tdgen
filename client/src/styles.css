@@ -218,7 +218,7 @@ ol ol ol li {
   padding: 8px 12px;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  max-width: 300px;
+  max-width: 400px;
   width: max-content;
   position: fixed;
   z-index: 1000;

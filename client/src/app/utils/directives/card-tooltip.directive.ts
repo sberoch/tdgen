@@ -160,6 +160,33 @@ export class CardTooltipDirective implements OnInit, OnDestroy {
     const titleText = this.renderer.createText(this.card.title);
     this.renderer.appendChild(titleElement, titleText);
 
+    // Create tags container (if tags exist)
+    let tagsContainer: HTMLElement | null = null;
+    if (this.card.tags && this.card.tags.length > 0) {
+      tagsContainer = this.renderer.createElement('div');
+      this.renderer.addClass(tagsContainer, 'flex');
+      this.renderer.addClass(tagsContainer, 'flex-wrap');
+      this.renderer.addClass(tagsContainer, 'gap-2');
+      this.renderer.addClass(tagsContainer, 'mt-1');
+      this.renderer.addClass(tagsContainer, 'mb-2');
+
+      this.card.tags.forEach((tag) => {
+        const tagPill = this.renderer.createElement('div');
+        this.renderer.addClass(tagPill, 'flex');
+        this.renderer.addClass(tagPill, 'items-center');
+        this.renderer.addClass(tagPill, 'px-3');
+        this.renderer.addClass(tagPill, 'py-1');
+        this.renderer.addClass(tagPill, 'rounded-full');
+        this.renderer.addClass(tagPill, 'text-xs');
+        this.renderer.setStyle(tagPill, 'background-color', '#888888');
+        this.renderer.setStyle(tagPill, 'color', '#ffffff');
+
+        const tagText = this.renderer.createText(tag);
+        this.renderer.appendChild(tagPill, tagText);
+        this.renderer.appendChild(tagsContainer, tagPill);
+      });
+    }
+
     // Create text element
     const textElement = this.renderer.createElement('p');
     this.renderer.addClass(textElement, 'text-xs');
@@ -178,6 +205,9 @@ export class CardTooltipDirective implements OnInit, OnDestroy {
 
     // Append all elements to tooltip
     this.renderer.appendChild(this.tooltipElement, titleElement);
+    if (tagsContainer) {
+      this.renderer.appendChild(this.tooltipElement, tagsContainer);
+    }
     this.renderer.appendChild(this.tooltipElement, textElement);
     this.renderer.appendChild(this.tooltipElement, classElement);
 
