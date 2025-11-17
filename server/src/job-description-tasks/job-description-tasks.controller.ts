@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { JobDescriptionTasksService } from './job-description-tasks.service';
@@ -17,6 +18,8 @@ import {
 } from './job-description-tasks.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserGuard } from '../auth/user.guard';
+import { Request } from 'express';
+import { SamlUser } from '../auth/auth.service';
 
 @Controller('job-description-tasks')
 @UseGuards(JwtAuthGuard, UserGuard)
@@ -38,8 +41,11 @@ export class JobDescriptionTasksController {
   }
 
   @Post()
-  async create(@Body() data: CreateJobDescriptionTaskDto) {
-    const result = await this.jobDescriptionTasksService.create(data);
+  async create(
+    @Body() data: CreateJobDescriptionTaskDto,
+    @Req() req: Request & { user: SamlUser },
+  ) {
+    const result = await this.jobDescriptionTasksService.create(data, req.user);
     return result;
   }
 
@@ -47,14 +53,22 @@ export class JobDescriptionTasksController {
   async set(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionTaskDto,
+    @Req() req: Request & { user: SamlUser },
   ) {
-    const result = await this.jobDescriptionTasksService.set(id, data);
+    const result = await this.jobDescriptionTasksService.set(
+      id,
+      data,
+      req.user,
+    );
     return result;
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    const result = await this.jobDescriptionTasksService.delete(id);
+  async delete(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ) {
+    const result = await this.jobDescriptionTasksService.delete(id, req.user);
     return result;
   }
 }

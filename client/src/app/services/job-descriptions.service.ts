@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { EnvironmentService } from './environment.service';
-import { SseService } from './sse.service';
+import { SseService, SseEvent } from './sse.service';
 import {
   CreateJobDescription,
   JobDescription,
@@ -40,9 +40,14 @@ export class JobDescriptionsService {
     this.sseService.lockEvents.subscribe((event) => {
       this.handleLockEvent(event);
     });
+
+    // Subscribe to job description events from SSE
+    this.sseService.jobDescriptionEvents.subscribe((event) => {
+      this.handleJobDescriptionEvent(event);
+    });
   }
 
-  private handleLockEvent(event: any): void {
+  private handleLockEvent(event: SseEvent): void {
     if (event.data.entityType !== 'JobDescription') {
       return; // Not a job description lock
     }
@@ -72,6 +77,43 @@ export class JobDescriptionsService {
 
     updatedDescriptions[descriptionIndex] = description;
     this.jobDescriptionsSubject.next(updatedDescriptions);
+  }
+
+  private handleJobDescriptionEvent(event: SseEvent): void {
+    const currentDescriptions = this.jobDescriptionsSubject.value;
+    let updatedList: JobDescription[];
+
+    switch (event.type) {
+      case 'job-description:created':
+        // Add new description to local list
+        updatedList = [...currentDescriptions, event.data];
+        break;
+
+      case 'job-description:updated':
+      case 'job-description:deleted':
+      case 'job-description:restored':
+        // Update existing description in local list
+        updatedList = currentDescriptions.map((desc) =>
+          desc.id === event.data.id ? event.data : desc
+        );
+        break;
+
+      case 'job-description:permanent-deleted':
+        // Remove from list completely
+        updatedList = currentDescriptions.filter(
+          (desc) => desc.id !== event.data.id
+        );
+        break;
+
+      default:
+        return;
+    }
+
+    // Sort by title alphabetically (case-sensitive)
+    updatedList.sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+    );
+    this.jobDescriptionsSubject.next(updatedList);
   }
 
   private loadJobDescriptions(

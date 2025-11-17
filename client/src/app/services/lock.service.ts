@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, Subject, interval, of } from 'rxjs';
 import { catchError, map, takeUntil } from 'rxjs/operators';
 import { EnvironmentService } from './environment.service';
 import { AuthService } from './auth.service';
-import { SseService } from './sse.service';
+import { SseService, SseEvent } from './sse.service';
 import {
   EntityType,
   LockInfo,
@@ -99,7 +99,7 @@ export class LockService implements OnDestroy {
   /**
    * Handle incoming SSE lock events
    */
-  private handleLockEvent(event: any): void {
+  private handleLockEvent(event: SseEvent): void {
     const { type, data } = event;
     const lockKey = `${data.entityType}:${data.entityId}`;
 

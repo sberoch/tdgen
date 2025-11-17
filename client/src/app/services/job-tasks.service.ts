@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { EnvironmentService } from './environment.service';
-import { SseService } from './sse.service';
+import { SseService, SseEvent } from './sse.service';
 import {
   CreateJobTask,
   JobTask,
@@ -40,9 +40,14 @@ export class JobTasksService {
     this.sseService.lockEvents.subscribe((event) => {
       this.handleLockEvent(event);
     });
+
+    // Subscribe to job task events from SSE
+    this.sseService.jobTaskEvents.subscribe((event) => {
+      this.handleJobTaskEvent(event);
+    });
   }
 
-  private handleLockEvent(event: any): void {
+  private handleLockEvent(event: SseEvent): void {
     if (event.data.entityType !== 'JobTask') {
       return; // Not a job task lock
     }
@@ -70,6 +75,41 @@ export class JobTasksService {
 
     updatedTasks[taskIndex] = task;
     this.jobTasksSubject.next(updatedTasks);
+  }
+
+  private handleJobTaskEvent(event: SseEvent): void {
+    const currentTasks = this.jobTasksSubject.value;
+    let updatedList: JobTask[];
+
+    switch (event.type) {
+      case 'job-task:created':
+        // Add new task to local list
+        updatedList = [...currentTasks, event.data];
+        break;
+
+      case 'job-task:updated':
+      case 'job-task:deleted':
+      case 'job-task:restored':
+        // Update existing task in local list
+        updatedList = currentTasks.map((task) =>
+          task.id === event.data.id ? event.data : task
+        );
+        break;
+
+      case 'job-task:permanent-deleted':
+        // Remove from list completely
+        updatedList = currentTasks.filter((task) => task.id !== event.data.id);
+        break;
+
+      default:
+        return;
+    }
+
+    // Sort by title alphabetically (case-sensitive)
+    updatedList.sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
+    );
+    this.jobTasksSubject.next(updatedList);
   }
 
   private loadJobTasks(

@@ -98,8 +98,9 @@ export class JobDescriptionsController {
   async updatePercentages(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionPercentagesDto,
+    @Req() req: Request & { user: SamlUser },
   ): Promise<JobDescription> {
-    return this.jobDescriptionsService.setPercentages(id, data);
+    return this.jobDescriptionsService.setPercentages(id, data, req.user);
   }
 
   @Delete(':id')
@@ -114,8 +115,11 @@ export class JobDescriptionsController {
 
   @Delete(':id/permanent')
   @UseGuards(AdminGuard)
-  async permanentDelete(@Param('id') id: string): Promise<void> {
-    return this.jobDescriptionsService.permanentDelete(id);
+  async permanentDelete(
+    @Param('id') id: string,
+    @Req() req: Request & { user: SamlUser },
+  ): Promise<void> {
+    return this.jobDescriptionsService.permanentDelete(id, req.user);
   }
 
   @Patch(':id/restore')

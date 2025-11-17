@@ -1,22 +1,26 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { JobTask, Prisma } from '@prisma/client';
+import { SamlUser } from '../auth/auth.service';
+import { EventsService } from '../events/events.service';
+import { calculateAdjustedPercentages } from '../job-description-tasks/job-description-tasks.utils';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateJobTaskDto,
-  UpdateJobTaskDto,
   JobTaskParams,
   JobTasksListResponse,
+  UpdateJobTaskDto,
 } from './job-tasks.dto';
-import { SamlUser } from '../auth/auth.service';
-import { calculateAdjustedPercentages } from '../job-description-tasks/job-description-tasks.utils';
 
 @Injectable()
 export class JobTasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private eventsService: EventsService,
+  ) {}
 
   async list(params?: JobTaskParams): Promise<JobTasksListResponse> {
     const whereClause = this.buildWhereClause(params);
@@ -68,7 +72,7 @@ export class JobTasksService {
 
   async create(data: CreateJobTaskDto, user: SamlUser): Promise<JobTask> {
     const { tags, ...rest } = data;
-    return this.prisma.jobTask.create({
+    const jobTask = await this.prisma.jobTask.create({
       data: {
         ...rest,
         tags: tags ? { create: tags.map((tag) => ({ name: tag })) } : undefined,
@@ -78,6 +82,16 @@ export class JobTasksService {
         tags: true,
       },
     });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-task:created',
+      data: jobTask,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return jobTask;
   }
 
   async set(
@@ -87,7 +101,7 @@ export class JobTasksService {
   ): Promise<JobTask> {
     const jobTask = await this.get(id);
     const { tags, ...rest } = data;
-    return this.prisma.jobTask.update({
+    const updatedJobTask = await this.prisma.jobTask.update({
       where: { id: jobTask.id },
       data: {
         ...rest,
@@ -101,6 +115,16 @@ export class JobTasksService {
         jobDescriptions: true,
       },
     });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-task:updated',
+      data: updatedJobTask,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return updatedJobTask;
   }
 
   async getAffectedJobDescriptionsCount(id: string): Promise<number> {
@@ -116,12 +140,25 @@ export class JobTasksService {
 
   async delete(id: string, user: SamlUser): Promise<void> {
     const jobTask = await this.get(id);
+    const deletedDate = new Date();
     await this.prisma.jobTask.update({
       where: { id: jobTask.id },
       data: {
-        deletedAt: new Date(),
+        deletedAt: deletedDate,
         deletedById: user.id,
       },
+    });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-task:deleted',
+      data: {
+        ...jobTask,
+        deletedAt: deletedDate,
+        deletedById: user.id,
+      },
+      userId: user.id,
+      timestamp: deletedDate.toISOString(),
     });
   }
 
@@ -198,6 +235,14 @@ export class JobTasksService {
         where: { id: jobTask.id },
       });
     });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-task:permanent-deleted',
+      data: jobTask,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   async restore(id: string, user: SamlUser): Promise<JobTask> {
@@ -236,6 +281,14 @@ export class JobTasksService {
           },
         },
       },
+    });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-task:restored',
+      data: restoredJobTask,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
     });
 
     return restoredJobTask;

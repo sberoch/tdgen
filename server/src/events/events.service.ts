@@ -1,27 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Subject } from 'rxjs';
-
-export interface SseEvent {
-  type: string;
-  data: any;
-  userId?: string;
-  timestamp: string;
-}
-
-interface ClientConnection {
-  userId: string;
-  subject: Subject<MessageEvent>;
-  connectedAt: Date;
-}
+import { ClientConnection, SseEvent } from './event.types';
 
 @Injectable()
 export class EventsService {
   private readonly logger = new Logger(EventsService.name);
   private clients = new Map<string, ClientConnection>();
 
-  /**
-   * Add a client connection
-   */
   addClient(userId: string, subject: Subject<MessageEvent>): void {
     this.clients.set(userId, {
       userId,
@@ -33,9 +18,6 @@ export class EventsService {
     );
   }
 
-  /**
-   * Remove a client connection
-   */
   removeClient(userId: string): void {
     this.clients.delete(userId);
     this.logger.debug(
@@ -43,9 +25,6 @@ export class EventsService {
     );
   }
 
-  /**
-   * Broadcast event to all connected clients
-   */
   broadcastEvent(event: SseEvent): void {
     const messageEvent: MessageEvent = {
       data: JSON.stringify(event),
@@ -69,16 +48,10 @@ export class EventsService {
     );
   }
 
-  /**
-   * Get list of active users
-   */
   getActiveUsers(): string[] {
     return Array.from(this.clients.keys());
   }
 
-  /**
-   * Get total connected clients count
-   */
   getConnectedClientsCount(): number {
     return this.clients.size;
   }

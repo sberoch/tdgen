@@ -8,6 +8,8 @@ import {
 } from './job-description-tasks.dto';
 import { calculateAdjustedPercentages } from './job-description-tasks.utils';
 import { JobDescriptionsService } from '../job-descriptions/job-descriptions.service';
+import { EventsService } from '../events/events.service';
+import { SamlUser } from '../auth/auth.service';
 
 const NEW_TASK_ORDER = -1;
 
@@ -16,6 +18,7 @@ export class JobDescriptionTasksService {
   constructor(
     private prisma: PrismaService,
     private jobDescriptionsService: JobDescriptionsService,
+    private eventsService: EventsService,
   ) {}
 
   async list(params?: JobDescriptionTaskParams): Promise<JobDescriptionTask[]> {
@@ -45,7 +48,7 @@ export class JobDescriptionTasksService {
     return jobDescriptionTask;
   }
 
-  async create(data: CreateJobDescriptionTaskDto) {
+  async create(data: CreateJobDescriptionTaskDto, user: SamlUser) {
     const previousJobDescriptionTasks = await this.list({
       jobDescriptionId: data.jobDescriptionId,
     });
@@ -67,6 +70,7 @@ export class JobDescriptionTasksService {
     await this.adjustTaskPercentages(
       data.jobDescriptionId,
       previousJobDescriptionTasksPercentages,
+      user,
     );
     await this.reorderTasksAfterChange(
       data.jobDescriptionId,
@@ -78,10 +82,23 @@ export class JobDescriptionTasksService {
     const updatedJobDescription = await this.jobDescriptionsService.get(
       data.jobDescriptionId.toString(),
     );
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description-task:created',
+      data: {
+        jobDescriptionId: data.jobDescriptionId,
+        jobTaskId: data.jobTaskId,
+        jobDescription: updatedJobDescription,
+      },
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
     return updatedJobDescription;
   }
 
-  async set(id: string, data: UpdateJobDescriptionTaskDto) {
+  async set(id: string, data: UpdateJobDescriptionTaskDto, user: SamlUser) {
     const jobDescriptionTask = await this.get(id);
     const updateData: Prisma.JobDescriptionTaskUpdateInput = {};
     const isOrderChanged =
@@ -121,17 +138,42 @@ export class JobDescriptionTasksService {
     const updatedJobDescription = await this.jobDescriptionsService.get(
       jobDescriptionTask.jobDescriptionId.toString(),
     );
+
+    // Emit events
+    this.eventsService.broadcastEvent({
+      type: 'job-description-task:updated',
+      data: {
+        jobDescriptionId: jobDescriptionTask.jobDescriptionId,
+        jobDescriptionTaskId: Number(id),
+        jobDescription: updatedJobDescription,
+      },
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (isOrderChanged) {
+      this.eventsService.broadcastEvent({
+        type: 'job-description-task:reordered',
+        data: {
+          jobDescriptionId: jobDescriptionTask.jobDescriptionId,
+          jobDescription: updatedJobDescription,
+        },
+        userId: user.id,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     return updatedJobDescription;
   }
 
-  async delete(id: string) {
+  async delete(id: string, user: SamlUser) {
     const jobDescriptionTask = await this.get(id);
     const previousJobDescriptionTasks = await this.list({
       jobDescriptionId: jobDescriptionTask.jobDescriptionId,
     });
     const previousJobDescriptionTasksPercentages =
       previousJobDescriptionTasks.map((task) => task.percentage);
-    const { jobDescriptionId, order } = jobDescriptionTask;
+    const { jobDescriptionId, jobTaskId, order } = jobDescriptionTask;
     await this.prisma.jobDescriptionTask.delete({
       where: { id: jobDescriptionTask.id },
     });
@@ -139,12 +181,26 @@ export class JobDescriptionTasksService {
     await this.adjustTaskPercentages(
       jobDescriptionId,
       previousJobDescriptionTasksPercentages,
+      user,
     );
     await this.reorderTasksAfterDeletion(jobDescriptionId, order);
 
     const updatedJobDescription = await this.jobDescriptionsService.get(
       jobDescriptionId.toString(),
     );
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description-task:deleted',
+      data: {
+        jobDescriptionId,
+        jobTaskId,
+        jobDescription: updatedJobDescription,
+      },
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
     return updatedJobDescription;
   }
 
@@ -235,6 +291,7 @@ export class JobDescriptionTasksService {
   private async adjustTaskPercentages(
     jobDescriptionId: number,
     previousJobDescriptionTasksPercentages: number[],
+    user: SamlUser,
   ): Promise<void> {
     const jobDescriptionTasks = await this.list({
       jobDescriptionId,
@@ -249,6 +306,20 @@ export class JobDescriptionTasksService {
         data: { percentage: percentages[i] },
       });
     }
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description-task:percentage-changed',
+      data: {
+        jobDescriptionId,
+        percentages: percentages.map((p, i) => ({
+          taskId: jobDescriptionTasks[i].id,
+          percentage: p,
+        })),
+      },
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   private buildWhereClause(

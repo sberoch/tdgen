@@ -1,8 +1,37 @@
 import { Injectable, NgZone } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
+export type EventType =
+  // JobTask events
+  | 'job-task:created'
+  | 'job-task:updated'
+  | 'job-task:deleted'
+  | 'job-task:restored'
+  | 'job-task:permanent-deleted'
+
+  // JobDescription events
+  | 'job-description:created'
+  | 'job-description:updated'
+  | 'job-description:deleted'
+  | 'job-description:restored'
+  | 'job-description:permanent-deleted'
+
+  // JobDescriptionTask events (task-to-description associations)
+  | 'job-description-task:created'
+  | 'job-description-task:updated'
+  | 'job-description-task:deleted'
+  | 'job-description-task:reordered'
+  | 'job-description-task:percentage-changed'
+
+  // Lock events
+  | 'lock:acquired'
+  | 'lock:released'
+  | 'lock:expired'
+  | 'lock:broken'
+  | 'lock:refreshed';
+
 export interface SseEvent {
-  type: string;
+  type: EventType;
   data: any;
   userId?: string;
   timestamp: string;
@@ -17,6 +46,9 @@ export class SseService {
 
   // Event subjects for different event types
   private lockEvents$ = new Subject<SseEvent>();
+  private jobTaskEvents$ = new Subject<SseEvent>();
+  private jobDescriptionEvents$ = new Subject<SseEvent>();
+  private jobDescriptionTaskEvents$ = new Subject<SseEvent>();
 
   // Connection state
   private connectionState$ = new BehaviorSubject<
@@ -28,6 +60,18 @@ export class SseService {
   // Public observables
   get lockEvents(): Observable<SseEvent> {
     return this.lockEvents$.asObservable();
+  }
+
+  get jobTaskEvents(): Observable<SseEvent> {
+    return this.jobTaskEvents$.asObservable();
+  }
+
+  get jobDescriptionEvents(): Observable<SseEvent> {
+    return this.jobDescriptionEvents$.asObservable();
+  }
+
+  get jobDescriptionTaskEvents(): Observable<SseEvent> {
+    return this.jobDescriptionTaskEvents$.asObservable();
   }
 
   get connectionState(): Observable<string> {
@@ -104,13 +148,12 @@ export class SseService {
    */
   private handleMessage(event: MessageEvent): void {
     try {
-      const sseEvent: SseEvent = JSON.parse(event.data);
-
-      // Ignore heartbeat
-      if (sseEvent.type === 'heartbeat') {
+      const rawEvent = JSON.parse(event.data);
+      if (rawEvent.type === 'heartbeat') {
         return;
       }
 
+      const sseEvent: SseEvent = rawEvent as SseEvent;
       this.routeEvent(sseEvent);
     } catch (error) {
       console.error('Error parsing SSE event:', error);
@@ -122,9 +165,16 @@ export class SseService {
    */
   private routeEvent(sseEvent: SseEvent): void {
     const eventType = sseEvent.type;
+    console.log('[DEV] Receiving event:', sseEvent);
 
     if (eventType.startsWith('lock:')) {
       this.lockEvents$.next(sseEvent);
+    } else if (eventType.startsWith('job-task:')) {
+      this.jobTaskEvents$.next(sseEvent);
+    } else if (eventType.startsWith('job-description:')) {
+      this.jobDescriptionEvents$.next(sseEvent);
+    } else if (eventType.startsWith('job-description-task:')) {
+      this.jobDescriptionTaskEvents$.next(sseEvent);
     }
   }
 
@@ -134,6 +184,9 @@ export class SseService {
   ngOnDestroy(): void {
     this.disconnect();
     this.lockEvents$.complete();
+    this.jobTaskEvents$.complete();
+    this.jobDescriptionEvents$.complete();
+    this.jobDescriptionTaskEvents$.complete();
     this.connectionState$.complete();
   }
 }

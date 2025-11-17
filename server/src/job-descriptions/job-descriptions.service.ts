@@ -3,21 +3,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { JobDescription, Prisma } from '@prisma/client';
+import { SamlUser } from '../auth/auth.service';
+import { EventsService } from '../events/events.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateJobDescriptionDto,
   JobDescriptionParams,
+  JobDescriptionsListResponse,
   UpdateJobDescriptionDto,
   UpdateJobDescriptionPercentagesDto,
-  JobDescriptionsListResponse,
 } from './job-descriptions.dto';
 import { getWeightedPayGroupFromTasks } from './job-descriptions.utils';
-import { SamlUser } from '../auth/auth.service';
 
 @Injectable()
 export class JobDescriptionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventsService: EventsService,
+  ) {}
 
   async list(
     params?: JobDescriptionParams,
@@ -145,7 +149,18 @@ export class JobDescriptionsService {
           tags: true,
         },
       });
-      return { ...jobDescription, weightedAverage: 0, taskCount: 0 };
+
+      const result = { ...jobDescription, weightedAverage: 0, taskCount: 0 };
+
+      // Emit event
+      this.eventsService.broadcastEvent({
+        type: 'job-description:created',
+        data: result,
+        userId: user.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      return result;
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -201,16 +216,31 @@ export class JobDescriptionsService {
       updatedJobDescription.tasks,
     );
 
-    return {
+    const result = {
       ...updatedJobDescription,
       weightedAverage: finalWeightedAverage,
       taskCount: updatedJobDescription.tasks.length,
     };
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description:updated',
+      data: result,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return result;
   }
 
-  async setPercentages(id: string, data: UpdateJobDescriptionPercentagesDto) {
+  async setPercentages(
+    id: string,
+    data: UpdateJobDescriptionPercentagesDto,
+    user: SamlUser,
+  ) {
     const jobDescription = await this.get(id);
     const currentJDTasks = jobDescription.tasks;
+
     for (let i = 0; i < currentJDTasks.length; i++) {
       const jobDescriptionTaskId = currentJDTasks[i].id;
       const percentage = data.taskPercentages.find(
@@ -224,21 +254,45 @@ export class JobDescriptionsService {
         data: { percentage },
       });
     }
-    return await this.get(id);
+
+    const result = await this.get(id);
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description-task:percentage-changed',
+      data: { jobDescriptionId: Number(id) },
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return result;
   }
 
   async delete(id: string, user: SamlUser): Promise<void> {
     const jobDescription = await this.get(id);
+    const deletedDate = new Date();
     await this.prisma.jobDescription.update({
       where: { id: jobDescription.id },
       data: {
-        deletedAt: new Date(),
+        deletedAt: deletedDate,
         deletedById: user.id,
       },
     });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description:deleted',
+      data: {
+        ...jobDescription,
+        deletedAt: deletedDate,
+        deletedById: user.id,
+      },
+      userId: user.id,
+      timestamp: deletedDate.toISOString(),
+    });
   }
 
-  async permanentDelete(id: string): Promise<void> {
+  async permanentDelete(id: string, user: SamlUser): Promise<void> {
     const jobDescription = await this.prisma.jobDescription.findUnique({
       where: { id: Number(id) },
       include: {
@@ -267,6 +321,14 @@ export class JobDescriptionsService {
       await prismaTx.jobDescription.delete({
         where: { id: jobDescription.id },
       });
+    });
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description:permanent-deleted',
+      data: jobDescription,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -318,23 +380,37 @@ export class JobDescriptionsService {
       },
     });
 
+    let result: Omit<JobDescription, 'tasks'> & {
+      weightedAverage: number;
+      taskCount: number;
+    };
     try {
       const weightedAverage = getWeightedPayGroupFromTasks(
         restoredJobDescription.tasks,
       );
-      return {
+      result = {
         ...restoredJobDescription,
         weightedAverage,
         taskCount: restoredJobDescription.tasks.length,
       };
     } catch (error) {
       console.error(error);
-      return {
+      result = {
         ...restoredJobDescription,
         weightedAverage: 0,
         taskCount: restoredJobDescription.tasks.length,
       };
     }
+
+    // Emit event
+    this.eventsService.broadcastEvent({
+      type: 'job-description:restored',
+      data: result,
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+    });
+
+    return result;
   }
 
   private buildWhereClause(

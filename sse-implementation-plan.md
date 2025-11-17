@@ -482,37 +482,6 @@ async breakLock(
 
   return lockStatus;
 }
-
-async refreshLock(
-  entityType: 'JobTask' | 'JobDescription',
-  entityId: number,
-  userId: string,
-): Promise<any> {
-  // ... refresh logic
-
-  // Optionally emit refresh event (low priority)
-  this.eventsService.broadcastEvent({
-    type: 'lock:refreshed',
-    data: { entityType, entityId },
-    userId,
-    timestamp: new Date().toISOString(),
-  });
-
-  return lockStatus;
-}
-
-async cleanupExpiredLocks(): Promise<void> {
-  // ... cleanup logic
-
-  // Emit expired lock events
-  expiredLocks.forEach(lock => {
-    this.eventsService.broadcastEvent({
-      type: 'lock:expired',
-      data: { entityType: lock.entityType, entityId: lock.entityId },
-      timestamp: new Date().toISOString(),
-    });
-  });
-}
 ```
 
 **Import EventsModule** in `LockModule`.
