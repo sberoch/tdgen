@@ -218,6 +218,10 @@ export class HeaderComponent implements OnInit {
     return this.tags.join(', ');
   }
 
+  get overflowTagsText(): string {
+    return this.tags.slice(5).join(', ');
+  }
+
   isUserAdmin(): boolean {
     return (
       this.currentUser?.groups.includes(

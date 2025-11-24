@@ -118,13 +118,6 @@
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
-            <mat-icon
-              *ngIf="isLockedByOtherUser(item)"
-              class="text-tertiary text-lg -translate-y-[2px]"
-              title="Gesperrt von {{ item.lockedById }}"
-            >
-              lock
-            </mat-icon>
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
@@ -144,6 +137,13 @@
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32 flex justify-end"
           >
+            <mat-icon
+              *ngIf="isLockedByOtherUser(item)"
+              class="text-tertiary text-lg translate-y-[3px]"
+              title="Gesperrt von {{ item.lockedById }}"
+            >
+              lock
+            </mat-icon>
             <!-- Admin users see three-dot menu -->
             <div *ngIf="isAdmin(); else regularUserButton">
               <button
@@ -272,7 +272,7 @@
               </div>
             </div>
             <div
-              class="flex flex-wrap gap-2 mb-4"
+              class="flex flex-wrap gap-2 mb-5 mt-[5px]"
               *ngIf="item.tags && item.tags.length > 0"
             >
               <div
@@ -290,8 +290,8 @@
                   (click)="!item.deletedAt ? removeTag(item, tag) : null"
                   [class]="
                     item.deletedAt
-                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white/30 text-white opacity-50 cursor-not-allowed'
-                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-red-700 cursor-pointer'
+                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#cccccc] opacity-50 cursor-not-allowed'
+                      : 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#888888] hover:bg-[#ccc] cursor-pointer'
                   "
                 >
                   <mat-icon class="text-xs mt-2">close</mat-icon>

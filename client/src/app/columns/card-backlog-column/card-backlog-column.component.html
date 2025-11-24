@@ -151,14 +151,25 @@
               lock
             </mat-icon>
           </div>
-          <button
-            mat-icon-button
-            class="compact-icon"
-            [matMenuTriggerFor]="cardMenu"
-            (click)="$event.stopPropagation(); currentIndex = $index"
-          >
-            <mat-icon>more_vert</mat-icon>
-          </button>
+          <div class="flex items-center gap-2">
+            <p
+              *ngIf="card.classification"
+              class="text-xs 2xl:text-sm 3xl:text-base text-black/50"
+              [class.line-through]="card.jobTask.deletedAt"
+              [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
+              [class.italic]="card.jobTask.deletedAt"
+            >
+              {{ card.classification }}
+            </p>
+            <button
+              mat-icon-button
+              class="compact-icon"
+              [matMenuTriggerFor]="cardMenu"
+              (click)="$event.stopPropagation(); currentIndex = $index"
+            >
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </div>
         </div>
         <p
           class="text-xs 2xl:text-sm 3xl:text-base mt-1"
@@ -168,15 +179,6 @@
           [innerHTML]="card.text | truncateSafeHtml : 9999"
         ></p>
         <div class="mt-3 flex flex-wrap items-center gap-2">
-          <p
-            *ngIf="card.classification"
-            class="text-xs 2xl:text-sm 3xl:text-base text-black/50"
-            [class.line-through]="card.jobTask.deletedAt"
-            [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
-            [class.italic]="card.jobTask.deletedAt"
-          >
-            {{ card.classification }}
-          </p>
           <div
             *ngFor="let tag of card.tags"
             class="flex items-center px-3 py-1 rounded-full text-xs"

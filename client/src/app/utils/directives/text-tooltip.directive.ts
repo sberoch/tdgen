@@ -158,7 +158,7 @@ export class TextTooltipDirective implements OnInit, OnDestroy {
       this.renderer.addClass(titleElement, 'font-bold');
       this.renderer.addClass(titleElement, 'text-xs');
       this.renderer.addClass(titleElement, '2xl:text-sm');
-      this.renderer.addClass(titleElement, 'mb-1');
+      this.renderer.addClass(titleElement, 'mb-2');
       const titleText = this.renderer.createText(this.tooltipTitle);
       this.renderer.appendChild(titleElement, titleText);
       this.renderer.appendChild(this.tooltipElement, titleElement);
