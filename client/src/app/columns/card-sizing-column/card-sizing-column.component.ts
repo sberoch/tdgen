@@ -1,9 +1,11 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { CardService } from '../../services/card.service';
 import { Card } from '../../utils/card.utils';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
+import { AuthService } from '../../services/auth.service';
 import { JobDescription } from '../../types/job-descriptions';
 import { PastelColorPipe } from '../../pipes/get-pastel-color-pipe';
 
@@ -22,11 +24,13 @@ export class CardSizingColumnComponent implements OnInit {
   isWorkspaceSet = false;
   private accumulatedDelta = 0;
   private jobDescription: JobDescription | null = null;
+  private _snackBar = inject(MatSnackBar);
 
   constructor(
     private currentWorkspaceService: CurrentWorkspaceService,
     private cardService: CardService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -88,6 +92,16 @@ export class CardSizingColumnComponent implements OnInit {
   }
 
   startDrag(event: MouseEvent, index: number) {
+    // Check if job description is locked by another user
+    if (this.isJobDescriptionLocked()) {
+      this._snackBar.open(
+        'Die Tätigkeitsdarstellung ist von einem anderen Benutzer gesperrt',
+        'Bestätigen',
+        { duration: 3000 }
+      );
+      return;
+    }
+
     this.isDragging = true;
     this.startY = event.clientY;
     this.currentIndex = index;
@@ -174,5 +188,14 @@ export class CardSizingColumnComponent implements OnInit {
 
   selectCard(card: Card) {
     this.cardService.selectCard(card);
+  }
+
+  isJobDescriptionLocked(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return (
+      !!this.jobDescription &&
+      !!this.jobDescription.lockedById &&
+      this.jobDescription.lockedById !== currentUser?.id
+    );
   }
 }

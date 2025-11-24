@@ -18,6 +18,8 @@ import {
 } from './job-description-tasks.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserGuard } from '../auth/user.guard';
+import { JobDescriptionTaskLockGuard } from './job-description-task-lock.guard';
+import { JobDescriptionCreateLockGuard } from './job-description-create-lock.guard';
 import { Request } from 'express';
 import { SamlUser } from '../auth/auth.service';
 
@@ -41,6 +43,7 @@ export class JobDescriptionTasksController {
   }
 
   @Post()
+  @UseGuards(JobDescriptionCreateLockGuard)
   async create(
     @Body() data: CreateJobDescriptionTaskDto,
     @Req() req: Request & { user: SamlUser },
@@ -50,6 +53,7 @@ export class JobDescriptionTasksController {
   }
 
   @Patch(':id')
+  @UseGuards(JobDescriptionTaskLockGuard)
   async set(
     @Param('id') id: string,
     @Body() data: UpdateJobDescriptionTaskDto,
@@ -64,6 +68,7 @@ export class JobDescriptionTasksController {
   }
 
   @Delete(':id')
+  @UseGuards(JobDescriptionTaskLockGuard)
   async delete(
     @Param('id') id: string,
     @Req() req: Request & { user: SamlUser },

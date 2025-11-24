@@ -7,6 +7,7 @@ import { JobTasksListResponse } from '../types/job-tasks';
 import { Card } from '../utils/card.utils';
 import { CurrentWorkspaceService } from './current-workspace.service';
 import { EnvironmentService } from './environment.service';
+import { SseService, SseEvent } from './sse.service';
 
 @Injectable({
   providedIn: 'root',
@@ -26,7 +27,8 @@ export class CardService {
   constructor(
     private http: HttpClient,
     private currentWorkspaceService: CurrentWorkspaceService,
-    private env: EnvironmentService
+    private env: EnvironmentService,
+    private sseService: SseService
   ) {
     this.apiUrl = `${this.env.apiUrl || '/'}api`;
     this.initializeCards();
@@ -36,6 +38,21 @@ export class CardService {
         this.updateCardsSubjects();
       }
     );
+
+    // Subscribe to lock events for real-time lock status updates
+    this.sseService.lockEvents.subscribe((event) => {
+      this.handleLockEvent(event);
+    });
+
+    // Subscribe to job task events for real-time updates
+    this.sseService.jobTaskEvents.subscribe((event) => {
+      this.handleJobTaskEvent(event);
+    });
+
+    // Subscribe to job-description-task events for real-time updates
+    this.sseService.jobDescriptionTaskEvents.subscribe((event) => {
+      this.handleJobDescriptionTaskEvent(event);
+    });
   }
 
   initializeCards() {
@@ -229,5 +246,174 @@ export class CardService {
 
   selectCard(card: Card) {
     this.selectedCardSubject.next(card);
+  }
+
+  private handleLockEvent(event: SseEvent): void {
+    if (event.data.entityType !== 'JobTask') {
+      return; // Not a job task lock
+    }
+
+    const taskId = event.data.entityId;
+
+    // Update backlog cards
+    const updatedBacklogCards = this.allBacklogCards.map((card) => {
+      if (card.jobTask.id === taskId) {
+        const updatedCard = { ...card };
+        updatedCard.jobTask = { ...card.jobTask };
+
+        if (event.type === 'lock:acquired') {
+          updatedCard.jobTask.lockedById = event.data.lockedById;
+          updatedCard.jobTask.lockedAt = new Date(event.data.lockExpiry).toISOString();
+          updatedCard.jobTask.lockExpiry = new Date(event.data.lockExpiry).toISOString();
+        } else if (event.type === 'lock:released' || event.type === 'lock:broken') {
+          updatedCard.jobTask.lockedById = undefined;
+          updatedCard.jobTask.lockedAt = undefined;
+          updatedCard.jobTask.lockExpiry = undefined;
+        }
+
+        return updatedCard;
+      }
+      return card;
+    });
+
+    this.allBacklogCards = updatedBacklogCards;
+
+    // Update display cards through CurrentWorkspaceService
+    if (this.currentJobDescription) {
+      const updatedJobDescription = { ...this.currentJobDescription };
+      updatedJobDescription.tasks = updatedJobDescription.tasks.map((jdTask) => {
+        if (jdTask.jobTask.id === taskId) {
+          const updatedJdTask = { ...jdTask };
+          updatedJdTask.jobTask = { ...jdTask.jobTask };
+
+          if (event.type === 'lock:acquired') {
+            updatedJdTask.jobTask.lockedById = event.data.lockedById;
+            updatedJdTask.jobTask.lockedAt = new Date(event.data.lockExpiry).toISOString();
+            updatedJdTask.jobTask.lockExpiry = new Date(event.data.lockExpiry).toISOString();
+          } else if (event.type === 'lock:released' || event.type === 'lock:broken') {
+            updatedJdTask.jobTask.lockedById = undefined;
+            updatedJdTask.jobTask.lockedAt = undefined;
+            updatedJdTask.jobTask.lockExpiry = undefined;
+          }
+
+          return updatedJdTask;
+        }
+        return jdTask;
+      });
+
+      this.currentWorkspaceService.setCurrentJobDescription(updatedJobDescription);
+    }
+
+    // Refresh the cards subjects
+    this.updateCardsSubjects();
+  }
+
+  private handleJobTaskEvent(event: SseEvent): void {
+    switch (event.type) {
+      case 'job-task:created':
+        // Add new task to backlog
+        const newCard: Card = {
+          classification: event.data.metadata?.['paymentGroup'] || '',
+          jobTask: event.data,
+          title: event.data.title,
+          text: event.data.text,
+          percentage: 5,
+          order: 0,
+          tags: event.data.tags?.map((tag: any) => tag.name) || [],
+        };
+        this.allBacklogCards = [...this.allBacklogCards, newCard];
+        break;
+
+      case 'job-task:updated':
+        // Update task in both backlog and display cards
+        this.allBacklogCards = this.allBacklogCards.map((card) =>
+          card.jobTask.id === event.data.id
+            ? {
+                ...card,
+                classification: event.data.metadata?.['paymentGroup'] || '',
+                jobTask: event.data,
+                title: event.data.title,
+                text: event.data.text,
+                tags: event.data.tags?.map((tag: any) => tag.name) || [],
+              }
+            : card
+        );
+
+        // Update in current job description if present
+        if (this.currentJobDescription) {
+          const updatedJobDescription = { ...this.currentJobDescription };
+          updatedJobDescription.tasks = updatedJobDescription.tasks.map((jdTask) =>
+            jdTask.jobTask.id === event.data.id
+              ? {
+                  ...jdTask,
+                  jobTask: event.data,
+                }
+              : jdTask
+          );
+          this.currentWorkspaceService.setCurrentJobDescription(updatedJobDescription);
+        }
+        break;
+
+      case 'job-task:deleted':
+      case 'job-task:restored':
+        // Update task deleted/restored status
+        this.allBacklogCards = this.allBacklogCards.map((card) =>
+          card.jobTask.id === event.data.id
+            ? {
+                ...card,
+                jobTask: { ...card.jobTask, deletedAt: event.data.deletedAt },
+              }
+            : card
+        );
+
+        // Update in current job description if present
+        if (this.currentJobDescription) {
+          const updatedJobDescription = { ...this.currentJobDescription };
+          updatedJobDescription.tasks = updatedJobDescription.tasks.map((jdTask) =>
+            jdTask.jobTask.id === event.data.id
+              ? {
+                  ...jdTask,
+                  jobTask: { ...jdTask.jobTask, deletedAt: event.data.deletedAt },
+                }
+              : jdTask
+          );
+          this.currentWorkspaceService.setCurrentJobDescription(updatedJobDescription);
+        }
+        break;
+
+      case 'job-task:permanent-deleted':
+        // Remove from backlog completely
+        this.allBacklogCards = this.allBacklogCards.filter(
+          (card) => card.jobTask.id !== event.data.id
+        );
+        break;
+    }
+
+    this.updateCardsSubjects();
+  }
+
+  private handleJobDescriptionTaskEvent(event: SseEvent): void {
+    // Only handle events for the current job description
+    if (!this.currentJobDescription) {
+      return;
+    }
+
+    const eventJobDescriptionId = event.data.jobDescriptionId;
+    if (eventJobDescriptionId !== this.currentJobDescription.id) {
+      return; // Event is for a different job description
+    }
+
+    switch (event.type) {
+      case 'job-description-task:created':
+      case 'job-description-task:updated':
+      case 'job-description-task:deleted':
+      case 'job-description-task:reordered':
+      case 'job-description-task:percentage-changed':
+        // Update the entire job description from the event data
+        if (event.data.jobDescription) {
+          this.currentWorkspaceService.setCurrentJobDescription(event.data.jobDescription);
+        }
+        break;
+    }
   }
 }

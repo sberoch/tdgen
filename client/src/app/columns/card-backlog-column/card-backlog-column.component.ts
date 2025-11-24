@@ -87,6 +87,7 @@ export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
 
   isWorkspaceSet = false;
+  private currentJobDescription: JobDescription | null = null;
   private allBacklogCards: Card[] = [];
   private filteredBacklogCards: Card[] = [];
   backlogCards: Card[] = [];
@@ -114,6 +115,7 @@ export class CardBacklogColumnComponent implements OnInit {
     this.currentWorkspaceService.currentJobDescription
       .pipe(takeUntil(this.destroy$))
       .subscribe((jobDescription) => {
+        this.currentJobDescription = jobDescription;
         const newWorkspaceSet = jobDescription !== null;
         this.isWorkspaceSet = newWorkspaceSet;
         if (!jobDescription) {
@@ -226,7 +228,7 @@ export class CardBacklogColumnComponent implements OnInit {
         } else {
           this.openSnackBar(
             'Maximale Anzahl an Arbeitsvorgängen erreicht',
-            'Akzeptieren'
+            'Bestätigen'
           );
         }
       }
@@ -352,6 +354,15 @@ export class CardBacklogColumnComponent implements OnInit {
       card.jobTask &&
       !!card.jobTask.lockedById &&
       card.jobTask.lockedById !== currentUser?.id
+    );
+  }
+
+  isJobDescriptionLocked(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return (
+      !!this.currentJobDescription &&
+      !!this.currentJobDescription.lockedById &&
+      this.currentJobDescription.lockedById !== currentUser?.id
     );
   }
 }
