@@ -396,26 +396,62 @@ export class JtOverviewAccordionComponent
   openEditDialog(item: JobTask, event: Event) {
     event.stopPropagation();
 
-    const dialogRef = this.dialog.open(JobTaskTitleDialogComponent, {
-      width: '600px',
-      data: {
-        title: item.title,
-        id: item.id,
-        isEditing: true,
-      },
-    });
+    // Acquire lock before opening edit dialog
+    this.lockService.acquireLock('JobTask', item.id!).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update local lock status
+          const currentUser = this.authService.getCurrentUser();
+          item.lockedById = currentUser?.id;
+          item.lockedAt = new Date().toISOString();
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.newlyCreatedTitle = result;
-        this.loadJobTasks();
-        this.cardService.initializeCards();
-        if (this.currentJobDescription) {
-          this.currentWorkspaceService.triggerJobDescriptionFetch(
-            this.currentJobDescription
-          );
+          const dialogRef = this.dialog.open(JobTaskTitleDialogComponent, {
+            width: '600px',
+            data: {
+              title: item.title,
+              id: item.id,
+              isEditing: true,
+            },
+          });
+
+          dialogRef.afterClosed().subscribe((result) => {
+            // Release lock after dialog closes
+            this.lockService.releaseLock('JobTask', item.id!).subscribe({
+              next: () => {
+                // Update local state to reflect lock release
+                item.lockedById = undefined;
+                item.lockedAt = undefined;
+                item.lockExpiry = undefined;
+                this.cdr.markForCheck();
+              },
+              error: (err) => console.error('Error releasing lock after title edit:', err),
+            });
+
+            if (result) {
+              this.newlyCreatedTitle = result;
+              this.loadJobTasks();
+              this.cardService.initializeCards();
+              if (this.currentJobDescription) {
+                this.currentWorkspaceService.triggerJobDescriptionFetch(
+                  this.currentJobDescription
+                );
+              }
+            }
+          });
+        } else {
+          // Lock acquisition failed - show conflict dialog
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: item.lockedById || 'Unbekannt',
+              entityType: 'JobTask',
+            },
+          });
         }
-      }
+      },
+      error: (err) => {
+        console.error('Error acquiring lock for title edit:', err);
+      },
     });
   }
 
@@ -601,28 +637,81 @@ export class JtOverviewAccordionComponent
   }
 
   deleteItem(item: JobTask): void {
-    this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
-      next: (affectedCount) => {
-        this.dialog.open(JobTaskDeleteConfirmationDialogComponent, {
-          width: '500px',
-          data: {
-            jobTask: item,
-            affectedCount: affectedCount,
-            onConfirmCallback: () => {
-              this.jobTasksService.deleteJobTask(item.id!).subscribe({
-                next: () => {
-                  this._handleSuccessfulUpdate({ reloadTasks: true });
-                },
-                error: (error) => {
-                  console.error('Error deleting job task:', error);
+    // Acquire lock before deleting
+    this.lockService.acquireLock('JobTask', item.id!).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update local lock status
+          const currentUser = this.authService.getCurrentUser();
+          item.lockedById = currentUser?.id;
+          item.lockedAt = new Date().toISOString();
+
+          this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
+            next: (affectedCount) => {
+              const dialogRef = this.dialog.open(JobTaskDeleteConfirmationDialogComponent, {
+                width: '500px',
+                data: {
+                  jobTask: item,
+                  affectedCount: affectedCount,
+                  onConfirmCallback: () => {
+                    this.jobTasksService.deleteJobTask(item.id!).subscribe({
+                      next: () => {
+                        // Release lock after successful deletion
+                        this.lockService.releaseLock('JobTask', item.id!).subscribe({
+                          next: () => {
+                            item.lockedById = undefined;
+                            item.lockedAt = undefined;
+                            item.lockExpiry = undefined;
+                            this.cdr.markForCheck();
+                          },
+                          error: (err) => console.error('Error releasing lock after delete:', err),
+                        });
+                        this._handleSuccessfulUpdate({ reloadTasks: true });
+                      },
+                      error: (error) => {
+                        console.error('Error deleting job task:', error);
+                        // Release lock on error
+                        this.lockService.releaseLock('JobTask', item.id!).subscribe();
+                      },
+                    });
+                  },
                 },
               });
+
+              dialogRef.afterClosed().subscribe((confirmed) => {
+                // Release lock if user cancelled
+                if (!confirmed) {
+                  this.lockService.releaseLock('JobTask', item.id!).subscribe({
+                    next: () => {
+                      item.lockedById = undefined;
+                      item.lockedAt = undefined;
+                      item.lockExpiry = undefined;
+                      this.cdr.markForCheck();
+                    },
+                    error: (err) => console.error('Error releasing lock after cancel:', err),
+                  });
+                }
+              });
             },
-          },
-        });
+            error: (error) => {
+              console.error('Error fetching affected job descriptions count:', error);
+              // Release lock on error
+              this.lockService.releaseLock('JobTask', item.id!).subscribe();
+            },
+          });
+        } else {
+          // Lock acquisition failed - show conflict dialog
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: item.lockedById || 'Unbekannt',
+              entityType: 'JobTask',
+            },
+          });
+        }
       },
-      error: (error) => {
-        console.error('Error fetching affected job descriptions count:', error);
+      error: (err) => {
+        console.error('Error acquiring lock for delete:', err);
       },
     });
   }
@@ -632,48 +721,138 @@ export class JtOverviewAccordionComponent
   }
 
   softDeleteItem(item: JobTask): void {
+    // softDeleteItem delegates to deleteItem, which now handles lock acquisition
     this.deleteItem(item);
   }
 
   permanentDeleteItemWithCleanup(item: JobTask): void {
-    this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
-      next: (affectedCount) => {
-        this.dialog.open(JobTaskPermanentDeleteDialogComponent, {
-          width: '500px',
-          data: {
-            jobTask: item,
-            affectedCount: affectedCount,
-            onConfirmCallback: () => {
-              this.jobTasksService
-                .permanentDeleteJobTaskWithCleanup(item.id!)
-                .subscribe({
-                  next: () => {
-                    this._handleSuccessfulUpdate({ reloadTasks: true });
+    // Acquire lock before permanent deletion
+    this.lockService.acquireLock('JobTask', item.id!).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update local lock status
+          const currentUser = this.authService.getCurrentUser();
+          item.lockedById = currentUser?.id;
+          item.lockedAt = new Date().toISOString();
+
+          this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
+            next: (affectedCount) => {
+              const dialogRef = this.dialog.open(JobTaskPermanentDeleteDialogComponent, {
+                width: '500px',
+                data: {
+                  jobTask: item,
+                  affectedCount: affectedCount,
+                  onConfirmCallback: () => {
+                    this.jobTasksService
+                      .permanentDeleteJobTaskWithCleanup(item.id!)
+                      .subscribe({
+                        next: () => {
+                          // Release lock after successful deletion
+                          this.lockService.releaseLock('JobTask', item.id!).subscribe({
+                            next: () => {
+                              item.lockedById = undefined;
+                              item.lockedAt = undefined;
+                              item.lockExpiry = undefined;
+                              this.cdr.markForCheck();
+                            },
+                            error: (err) => console.error('Error releasing lock after permanent delete:', err),
+                          });
+                          this._handleSuccessfulUpdate({ reloadTasks: true });
+                        },
+                        error: (error) => {
+                          console.error(
+                            'Error permanently deleting job task with cleanup:',
+                            error
+                          );
+                          // Release lock on error
+                          this.lockService.releaseLock('JobTask', item.id!).subscribe();
+                        },
+                      });
                   },
-                  error: (error) => {
-                    console.error(
-                      'Error permanently deleting job task with cleanup:',
-                      error
-                    );
-                  },
-                });
+                },
+              });
+
+              dialogRef.afterClosed().subscribe((confirmed) => {
+                // Release lock if user cancelled
+                if (!confirmed) {
+                  this.lockService.releaseLock('JobTask', item.id!).subscribe({
+                    next: () => {
+                      item.lockedById = undefined;
+                      item.lockedAt = undefined;
+                      item.lockExpiry = undefined;
+                      this.cdr.markForCheck();
+                    },
+                    error: (err) => console.error('Error releasing lock after cancel:', err),
+                  });
+                }
+              });
             },
-          },
-        });
+            error: (error) => {
+              console.error('Error fetching affected job descriptions count:', error);
+              // Release lock on error
+              this.lockService.releaseLock('JobTask', item.id!).subscribe();
+            },
+          });
+        } else {
+          // Lock acquisition failed - show conflict dialog
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: item.lockedById || 'Unbekannt',
+              entityType: 'JobTask',
+            },
+          });
+        }
       },
-      error: (error) => {
-        console.error('Error fetching affected job descriptions count:', error);
+      error: (err) => {
+        console.error('Error acquiring lock for permanent delete:', err);
       },
     });
   }
 
   restoreItem(item: JobTask): void {
-    this.jobTasksService.restoreJobTask(item.id!).subscribe({
-      next: () => {
-        this._handleSuccessfulUpdate({ reloadTasks: true });
+    // Acquire lock before restoring
+    this.lockService.acquireLock('JobTask', item.id!).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update local lock status
+          const currentUser = this.authService.getCurrentUser();
+          item.lockedById = currentUser?.id;
+          item.lockedAt = new Date().toISOString();
+
+          this.jobTasksService.restoreJobTask(item.id!).subscribe({
+            next: () => {
+              // Release lock after successful restore
+              this.lockService.releaseLock('JobTask', item.id!).subscribe({
+                next: () => {
+                  item.lockedById = undefined;
+                  item.lockedAt = undefined;
+                  item.lockExpiry = undefined;
+                  this.cdr.markForCheck();
+                },
+                error: (err) => console.error('Error releasing lock after restore:', err),
+              });
+              this._handleSuccessfulUpdate({ reloadTasks: true });
+            },
+            error: (error) => {
+              console.error('Error restoring job task:', error);
+              // Release lock on error
+              this.lockService.releaseLock('JobTask', item.id!).subscribe();
+            },
+          });
+        } else {
+          // Lock acquisition failed - show conflict dialog
+          this.dialog.open(LockConflictDialogComponent, {
+            width: '500px',
+            data: {
+              lockedById: item.lockedById || 'Unbekannt',
+              entityType: 'JobTask',
+            },
+          });
+        }
       },
-      error: (error) => {
-        console.error('Error restoring job task:', error);
+      error: (err) => {
+        console.error('Error acquiring lock for restore:', err);
       },
     });
   }

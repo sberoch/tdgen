@@ -22,6 +22,7 @@ import { JobDescriptionsService } from '../../services/job-descriptions.service'
 import { JobDescription } from '../../types/job-descriptions';
 import { User } from '../../types/user';
 import { TextTooltipDirective } from '../../utils/directives/text-tooltip.directive';
+import { LockService } from '../../services/lock.service';
 
 @Component({
   selector: 'app-header',
@@ -59,7 +60,8 @@ export class HeaderComponent implements OnInit {
     private currentWorkspaceService: CurrentWorkspaceService,
     private jobDescriptionsService: JobDescriptionsService,
     private authService: AuthService,
-    private environmentService: EnvironmentService
+    private environmentService: EnvironmentService,
+    private lockService: LockService
   ) {}
 
   ngOnInit() {
@@ -167,6 +169,12 @@ export class HeaderComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
+        // Release lock on the current job description, if any, since we are no longer working with it
+        if (this.jobDescription?.id) {
+          this.lockService
+            .releaseLock('JobDescription', this.jobDescription.id)
+            .subscribe();
+        }
         this.currentWorkspaceService.clearCurrentJobDescription();
       }
     });
