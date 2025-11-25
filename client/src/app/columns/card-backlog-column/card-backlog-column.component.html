@@ -36,7 +36,9 @@
         *ngFor="let card of backlogCards; trackBy: trackCardById"
         class="bg-white shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md p-3 select-none mx-2 mb-[2px]"
         [class.cursor-move]="isWorkspaceSet && !isLockedByOtherUser(card)"
-        [class.cursor-not-allowed]="!isWorkspaceSet || isLockedByOtherUser(card)"
+        [class.cursor-not-allowed]="
+          !isWorkspaceSet || isLockedByOtherUser(card)
+        "
         [class.opacity-60]="isLockedByOtherUser(card)"
         cdkDrag
         [cdkDragDisabled]="!isWorkspaceSet || isLockedByOtherUser(card)"
@@ -66,29 +68,33 @@
           <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
             {{ card.title }}
           </p>
-          <mat-icon
-            *ngIf="isLockedByOtherUser(card)"
-            class="text-tertiary text-sm"
-            title="Gesperrt von {{ card.jobTask.lockedById }}"
-          >
-            lock
-          </mat-icon>
         </div>
         <p
           class="text-xs 2xl:text-sm mt-1"
           [innerHTML]="card.text | truncateSafeHtml : 145"
         ></p>
         <div class="flex items-center justify-between translate-y-1 h-8">
-          <p class="text-xs 2xl:text-sm text-black/50 mt-1">
-            {{ card.classification }}
-          </p>
+          <div class="flex items-center">
+            <mat-icon
+              *ngIf="isLockedByOtherUser(card)"
+              class="text-tertiary text-sm translate-y-[3px]"
+              title="Gesperrt von {{ card.jobTask.lockedById }}"
+            >
+              lock
+            </mat-icon>
+            <p class="text-xs 2xl:text-sm text-black/50 mt-1">
+              {{ card.classification }}
+            </p>
+          </div>
           <button
             mat-icon-button
             class="text-gray-500 hover:text-secondary"
             (click)="openDialogWithCard(card)"
             [disabled]="isLockedByOtherUser(card)"
             [style.opacity]="isLockedByOtherUser(card) ? '0.5' : '1'"
-            [style.cursor]="isLockedByOtherUser(card) ? 'not-allowed' : 'pointer'"
+            [style.cursor]="
+              isLockedByOtherUser(card) ? 'not-allowed' : 'pointer'
+            "
           >
             <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
           </button>
@@ -182,7 +188,9 @@
           <div
             *ngFor="let tag of card.tags"
             class="flex items-center px-3 py-1 rounded-full text-xs"
-            [style.background-color]="card.jobTask.deletedAt ? '#cccccc' : '#888888'"
+            [style.background-color]="
+              card.jobTask.deletedAt ? '#cccccc' : '#888888'
+            "
             [style.color]="'#ffffff'"
           >
             <span>{{ tag }}</span>
@@ -241,7 +249,10 @@
   <button
     mat-menu-item
     (click)="openDialogWithCard(displayCards[currentIndex])"
-    [disabled]="shouldDisableEditButton(displayCards[currentIndex]) || isLockedByOtherUser(displayCards[currentIndex])"
+    [disabled]="
+      shouldDisableEditButton(displayCards[currentIndex]) ||
+      isLockedByOtherUser(displayCards[currentIndex])
+    "
   >
     <mat-icon>edit</mat-icon>
     <span>Editieren</span>
