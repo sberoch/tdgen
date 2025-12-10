@@ -406,7 +406,7 @@ function textSplit(
       title +
       ' (' +
       value +
-      ' %)\n' +
+      ' %)\n\n' +
       parts.slice(0, bestSplitIndex).join('\n\n');
     const secondPart =
       numbering[0] +
@@ -414,7 +414,7 @@ function textSplit(
       title +
       ' (' +
       value +
-      ' %) (Fortsetzung)\n' +
+      ' %) (Fortsetzung)\n\n' +
       parts.slice(bestSplitIndex).join('\n\n');
 
     return {
@@ -460,7 +460,7 @@ function textSplit(
       resArray[i][2] +
       ' (' +
       resArray[i][1] +
-      ' %)\n' +
+      ' %)\n\n' +
       resArray[i][0];
     statsArray[i] = numbering[i] + ':\n' + resArray[i][1];
   }
@@ -472,8 +472,8 @@ function textSplit(
   const stats2 = statsArray.slice(bestSplitIndex);
 
   return {
-    group1: group1.map(([text]) => text).join('\n\n'),
-    group2: group2.map(([text]) => text).join('\n\n'),
+    group1: group1.map(([text]) => text).join('\n\n\n'),
+    group2: group2.map(([text]) => text).join('\n\n\n'),
     stats1: stats1.join('\n\n'),
     stats2: stats2.join('\n\n'),
   };

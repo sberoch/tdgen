@@ -18,376 +18,382 @@
     [formGroup]="exportForm"
     class="flex flex-col gap-12 overflow-y-auto max-h-[70vh] mt-6"
   >
-    <div class="flex flex-row gap-16">
-      <div class="flex flex-col w-1/2">
-        <input
-          type="text"
-          name="department"
-          autocomplete="off"
-          formControlName="department"
-          placeholder="Dienststelle*"
-          [class]="
-            'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-            (hasFieldError('department')
-              ? 'border-red-500 focus:border-red-500'
-              : 'border-[#e2e8f0] focus:border-secondary')
-          "
-        />
-      </div>
-
-      <div class="flex flex-row w-1/2 gap-2">
-        <div class="flex flex-col w-2/3">
+    <fieldset
+      class="flex flex-col gap-12 border-0 p-0 m-0"
+      [disabled]="exportForm.get('bypassFormData')?.value"
+      [class.opacity-50]="exportForm.get('bypassFormData')?.value"
+    >
+      <div class="flex flex-row gap-16">
+        <div class="flex flex-col w-1/2">
           <input
             type="text"
-            name="location"
+            name="department"
             autocomplete="off"
-            formControlName="location"
-            placeholder="Ort*"
+            formControlName="department"
+            placeholder="Dienststelle*"
             [class]="
               'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-              (hasFieldError('location')
+              (hasFieldError('department')
                 ? 'border-red-500 focus:border-red-500'
                 : 'border-[#e2e8f0] focus:border-secondary')
             "
           />
         </div>
 
-        <p class="translate-y-2">,</p>
-
-        <div class="flex flex-col flex-grow">
-          <input
-            [type]="getInputType('date')"
-            name="date"
-            autocomplete="off"
-            formControlName="date"
-            placeholder="Datum*"
-            (focus)="onDateFocus($event)"
-            (blur)="onDateBlur($event)"
-            [class]="
-              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-              (hasFieldError('date')
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-[#e2e8f0] focus:border-secondary')
-            "
-          />
-        </div>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-2 gap-16">
-      <div class="flex flex-col gap-2">
-        <h4 class="text-lg font-medium">Anlass</h4>
-        <div class="grid grid-cols-3 gap-4">
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="einstellung"
-              class="w-4 h-4"
-              formControlName="einstellung"
-            />
-            <label for="einstellung">Einstellung</label>
-          </div>
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="versetzung"
-              class="w-4 h-4"
-              formControlName="versetzung"
-            />
-            <label for="versetzung">Versetzung</label>
-          </div>
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="umsetzung"
-              class="w-4 h-4"
-              formControlName="umsetzung"
-            />
-            <label for="umsetzung">Umsetzung</label>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 mt-1">
-          <input
-            type="checkbox"
-            id="aufgabenaderung"
-            class="w-4 h-4"
-            formControlName="aufgabenaderung"
-          />
-          <label for="aufgabenanderung">
-            Aufgabenänderung einschl. Aufgabenzuwachs und -wegfall
-          </label>
-        </div>
-        <div class="flex items-center gap-2 mt-1">
-          <input
-            type="checkbox"
-            id="sonstigesCheckbox"
-            class="w-4 h-4 flex-shrink-0"
-            formControlName="sonstigesCheckbox"
-          />
-          <label for="sonstigesCheckbox" class="flex-shrink-0"
-            >Sonstiges:</label
-          >
-          <input
-            type="text"
-            name="sonstigesInput"
-            formControlName="sonstigesInput"
-            class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary flex-grow placeholder:italic"
-          />
-        </div>
-        <div class="flex items-center gap-2 mt-3">
-          <label>mit Wirkung vom</label>
-          <input
-            [type]="getInputType('effectiveDate')"
-            name="effectiveDate"
-            autocomplete="off"
-            formControlName="effectiveDate"
-            placeholder="Datum*"
-            (focus)="onDateFocus($event)"
-            (blur)="onDateBlur($event)"
-            [class]="
-              'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-              (hasFieldError('effectiveDate')
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-[#e2e8f0] focus:border-secondary')
-            "
-          />
-        </div>
-        <div class="flex items-center gap-2 mt-14">
-          <h4 class="text-lg font-medium">
-            Organisatorische Eingliederung des Arbeitsplatzes
-          </h4>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex flex-col mt-[2px]">
+        <div class="flex flex-row w-1/2 gap-2">
+          <div class="flex flex-col w-2/3">
             <input
               type="text"
-              name="beschaftigungsdienststelle"
+              name="location"
               autocomplete="off"
-              formControlName="beschaftigungsdienststelle"
-              placeholder="Beschäftigungsdienststelle*"
-              [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                (hasFieldError('beschaftigungsdienststelle')
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-[#e2e8f0] focus:border-secondary')
-              "
-            />
-          </div>
-
-          <div class="flex flex-col mt-[2px]">
-            <input
-              type="text"
-              name="organisationseinheit"
-              autocomplete="off"
-              formControlName="organisationseinheit"
-              placeholder="Organisationseinheit*"
-              [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                (hasFieldError('organisationseinheit')
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-[#e2e8f0] focus:border-secondary')
-              "
-            />
-          </div>
-
-          <div class="flex flex-col">
-            <input
-              type="text"
-              name="dienstpostennr"
-              autocomplete="off"
-              formControlName="dienstpostennr"
-              placeholder="Dienstpostennr./Stellenschlüssel"
-              class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
-            />
-          </div>
-
-          <div class="flex flex-col">
-            <input
-              type="text"
-              name="funktion"
-              autocomplete="off"
-              formControlName="funktion"
-              placeholder="Funktion*"
-              [class]="
-                'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                (hasFieldError('funktion')
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-[#e2e8f0] focus:border-secondary')
-              "
-            />
-          </div>
-        </div>
-      </div>
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-row gap-2">
-          <h4 class="text-lg font-medium">Arbeitsplatzinhaber/-in</h4>
-        </div>
-        <div class="flex flex-col gap-3">
-          <div class="flex flex-col">
-            <input
-              type="text"
-              name="employeeName"
-              autocomplete="off"
-              formControlName="employeeName"
-              placeholder="Name, Vorname*"
+              formControlName="location"
+              placeholder="Ort*"
               [class]="
                 'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                (hasFieldError('employeeName')
+                (hasFieldError('location')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
           </div>
 
-          <div class="flex items-center gap-4 my-1">
-            <label class="max-w-[35%] leading-tight">
-              Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am
-            </label>
+          <p class="translate-y-2">,</p>
+
+          <div class="flex flex-col flex-grow">
             <input
-              [type]="getInputType('workplaceStartDate')"
-              name="workplaceStartDate"
+              [type]="getInputType('date')"
+              name="date"
               autocomplete="off"
-              formControlName="workplaceStartDate"
+              formControlName="date"
               placeholder="Datum*"
               (focus)="onDateFocus($event)"
               (blur)="onDateBlur($event)"
               [class]="
                 'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                (hasFieldError('workplaceStartDate')
+                (hasFieldError('date')
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-[#e2e8f0] focus:border-secondary')
               "
             />
           </div>
+        </div>
+      </div>
 
-          <div class="flex items-center gap-2">
-            <label>Schwerbehindert oder gleichgestellt:</label>
-            <div class="flex gap-4">
-              <div class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="disabled-yes"
-                  name="disabled"
-                  value="yes"
-                  formControlName="disabled"
-                  class="w-4 h-4"
-                />
-                <label for="disabled-yes">ja</label>
-              </div>
-              <div class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="disabled-no"
-                  name="disabled"
-                  value="no"
-                  formControlName="disabled"
-                  class="w-4 h-4"
-                />
-                <label for="disabled-no">nein</label>
-              </div>
+      <div class="grid grid-cols-2 gap-16">
+        <div class="flex flex-col gap-2">
+          <h4 class="text-lg font-medium">Anlass</h4>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="einstellung"
+                class="w-4 h-4"
+                formControlName="einstellung"
+              />
+              <label for="einstellung">Einstellung</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="versetzung"
+                class="w-4 h-4"
+                formControlName="versetzung"
+              />
+              <label for="versetzung">Versetzung</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="umsetzung"
+                class="w-4 h-4"
+                formControlName="umsetzung"
+              />
+              <label for="umsetzung">Umsetzung</label>
             </div>
           </div>
+          <div class="flex items-center gap-2 mt-1">
+            <input
+              type="checkbox"
+              id="aufgabenaderung"
+              class="w-4 h-4"
+              formControlName="aufgabenaderung"
+            />
+            <label for="aufgabenanderung">
+              Aufgabenänderung einschl. Aufgabenzuwachs und -wegfall
+            </label>
+          </div>
+          <div class="flex items-center gap-2 mt-1">
+            <input
+              type="checkbox"
+              id="sonstigesCheckbox"
+              class="w-4 h-4 flex-shrink-0"
+              formControlName="sonstigesCheckbox"
+            />
+            <label for="sonstigesCheckbox" class="flex-shrink-0"
+              >Sonstiges:</label
+            >
+            <input
+              type="text"
+              name="sonstigesInput"
+              formControlName="sonstigesInput"
+              class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary flex-grow placeholder:italic"
+            />
+          </div>
+          <div class="flex items-center gap-2 mt-3">
+            <label>mit Wirkung vom</label>
+            <input
+              [type]="getInputType('effectiveDate')"
+              name="effectiveDate"
+              autocomplete="off"
+              formControlName="effectiveDate"
+              placeholder="Datum*"
+              (focus)="onDateFocus($event)"
+              (blur)="onDateBlur($event)"
+              [class]="
+                'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                (hasFieldError('effectiveDate')
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-[#e2e8f0] focus:border-secondary')
+              "
+            />
+          </div>
+          <div class="flex items-center gap-2 mt-14">
+            <h4 class="text-lg font-medium">
+              Organisatorische Eingliederung des Arbeitsplatzes
+            </h4>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col mt-[2px]">
+              <input
+                type="text"
+                name="beschaftigungsdienststelle"
+                autocomplete="off"
+                formControlName="beschaftigungsdienststelle"
+                placeholder="Beschäftigungsdienststelle*"
+                [class]="
+                  'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                  (hasFieldError('beschaftigungsdienststelle')
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[#e2e8f0] focus:border-secondary')
+                "
+              />
+            </div>
 
-          <div class="flex flex-col gap-2 mt-7">
-            <h4 class="text-lg font-medium">Beschäftigungsumfang</h4>
-            <div class="flex gap-4">
-              <div class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="fulltime"
-                  name="employmentScope"
-                  value="fulltime"
-                  formControlName="employmentScope"
-                  class="w-4 h-4"
-                />
-                <label for="fulltime">Vollzeit</label>
-              </div>
-              <div class="flex items-center gap-2">
-                <input
-                  type="radio"
-                  id="parttime"
-                  name="employmentScope"
-                  value="parttime"
-                  formControlName="employmentScope"
-                  class="w-4 h-4 ml-4"
-                />
-                <label for="parttime">Teilzeit mit</label>
-                <input
-                  name="parttimeHours"
-                  autocomplete="off"
-                  formControlName="parttimeHours"
-                  [class]="
-                    'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary w-20 placeholder:italic ' +
-                    (hasFieldError('parttimeHours')
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-[#e2e8f0] focus:border-secondary')
-                  "
-                />
-                <label>Stunden</label>
-              </div>
+            <div class="flex flex-col mt-[2px]">
+              <input
+                type="text"
+                name="organisationseinheit"
+                autocomplete="off"
+                formControlName="organisationseinheit"
+                placeholder="Organisationseinheit*"
+                [class]="
+                  'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                  (hasFieldError('organisationseinheit')
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[#e2e8f0] focus:border-secondary')
+                "
+              />
+            </div>
+
+            <div class="flex flex-col">
+              <input
+                type="text"
+                name="dienstpostennr"
+                autocomplete="off"
+                formControlName="dienstpostennr"
+                placeholder="Dienstpostennr./Stellenschlüssel"
+                class="px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
+              />
+            </div>
+
+            <div class="flex flex-col">
+              <input
+                type="text"
+                name="funktion"
+                autocomplete="off"
+                formControlName="funktion"
+                placeholder="Funktion*"
+                [class]="
+                  'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                  (hasFieldError('funktion')
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[#e2e8f0] focus:border-secondary')
+                "
+              />
             </div>
           </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-row gap-2">
+            <h4 class="text-lg font-medium">Arbeitsplatzinhaber/-in</h4>
+          </div>
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-col">
+              <input
+                type="text"
+                name="employeeName"
+                autocomplete="off"
+                formControlName="employeeName"
+                placeholder="Name, Vorname*"
+                [class]="
+                  'w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                  (hasFieldError('employeeName')
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[#e2e8f0] focus:border-secondary')
+                "
+              />
+            </div>
 
-          <div class="flex flex-col gap-1 mt-7">
-            <h4 class="text-lg font-medium">Bezugszeitraum</h4>
-            <div class="flex flex-col gap-3">
-              <div class="flex flex-row gap-2">
+            <div class="flex items-center gap-4 my-1">
+              <label class="max-w-[35%] leading-tight">
+                Übernahme des Arbeitsplatzes in aktueller Ausgestaltung am
+              </label>
+              <input
+                [type]="getInputType('workplaceStartDate')"
+                name="workplaceStartDate"
+                autocomplete="off"
+                formControlName="workplaceStartDate"
+                placeholder="Datum*"
+                (focus)="onDateFocus($event)"
+                (blur)="onDateBlur($event)"
+                [class]="
+                  'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                  (hasFieldError('workplaceStartDate')
+                    ? 'border-red-500 focus:border-red-500'
+                    : 'border-[#e2e8f0] focus:border-secondary')
+                "
+              />
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label>Schwerbehindert oder gleichgestellt:</label>
+              <div class="flex gap-4">
                 <div class="flex items-center gap-2">
                   <input
-                    [type]="getInputType('periodStart')"
-                    name="periodStart"
+                    type="radio"
+                    id="disabled-yes"
+                    name="disabled"
+                    value="yes"
+                    formControlName="disabled"
+                    class="w-4 h-4"
+                  />
+                  <label for="disabled-yes">ja</label>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="disabled-no"
+                    name="disabled"
+                    value="no"
+                    formControlName="disabled"
+                    class="w-4 h-4"
+                  />
+                  <label for="disabled-no">nein</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 mt-7">
+              <h4 class="text-lg font-medium">Beschäftigungsumfang</h4>
+              <div class="flex gap-4">
+                <div class="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="fulltime"
+                    name="employmentScope"
+                    value="fulltime"
+                    formControlName="employmentScope"
+                    class="w-4 h-4"
+                  />
+                  <label for="fulltime">Vollzeit</label>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="parttime"
+                    name="employmentScope"
+                    value="parttime"
+                    formControlName="employmentScope"
+                    class="w-4 h-4 ml-4"
+                  />
+                  <label for="parttime">Teilzeit mit</label>
+                  <input
+                    name="parttimeHours"
                     autocomplete="off"
-                    formControlName="periodStart"
-                    placeholder="Datum von"
-                    (focus)="onDateFocus($event)"
-                    (blur)="onDateBlur($event)"
+                    formControlName="parttimeHours"
                     [class]="
-                      'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
-                      (hasFieldError('periodStart')
+                      'px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary w-20 placeholder:italic ' +
+                      (hasFieldError('parttimeHours')
                         ? 'border-red-500 focus:border-red-500'
                         : 'border-[#e2e8f0] focus:border-secondary')
                     "
                   />
-                  <input
-                    type="radio"
-                    id="period-until"
-                    name="periodType"
-                    value="until"
-                    formControlName="periodType"
-                    class="w-4 h-4 ml-12"
-                  />
+                  <label>Stunden</label>
                 </div>
+              </div>
+            </div>
 
-                <div class="flex w-full items-center gap-8">
-                  <div class="relative">
-                    <input
-                      [type]="getInputType('periodEnd')"
-                      name="periodEnd"
-                      autocomplete="off"
-                      formControlName="periodEnd"
-                      placeholder="Datum bis"
-                      (focus)="onDateFocus($event)"
-                      (blur)="onDateBlur($event)"
-                      class="w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
-                    />
-                    <!-- Custom tooltip for date range validation -->
-                    <div
-                      *ngIf="hasDateRangeError()"
-                      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-sm rounded-md z-10 whitespace-nowrap bg-[#f2f6fa] border-2 border-red-500 text-red-600 shadow-lg before:content-[''] before:absolute before:top-full before:left-1/2 before:transform before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-red-500"
-                    >
-                      „Datum bis“ darf nicht vor „Datum von“ liegen.
-                    </div>
-                  </div>
+            <div class="flex flex-col gap-1 mt-7">
+              <h4 class="text-lg font-medium">Bezugszeitraum</h4>
+              <div class="flex flex-col gap-3">
+                <div class="flex flex-row gap-2">
                   <div class="flex items-center gap-2">
                     <input
-                      type="radio"
-                      id="period-today"
-                      name="periodType"
-                      value="today"
-                      formControlName="periodType"
-                      class="w-4 h-4"
+                      [type]="getInputType('periodStart')"
+                      name="periodStart"
+                      autocomplete="off"
+                      formControlName="periodStart"
+                      placeholder="Datum von"
+                      (focus)="onDateFocus($event)"
+                      (blur)="onDateBlur($event)"
+                      [class]="
+                        'w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary placeholder:italic ' +
+                        (hasFieldError('periodStart')
+                          ? 'border-red-500 focus:border-red-500'
+                          : 'border-[#e2e8f0] focus:border-secondary')
+                      "
                     />
-                    <label for="period-today">oder „heute“</label>
+                    <input
+                      type="radio"
+                      id="period-until"
+                      name="periodType"
+                      value="until"
+                      formControlName="periodType"
+                      class="w-4 h-4 ml-12"
+                    />
+                  </div>
+
+                  <div class="flex w-full items-center gap-8">
+                    <div class="relative">
+                      <input
+                        [type]="getInputType('periodEnd')"
+                        name="periodEnd"
+                        autocomplete="off"
+                        formControlName="periodEnd"
+                        placeholder="Datum bis"
+                        (focus)="onDateFocus($event)"
+                        (blur)="onDateBlur($event)"
+                        class="w-52 h-[34px] px-2 py-1 border rounded-md focus:outline-none focus:ring-secondary border-[#e2e8f0] focus:border-secondary placeholder:italic"
+                      />
+                      <!-- Custom tooltip for date range validation -->
+                      <div
+                        *ngIf="hasDateRangeError()"
+                        class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-sm rounded-md z-10 whitespace-nowrap bg-[#f2f6fa] border-2 border-red-500 text-red-600 shadow-lg before:content-[''] before:absolute before:top-full before:left-1/2 before:transform before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-red-500"
+                      >
+                        „Datum bis“ darf nicht vor „Datum von“ liegen.
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="period-today"
+                        name="periodType"
+                        value="today"
+                        formControlName="periodType"
+                        class="w-4 h-4"
+                      />
+                      <label for="period-today">oder „heute“</label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -395,7 +401,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </fieldset>
 
     <!-- Global error message -->
     <div
@@ -413,7 +419,9 @@
           class="w-4 h-4"
           formControlName="drawMode"
         />
-        <label for="drawMode">Verbesserte Darstellung (PDF nicht editierbar)</label>
+        <label for="drawMode"
+          >Verbesserte Darstellung (PDF nicht editierbar)</label
+        >
       </div>
       <div class="flex items-center gap-2">
         <input
