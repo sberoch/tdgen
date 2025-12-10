@@ -13,6 +13,7 @@ export class SamlStrategy extends PassportStrategy(Strategy, 'saml') {
       cert: process.env.SAML_CERT as string,
       identifierFormat: null,
       disableRequestedAuthnContext: true,
+      acceptedClockSkewMs: 10000, // 10 seconds tolerance
     });
   }
 

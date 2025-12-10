@@ -227,6 +227,7 @@ export const fillJobDescriptionForm = async (
     formData['f.zeitraum.2']
   );
 
+  /*
   pdfForm
     .getTextField('f.beschreibung.1')
     .setText(formData['f.beschreibung.1'] || '');
@@ -236,6 +237,7 @@ export const fillJobDescriptionForm = async (
     'f.beschreibung.1',
     formData['f.beschreibung.1']
   );
+  */
 
   drawTextOnField({
     drawMode,
