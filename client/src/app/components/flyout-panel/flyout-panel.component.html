@@ -40,6 +40,7 @@
           <div
             *ngIf="field.type === 'text' && field.name && field.label"
             class="mb-12 mt-2"
+            [class.opacity-60]="isLockedForCurrentUser()"
           >
             <label
               [for]="field.name"
@@ -54,8 +55,16 @@
               [config]="getEditorConfig(field)"
               (blur)="saveForm()"
               class="mt-1 block w-full"
-              (keydown)="onKeydown($event, field)"
-              (paste)="onPaste($event, field)"
+              (keydown)="
+                isLockedForCurrentUser()
+                  ? $event.preventDefault()
+                  : onKeydown($event, field)
+              "
+              (paste)="
+                isLockedForCurrentUser()
+                  ? $event.preventDefault()
+                  : onPaste($event, field)
+              "
             ></angular-editor>
             <div
               *ngIf="getMaxLength(field) as maxLength"

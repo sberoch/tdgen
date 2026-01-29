@@ -15,6 +15,7 @@ export type JobTask = {
   lockedAt?: string;
   lockedById?: string;
   lockExpiry?: string;
+  isLockedForUsers?: boolean;
 };
 
 export type CreateJobTask = {
@@ -24,7 +25,9 @@ export type CreateJobTask = {
   tags: string[];
 };
 
-export type UpdateJobTask = Partial<CreateJobTask>;
+export type UpdateJobTask = Partial<CreateJobTask> & {
+  isLockedForUsers?: boolean;
+};
 
 export type JobTasksListResponse = {
   tasks: JobTask[];

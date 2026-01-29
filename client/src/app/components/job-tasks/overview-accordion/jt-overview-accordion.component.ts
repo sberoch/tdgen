@@ -76,7 +76,7 @@ interface ExpandableJobTask extends JobTask {
           padding: '0',
           overflow: 'hidden',
           opacity: 0,
-        })
+        }),
       ),
       state(
         'expanded',
@@ -85,7 +85,7 @@ interface ExpandableJobTask extends JobTask {
           padding: '*',
           overflow: 'hidden',
           opacity: 1,
-        })
+        }),
       ),
       transition('collapsed <=> expanded', [animate('200ms ease-in-out')]),
     ]),
@@ -179,7 +179,7 @@ export class JtOverviewAccordionComponent
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private lockService: LockService,
-    private sseService: SseService
+    private sseService: SseService,
   ) {}
 
   ngOnInit(): void {
@@ -187,7 +187,7 @@ export class JtOverviewAccordionComponent
     this.currentWorkspaceService.currentJobDescription.subscribe(
       (jobDescription) => {
         this.currentJobDescription = jobDescription;
-      }
+      },
     );
 
     // Subscribe to lock conflicts
@@ -200,7 +200,7 @@ export class JtOverviewAccordionComponent
             entityType: conflict.entityType,
           },
         });
-      })
+      }),
     );
 
     // Subscribe to jobTasks$ observable for real-time updates
@@ -214,7 +214,7 @@ export class JtOverviewAccordionComponent
         })) as ExpandableJobTask[];
         console.log('Updated this.jobTasks, calling detectChanges');
         this.cdr.detectChanges(); // Force immediate change detection instead of markForCheck
-      })
+      }),
     );
   }
 
@@ -300,7 +300,7 @@ export class JtOverviewAccordionComponent
             const targetTitle =
               this.initialCard?.title || this.newlyCreatedTitle;
             const targetItem = this.jobTasks.find(
-              (jt) => jt.title === targetTitle
+              (jt) => jt.title === targetTitle,
             );
 
             if (targetItem && targetItem.id) {
@@ -386,7 +386,7 @@ export class JtOverviewAccordionComponent
         this.cardService.initializeCards();
         if (this.currentJobDescription) {
           this.currentWorkspaceService.triggerJobDescriptionFetch(
-            this.currentJobDescription
+            this.currentJobDescription,
           );
         }
       }
@@ -424,7 +424,8 @@ export class JtOverviewAccordionComponent
                 item.lockExpiry = undefined;
                 this.cdr.markForCheck();
               },
-              error: (err) => console.error('Error releasing lock after title edit:', err),
+              error: (err) =>
+                console.error('Error releasing lock after title edit:', err),
             });
 
             if (result) {
@@ -433,7 +434,7 @@ export class JtOverviewAccordionComponent
               this.cardService.initializeCards();
               if (this.currentJobDescription) {
                 this.currentWorkspaceService.triggerJobDescriptionFetch(
-                  this.currentJobDescription
+                  this.currentJobDescription,
                 );
               }
             }
@@ -475,7 +476,7 @@ export class JtOverviewAccordionComponent
     // Save pending changes for the item being collapsed
     if (previousExpandedItemId) {
       const previouslyExpandedItem = this.jobTasks.find(
-        (jt) => jt.id === previousExpandedItemId
+        (jt) => jt.id === previousExpandedItemId,
       );
       if (previouslyExpandedItem && previouslyExpandedItem.id) {
         const payloadToSave: Partial<JobTask> = {};
@@ -487,7 +488,7 @@ export class JtOverviewAccordionComponent
           this.jobTasksService
             .updateJobTask(
               previouslyExpandedItem.id!,
-              payloadToSave as Partial<CreateJobTask>
+              payloadToSave as Partial<CreateJobTask>,
             )
             .subscribe({
               next: (taskFromServer) => {
@@ -498,7 +499,7 @@ export class JtOverviewAccordionComponent
               error: (err) =>
                 console.error(
                   'Error updating job task from toggleAccordion:',
-                  err
+                  err,
                 ),
             });
         }
@@ -545,6 +546,10 @@ export class JtOverviewAccordionComponent
     return !!item.lockedById && item.lockedById !== currentUser?.id;
   }
 
+  isItemLockedForCurrentUser(item: JobTask): boolean {
+    return !!item.isLockedForUsers && !this.isAdmin();
+  }
+
   getJobDescriptionCountDisplay(item: JobTask): string {
     const count = item.jobDescriptions?.length || 0;
 
@@ -565,10 +570,10 @@ export class JtOverviewAccordionComponent
 
     // Avoid adding duplicates based on current local tags
     const existingTagNamesSet = new Set(
-      item.tags?.map((tag) => tag.name) || []
+      item.tags?.map((tag) => tag.name) || [],
     );
     const uniqueNewTagNames = newTagNames.filter(
-      (name) => !existingTagNamesSet.has(name)
+      (name) => !existingTagNamesSet.has(name),
     );
 
     if (uniqueNewTagNames.length === 0) {
@@ -579,7 +584,7 @@ export class JtOverviewAccordionComponent
     // Optimistically update local tags for UI responsiveness
     const currentTags = item.tags ? [...item.tags] : [];
     uniqueNewTagNames.forEach((name) =>
-      currentTags.push({ id: Math.random(), name } as Tag)
+      currentTags.push({ id: Math.random(), name } as Tag),
     ); // Add with temp id
     item.tags = currentTags;
 
@@ -646,59 +651,81 @@ export class JtOverviewAccordionComponent
           item.lockedById = currentUser?.id;
           item.lockedAt = new Date().toISOString();
 
-          this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
-            next: (affectedCount) => {
-              const dialogRef = this.dialog.open(JobTaskDeleteConfirmationDialogComponent, {
-                width: '500px',
-                data: {
-                  jobTask: item,
-                  affectedCount: affectedCount,
-                  onConfirmCallback: () => {
-                    this.jobTasksService.deleteJobTask(item.id!).subscribe({
-                      next: () => {
-                        // Release lock after successful deletion
-                        this.lockService.releaseLock('JobTask', item.id!).subscribe({
+          this.jobTasksService
+            .getAffectedJobDescriptionsCount(item.id!)
+            .subscribe({
+              next: (affectedCount) => {
+                const dialogRef = this.dialog.open(
+                  JobTaskDeleteConfirmationDialogComponent,
+                  {
+                    width: '500px',
+                    data: {
+                      jobTask: item,
+                      affectedCount: affectedCount,
+                      onConfirmCallback: () => {
+                        this.jobTasksService.deleteJobTask(item.id!).subscribe({
                           next: () => {
-                            item.lockedById = undefined;
-                            item.lockedAt = undefined;
-                            item.lockExpiry = undefined;
-                            this.cdr.markForCheck();
+                            // Release lock after successful deletion
+                            this.lockService
+                              .releaseLock('JobTask', item.id!)
+                              .subscribe({
+                                next: () => {
+                                  item.lockedById = undefined;
+                                  item.lockedAt = undefined;
+                                  item.lockExpiry = undefined;
+                                  this.cdr.markForCheck();
+                                },
+                                error: (err) =>
+                                  console.error(
+                                    'Error releasing lock after delete:',
+                                    err,
+                                  ),
+                              });
+                            this._handleSuccessfulUpdate({ reloadTasks: true });
                           },
-                          error: (err) => console.error('Error releasing lock after delete:', err),
+                          error: (error) => {
+                            console.error('Error deleting job task:', error);
+                            // Release lock on error
+                            this.lockService
+                              .releaseLock('JobTask', item.id!)
+                              .subscribe();
+                          },
                         });
-                        this._handleSuccessfulUpdate({ reloadTasks: true });
                       },
-                      error: (error) => {
-                        console.error('Error deleting job task:', error);
-                        // Release lock on error
-                        this.lockService.releaseLock('JobTask', item.id!).subscribe();
-                      },
-                    });
-                  },
-                },
-              });
-
-              dialogRef.afterClosed().subscribe((confirmed) => {
-                // Release lock if user cancelled
-                if (!confirmed) {
-                  this.lockService.releaseLock('JobTask', item.id!).subscribe({
-                    next: () => {
-                      item.lockedById = undefined;
-                      item.lockedAt = undefined;
-                      item.lockExpiry = undefined;
-                      this.cdr.markForCheck();
                     },
-                    error: (err) => console.error('Error releasing lock after cancel:', err),
-                  });
-                }
-              });
-            },
-            error: (error) => {
-              console.error('Error fetching affected job descriptions count:', error);
-              // Release lock on error
-              this.lockService.releaseLock('JobTask', item.id!).subscribe();
-            },
-          });
+                  },
+                );
+
+                dialogRef.afterClosed().subscribe((confirmed) => {
+                  // Release lock if user cancelled
+                  if (!confirmed) {
+                    this.lockService
+                      .releaseLock('JobTask', item.id!)
+                      .subscribe({
+                        next: () => {
+                          item.lockedById = undefined;
+                          item.lockedAt = undefined;
+                          item.lockExpiry = undefined;
+                          this.cdr.markForCheck();
+                        },
+                        error: (err) =>
+                          console.error(
+                            'Error releasing lock after cancel:',
+                            err,
+                          ),
+                      });
+                  }
+                });
+              },
+              error: (error) => {
+                console.error(
+                  'Error fetching affected job descriptions count:',
+                  error,
+                );
+                // Release lock on error
+                this.lockService.releaseLock('JobTask', item.id!).subscribe();
+              },
+            });
         } else {
           // Lock acquisition failed - show conflict dialog
           this.dialog.open(LockConflictDialogComponent, {
@@ -720,6 +747,30 @@ export class JtOverviewAccordionComponent
     return this.authService.isAdmin();
   }
 
+  toggleLockForUsers(item: JobTask, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const isLocked = checkbox.checked;
+
+    this.jobTasksService
+      .updateJobTask(item.id, { isLockedForUsers: isLocked })
+      .subscribe({
+        next: (updatedTask) => {
+          const index = this.jobTasks.findIndex((jt) => jt.id === item.id);
+          if (index !== -1) {
+            this.jobTasks[index] = {
+              ...this.jobTasks[index],
+              isLockedForUsers: isLocked,
+            };
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error updating lock status', error);
+          checkbox.checked = !isLocked; // Revert on error
+        },
+      });
+  }
+
   softDeleteItem(item: JobTask): void {
     // softDeleteItem delegates to deleteItem, which now handles lock acquisition
     this.deleteItem(item);
@@ -735,64 +786,88 @@ export class JtOverviewAccordionComponent
           item.lockedById = currentUser?.id;
           item.lockedAt = new Date().toISOString();
 
-          this.jobTasksService.getAffectedJobDescriptionsCount(item.id!).subscribe({
-            next: (affectedCount) => {
-              const dialogRef = this.dialog.open(JobTaskPermanentDeleteDialogComponent, {
-                width: '500px',
-                data: {
-                  jobTask: item,
-                  affectedCount: affectedCount,
-                  onConfirmCallback: () => {
-                    this.jobTasksService
-                      .permanentDeleteJobTaskWithCleanup(item.id!)
+          this.jobTasksService
+            .getAffectedJobDescriptionsCount(item.id!)
+            .subscribe({
+              next: (affectedCount) => {
+                const dialogRef = this.dialog.open(
+                  JobTaskPermanentDeleteDialogComponent,
+                  {
+                    width: '500px',
+                    data: {
+                      jobTask: item,
+                      affectedCount: affectedCount,
+                      onConfirmCallback: () => {
+                        this.jobTasksService
+                          .permanentDeleteJobTaskWithCleanup(item.id!)
+                          .subscribe({
+                            next: () => {
+                              // Release lock after successful deletion
+                              this.lockService
+                                .releaseLock('JobTask', item.id!)
+                                .subscribe({
+                                  next: () => {
+                                    item.lockedById = undefined;
+                                    item.lockedAt = undefined;
+                                    item.lockExpiry = undefined;
+                                    this.cdr.markForCheck();
+                                  },
+                                  error: (err) =>
+                                    console.error(
+                                      'Error releasing lock after permanent delete:',
+                                      err,
+                                    ),
+                                });
+                              this._handleSuccessfulUpdate({
+                                reloadTasks: true,
+                              });
+                            },
+                            error: (error) => {
+                              console.error(
+                                'Error permanently deleting job task with cleanup:',
+                                error,
+                              );
+                              // Release lock on error
+                              this.lockService
+                                .releaseLock('JobTask', item.id!)
+                                .subscribe();
+                            },
+                          });
+                      },
+                    },
+                  },
+                );
+
+                dialogRef.afterClosed().subscribe((confirmed) => {
+                  // Release lock if user cancelled
+                  if (!confirmed) {
+                    this.lockService
+                      .releaseLock('JobTask', item.id!)
                       .subscribe({
                         next: () => {
-                          // Release lock after successful deletion
-                          this.lockService.releaseLock('JobTask', item.id!).subscribe({
-                            next: () => {
-                              item.lockedById = undefined;
-                              item.lockedAt = undefined;
-                              item.lockExpiry = undefined;
-                              this.cdr.markForCheck();
-                            },
-                            error: (err) => console.error('Error releasing lock after permanent delete:', err),
-                          });
-                          this._handleSuccessfulUpdate({ reloadTasks: true });
+                          item.lockedById = undefined;
+                          item.lockedAt = undefined;
+                          item.lockExpiry = undefined;
+                          this.cdr.markForCheck();
                         },
-                        error: (error) => {
+                        error: (err) =>
                           console.error(
-                            'Error permanently deleting job task with cleanup:',
-                            error
-                          );
-                          // Release lock on error
-                          this.lockService.releaseLock('JobTask', item.id!).subscribe();
-                        },
+                            'Error releasing lock after cancel:',
+                            err,
+                          ),
                       });
-                  },
-                },
-              });
-
-              dialogRef.afterClosed().subscribe((confirmed) => {
-                // Release lock if user cancelled
-                if (!confirmed) {
-                  this.lockService.releaseLock('JobTask', item.id!).subscribe({
-                    next: () => {
-                      item.lockedById = undefined;
-                      item.lockedAt = undefined;
-                      item.lockExpiry = undefined;
-                      this.cdr.markForCheck();
-                    },
-                    error: (err) => console.error('Error releasing lock after cancel:', err),
-                  });
-                }
-              });
-            },
-            error: (error) => {
-              console.error('Error fetching affected job descriptions count:', error);
-              // Release lock on error
-              this.lockService.releaseLock('JobTask', item.id!).subscribe();
-            },
-          });
+                  }
+                });
+              },
+              error: (error) => {
+                console.error(
+                  'Error fetching affected job descriptions count:',
+                  error,
+                );
+                // Release lock on error
+                this.lockService.releaseLock('JobTask', item.id!).subscribe();
+              },
+            });
         } else {
           // Lock acquisition failed - show conflict dialog
           this.dialog.open(LockConflictDialogComponent, {
@@ -830,7 +905,8 @@ export class JtOverviewAccordionComponent
                   item.lockExpiry = undefined;
                   this.cdr.markForCheck();
                 },
-                error: (err) => console.error('Error releasing lock after restore:', err),
+                error: (err) =>
+                  console.error('Error releasing lock after restore:', err),
               });
               this._handleSuccessfulUpdate({ reloadTasks: true });
             },
@@ -919,14 +995,14 @@ export class JtOverviewAccordionComponent
   getEditorConfig(item: JobTask): AngularEditorConfig {
     return {
       ...this.editorConfig,
-      editable: !item.deletedAt,
+      editable: !item.deletedAt && !this.isItemLockedForCurrentUser(item),
     };
   }
 
   onEditorBlur(): void {
     if (this.expandedItemId) {
       const expandedItem = this.jobTasks.find(
-        (jt) => jt.id === this.expandedItemId
+        (jt) => jt.id === this.expandedItemId,
       );
       if (expandedItem && expandedItem.id) {
         if (expandedItem.text !== this.htmlContent) {
@@ -965,7 +1041,7 @@ export class JtOverviewAccordionComponent
 
   onOverlayModalClosed(): void {
     const expandedItem = this.jobTasks.find(
-      (jt) => jt.id === this.expandedItemId
+      (jt) => jt.id === this.expandedItemId,
     );
 
     if (expandedItem && expandedItem.id) {
@@ -982,12 +1058,12 @@ export class JtOverviewAccordionComponent
         const currentTags = expandedItem.tags ? [...expandedItem.tags] : [];
         const existingTagNamesSet = new Set(currentTags.map((t) => t.name));
         const uniqueNewTags = newTagNames.filter(
-          (name) => !existingTagNamesSet.has(name)
+          (name) => !existingTagNamesSet.has(name),
         );
 
         if (uniqueNewTags.length > 0) {
           uniqueNewTags.forEach((name) =>
-            currentTags.push({ id: Math.random(), name } as Tag)
+            currentTags.push({ id: Math.random(), name } as Tag),
           );
           expandedItem.tags = currentTags; // Update local item's tags
           payload.tags = expandedItem.tags.map((t) => t.name); // This is now string[]
@@ -1029,7 +1105,7 @@ export class JtOverviewAccordionComponent
             error: (err) =>
               console.error(
                 'Error updating job task from onOverlayModalClosed:',
-                err
+                err,
               ),
           });
       }
@@ -1038,7 +1114,7 @@ export class JtOverviewAccordionComponent
     // Release lock when overlay closes
     if (this.expandedItemId) {
       const itemToRelease = this.jobTasks.find(
-        (jt) => jt.id === this.expandedItemId
+        (jt) => jt.id === this.expandedItemId,
       );
 
       this.lockService.releaseLock('JobTask', this.expandedItemId).subscribe({
@@ -1058,11 +1134,11 @@ export class JtOverviewAccordionComponent
   }
 
   private _handleSuccessfulUpdate(
-    options: { reloadTasks?: boolean; updatedTaskFromServer?: JobTask } = {}
+    options: { reloadTasks?: boolean; updatedTaskFromServer?: JobTask } = {},
   ): void {
     if (options.updatedTaskFromServer) {
       const localTask = this.jobTasks.find(
-        (jt) => jt.id === options.updatedTaskFromServer!.id
+        (jt) => jt.id === options.updatedTaskFromServer!.id,
       );
       if (localTask) {
         // Preserve 'isNew' if it was set locally and not part of server response,
@@ -1086,7 +1162,7 @@ export class JtOverviewAccordionComponent
     this.cardService.initializeCards();
     if (this.currentJobDescription) {
       this.currentWorkspaceService.triggerJobDescriptionFetch(
-        this.currentJobDescription
+        this.currentJobDescription,
       );
     }
     this.cdr.markForCheck();

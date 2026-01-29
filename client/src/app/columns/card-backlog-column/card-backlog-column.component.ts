@@ -108,7 +108,7 @@ export class CardBacklogColumnComponent implements OnInit {
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
     private jobDescriptionsService: JobDescriptionsService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -167,7 +167,7 @@ export class CardBacklogColumnComponent implements OnInit {
 
     const container = this.scrollContainer.nativeElement;
     const cardElement = container.querySelector(
-      `[data-title="${this.selectedCard.title}"]`
+      `[data-title="${this.selectedCard.title}"]`,
     ) as HTMLElement;
 
     if (cardElement) {
@@ -223,12 +223,12 @@ export class CardBacklogColumnComponent implements OnInit {
         if (this.displayCards.length < MAX_DISPLAY_CARDS) {
           this.cardService.addToDisplay(
             this.currentDraggingCard,
-            event.currentIndex
+            event.currentIndex,
           );
         } else {
           this.openSnackBar(
             'Maximale Anzahl an Arbeitsvorgängen erreicht',
-            'Bestätigen'
+            'Bestätigen',
           );
         }
       }
@@ -340,10 +340,10 @@ export class CardBacklogColumnComponent implements OnInit {
 
   private updateFilteredBacklogCards(): void {
     const displayCardIds = new Set(
-      this.displayCards.map((dc) => dc.jobTask.id)
+      this.displayCards.map((dc) => dc.jobTask.id),
     );
     this.filteredBacklogCards = this.allBacklogCards.filter(
-      (card) => !displayCardIds.has(card.jobTask.id)
+      (card) => !displayCardIds.has(card.jobTask.id),
     );
   }
 
@@ -363,6 +363,24 @@ export class CardBacklogColumnComponent implements OnInit {
       !!this.currentJobDescription &&
       !!this.currentJobDescription.lockedById &&
       this.currentJobDescription.lockedById !== currentUser?.id
+    );
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
+  isJobDescriptionLockedForUsers(): boolean {
+    return (
+      !!this.currentJobDescription &&
+      !!this.currentJobDescription.isLockedForUsers &&
+      !this.isAdmin()
+    );
+  }
+
+  isCardLockedForUsers(card: Card): boolean {
+    return (
+      card && card.jobTask && !!card.jobTask.isLockedForUsers && !this.isAdmin()
     );
   }
 }

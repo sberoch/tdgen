@@ -7,7 +7,9 @@ export type CreateJobDescriptionDto = {
   tags: string[];
 };
 
-export type UpdateJobDescriptionDto = Partial<CreateJobDescriptionDto>;
+export type UpdateJobDescriptionDto = Partial<CreateJobDescriptionDto> & {
+  isLockedForUsers?: boolean;
+};
 
 export type JobDescriptionParams = {
   title?: string;

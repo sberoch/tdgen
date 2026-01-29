@@ -67,7 +67,7 @@ interface ExpandableJobDescription extends JobDescription {
           padding: '0',
           overflow: 'hidden',
           opacity: 0,
-        })
+        }),
       ),
       state(
         'expanded',
@@ -76,7 +76,7 @@ interface ExpandableJobDescription extends JobDescription {
           padding: '*',
           overflow: 'hidden',
           opacity: 1,
-        })
+        }),
       ),
       transition('collapsed <=> expanded', [animate('200ms ease-in-out')]),
     ]),
@@ -109,7 +109,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     private authService: AuthService,
     private lockService: LockService,
     private sseService: SseService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -125,7 +125,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             entityType: conflict.entityType,
           },
         });
-      })
+      }),
     );
 
     // Subscribe to jobDescriptions$ observable for real-time updates
@@ -138,7 +138,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           isNew: false,
         })) as ExpandableJobDescription[];
         this.cdr.markForCheck();
-      })
+      }),
     );
   }
 
@@ -228,7 +228,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             const targetTitle =
               this.initialJobDescription?.title || this.newlyCreatedTitle;
             const newItem = this.jobDescriptions.find(
-              (jd) => jd.title === targetTitle
+              (jd) => jd.title === targetTitle,
             );
             if (newItem && newItem.id) {
               // Acquire lock and expand
@@ -306,14 +306,17 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           item.lockedById = currentUser?.id;
           item.lockedAt = new Date().toISOString();
 
-          const dialogRef = this.dialog.open(JobDescriptionTitleDialogComponent, {
-            width: '600px',
-            data: {
-              title: item.title,
-              id: item.id,
-              isEditing: true,
+          const dialogRef = this.dialog.open(
+            JobDescriptionTitleDialogComponent,
+            {
+              width: '600px',
+              data: {
+                title: item.title,
+                id: item.id,
+                isEditing: true,
+              },
             },
-          });
+          );
 
           dialogRef.afterClosed().subscribe((result) => {
             // Release lock after dialog closes
@@ -324,7 +327,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
                 item.lockedAt = undefined;
                 item.lockExpiry = undefined;
               },
-              error: (err) => console.error('Error releasing lock after title edit:', err),
+              error: (err) =>
+                console.error('Error releasing lock after title edit:', err),
             });
 
             if (result) {
@@ -403,6 +407,10 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     return !!item.lockedById && item.lockedById !== currentUser?.id;
   }
 
+  isItemLockedForCurrentUser(item: JobDescription): boolean {
+    return !!item.isLockedForUsers && !this.isAdmin();
+  }
+
   getTaskCountDisplay(item: JobDescription): string {
     const taskCount = item.taskCount;
     const weightedAverage = item.weightedAverage.toFixed(2);
@@ -426,7 +434,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     if (!item.tags) item.tags = [];
     const existingTagNames = new Set(item.tags.map((tag) => tag.name));
     const uniqueNewTags = newTags.filter(
-      (newTag) => !existingTagNames.has(newTag.name)
+      (newTag) => !existingTagNames.has(newTag.name),
     );
     item.tags = [...item.tags, ...uniqueNewTags];
     this.tagInput = '';
@@ -464,45 +472,61 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           item.lockedById = currentUser?.id;
           item.lockedAt = new Date().toISOString();
 
-          this.dialog.open(ConfirmDialogComponent, {
-            width: '400px',
-            data: {
-              title: 'Eintrag löschen?',
-              onConfirmCallback: () => {
-                this.jobDescriptionsService.deleteJobDescription(item.id).subscribe({
-                  next: () => {
-                    // Release lock after successful deletion
-                    this.lockService.releaseLock('JobDescription', item.id).subscribe({
+          this.dialog
+            .open(ConfirmDialogComponent, {
+              width: '400px',
+              data: {
+                title: 'Eintrag löschen?',
+                onConfirmCallback: () => {
+                  this.jobDescriptionsService
+                    .deleteJobDescription(item.id)
+                    .subscribe({
                       next: () => {
-                        item.lockedById = undefined;
-                        item.lockedAt = undefined;
-                        item.lockExpiry = undefined;
+                        // Release lock after successful deletion
+                        this.lockService
+                          .releaseLock('JobDescription', item.id)
+                          .subscribe({
+                            next: () => {
+                              item.lockedById = undefined;
+                              item.lockedAt = undefined;
+                              item.lockExpiry = undefined;
+                            },
+                            error: (err) =>
+                              console.error(
+                                'Error releasing lock after delete:',
+                                err,
+                              ),
+                          });
+                        this.loadJobDescriptions();
                       },
-                      error: (err) => console.error('Error releasing lock after delete:', err),
+                      error: (error) => {
+                        console.error('Error deleting job description:', error);
+                        // Release lock on error
+                        this.lockService
+                          .releaseLock('JobDescription', item.id)
+                          .subscribe();
+                      },
                     });
-                    this.loadJobDescriptions();
-                  },
-                  error: (error) => {
-                    console.error('Error deleting job description:', error);
-                    // Release lock on error
-                    this.lockService.releaseLock('JobDescription', item.id).subscribe();
-                  },
-                });
-              },
-            },
-          }).afterClosed().subscribe((confirmed) => {
-            // Release lock if user cancelled
-            if (!confirmed) {
-              this.lockService.releaseLock('JobDescription', item.id).subscribe({
-                next: () => {
-                  item.lockedById = undefined;
-                  item.lockedAt = undefined;
-                  item.lockExpiry = undefined;
                 },
-                error: (err) => console.error('Error releasing lock after cancel:', err),
-              });
-            }
-          });
+              },
+            })
+            .afterClosed()
+            .subscribe((confirmed) => {
+              // Release lock if user cancelled
+              if (!confirmed) {
+                this.lockService
+                  .releaseLock('JobDescription', item.id)
+                  .subscribe({
+                    next: () => {
+                      item.lockedById = undefined;
+                      item.lockedAt = undefined;
+                      item.lockExpiry = undefined;
+                    },
+                    error: (err) =>
+                      console.error('Error releasing lock after cancel:', err),
+                  });
+              }
+            });
         } else {
           // Lock acquisition failed - show conflict dialog
           this.dialog.open(LockConflictDialogComponent, {
@@ -524,6 +548,32 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     return this.authService.isAdmin();
   }
 
+  toggleLockForUsers(item: JobDescription, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const isLocked = checkbox.checked;
+
+    this.jobDescriptionsService
+      .updateJobDescription(item.id, { isLockedForUsers: isLocked })
+      .subscribe({
+        next: (updatedJd) => {
+          const index = this.jobDescriptions.findIndex(
+            (jd) => jd.id === item.id,
+          );
+          if (index !== -1) {
+            this.jobDescriptions[index] = {
+              ...this.jobDescriptions[index],
+              isLockedForUsers: isLocked,
+            };
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error updating lock status', error);
+          checkbox.checked = !isLocked; // Revert on error
+        },
+      });
+  }
+
   softDeleteItem(item: JobDescription): void {
     // softDeleteItem delegates to deleteItem, which now handles lock acquisition
     this.deleteItem(item);
@@ -539,50 +589,64 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           item.lockedById = currentUser?.id;
           item.lockedAt = new Date().toISOString();
 
-          this.dialog.open(ConfirmDialogComponent, {
-            width: '400px',
-            data: {
-              title: 'Eintrag permanent löschen?',
-              onConfirmCallback: () => {
-                this.jobDescriptionsService
-                  .permanentDeleteJobDescription(item.id)
+          this.dialog
+            .open(ConfirmDialogComponent, {
+              width: '400px',
+              data: {
+                title: 'Eintrag permanent löschen?',
+                onConfirmCallback: () => {
+                  this.jobDescriptionsService
+                    .permanentDeleteJobDescription(item.id)
+                    .subscribe({
+                      next: () => {
+                        // Release lock after successful deletion
+                        this.lockService
+                          .releaseLock('JobDescription', item.id)
+                          .subscribe({
+                            next: () => {
+                              item.lockedById = undefined;
+                              item.lockedAt = undefined;
+                              item.lockExpiry = undefined;
+                            },
+                            error: (err) =>
+                              console.error(
+                                'Error releasing lock after permanent delete:',
+                                err,
+                              ),
+                          });
+                        this.loadJobDescriptions();
+                      },
+                      error: (error) => {
+                        console.error(
+                          'Error permanently deleting job description:',
+                          error,
+                        );
+                        // Release lock on error
+                        this.lockService
+                          .releaseLock('JobDescription', item.id)
+                          .subscribe();
+                      },
+                    });
+                },
+              },
+            })
+            .afterClosed()
+            .subscribe((confirmed) => {
+              // Release lock if user cancelled
+              if (!confirmed) {
+                this.lockService
+                  .releaseLock('JobDescription', item.id)
                   .subscribe({
                     next: () => {
-                      // Release lock after successful deletion
-                      this.lockService.releaseLock('JobDescription', item.id).subscribe({
-                        next: () => {
-                          item.lockedById = undefined;
-                          item.lockedAt = undefined;
-                          item.lockExpiry = undefined;
-                        },
-                        error: (err) => console.error('Error releasing lock after permanent delete:', err),
-                      });
-                      this.loadJobDescriptions();
+                      item.lockedById = undefined;
+                      item.lockedAt = undefined;
+                      item.lockExpiry = undefined;
                     },
-                    error: (error) => {
-                      console.error(
-                        'Error permanently deleting job description:',
-                        error
-                      );
-                      // Release lock on error
-                      this.lockService.releaseLock('JobDescription', item.id).subscribe();
-                    },
+                    error: (err) =>
+                      console.error('Error releasing lock after cancel:', err),
                   });
-              },
-            },
-          }).afterClosed().subscribe((confirmed) => {
-            // Release lock if user cancelled
-            if (!confirmed) {
-              this.lockService.releaseLock('JobDescription', item.id).subscribe({
-                next: () => {
-                  item.lockedById = undefined;
-                  item.lockedAt = undefined;
-                  item.lockExpiry = undefined;
-                },
-                error: (err) => console.error('Error releasing lock after cancel:', err),
-              });
-            }
-          });
+              }
+            });
         } else {
           // Lock acquisition failed - show conflict dialog
           this.dialog.open(LockConflictDialogComponent, {
@@ -613,20 +677,25 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           this.jobDescriptionsService.restoreJobDescription(item.id).subscribe({
             next: () => {
               // Release lock after successful restore
-              this.lockService.releaseLock('JobDescription', item.id).subscribe({
-                next: () => {
-                  item.lockedById = undefined;
-                  item.lockedAt = undefined;
-                  item.lockExpiry = undefined;
-                },
-                error: (err) => console.error('Error releasing lock after restore:', err),
-              });
+              this.lockService
+                .releaseLock('JobDescription', item.id)
+                .subscribe({
+                  next: () => {
+                    item.lockedById = undefined;
+                    item.lockedAt = undefined;
+                    item.lockExpiry = undefined;
+                  },
+                  error: (err) =>
+                    console.error('Error releasing lock after restore:', err),
+                });
               this.loadJobDescriptions();
             },
             error: (error) => {
               console.error('Error restoring job description:', error);
               // Release lock on error
-              this.lockService.releaseLock('JobDescription', item.id).subscribe();
+              this.lockService
+                .releaseLock('JobDescription', item.id)
+                .subscribe();
             },
           });
         } else {
@@ -660,7 +729,9 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   private expandAndAcquireLock(descriptionId: number): void {
     const currentUser = this.authService.getCurrentUser();
-    const itemToExpand = this.jobDescriptions.find((jd) => jd.id === descriptionId);
+    const itemToExpand = this.jobDescriptions.find(
+      (jd) => jd.id === descriptionId,
+    );
 
     this.lockService.acquireLock('JobDescription', descriptionId).subscribe({
       next: (success) => {
@@ -700,7 +771,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             item.lockedAt = new Date().toISOString();
           }
         },
-        error: (err) => console.error('Error acquiring lock for workplace:', err),
+        error: (err) =>
+          console.error('Error acquiring lock for workplace:', err),
       });
     }
 
@@ -729,7 +801,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   onOverlayModalClosed(options: { keepLock?: boolean } = {}): void {
     const expandedItem = this.jobDescriptions.find(
-      (jd) => jd.id === this.expandedItemId
+      (jd) => jd.id === this.expandedItemId,
     );
     if (expandedItem && expandedItem.id) {
       this.addTags(expandedItem);
@@ -752,7 +824,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           error: (error) => {
             console.error(
               'Error updating job description on modal close:',
-              error
+              error,
             );
           },
         });
@@ -761,7 +833,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     // Release lock when overlay closes (unless keeping lock for workplace)
     if (this.expandedItemId && !options.keepLock) {
       const itemToRelease = this.jobDescriptions.find(
-        (jd) => jd.id === this.expandedItemId
+        (jd) => jd.id === this.expandedItemId,
       );
 
       this.lockService
@@ -775,7 +847,8 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
               itemToRelease.lockExpiry = undefined;
             }
           },
-          error: (err) => console.error('Error releasing lock on overlay close:', err),
+          error: (err) =>
+            console.error('Error releasing lock on overlay close:', err),
         });
 
       // Reset expanded state

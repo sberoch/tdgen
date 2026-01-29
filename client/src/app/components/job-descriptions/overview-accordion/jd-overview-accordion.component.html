@@ -65,6 +65,7 @@
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">geändert am</div>
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">gelöscht am</div>
         <div class="px-4 py-2 w-28 3xl:w-32"></div>
+        <div class="px-4 py-2 w-10"></div>
       </div>
 
       <!-- Accordion items -->
@@ -76,14 +77,14 @@
           [ngClass]="{
             'animate-flash': item.isNew,
             'cursor-pointer': !isLockedByOtherUser(item),
-            'cursor-not-allowed': isLockedByOtherUser(item)
+            'cursor-not-allowed': isLockedByOtherUser(item),
           }"
           [style.background-color]="
             item.isNew
               ? ''
               : i % 2 === 0
-              ? 'rgb(243 244 246)'
-              : 'rgb(229 231 235)'
+                ? 'rgb(243 244 246)'
+                : 'rgb(229 231 235)'
           "
           [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
           (click)="toggleAccordion(item.id!)"
@@ -95,9 +96,15 @@
             <span
               class="mr-2 font-medium"
               [style.cursor]="
-                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? 'not-allowed'
+                  : 'pointer'
               "
-              [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
+              [style.opacity]="
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? '0.6'
+                  : '1'
+              "
             >
               {{ truncate(item.title, 100) }}
             </span>
@@ -107,11 +114,23 @@
               class="text-gray-500 hover:text-secondary translate-y-[2px]"
               title="Umbenennen"
               (click)="openEditDialog(item, $event)"
-              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
-              [disabled]="isLockedByOtherUser(item)"
-              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+              [style.color]="
+                item.deletedAt || isItemLockedForCurrentUser(item)
+                  ? '#9CA3AF'
+                  : 'inherit'
+              "
+              [disabled]="
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+              "
+              [style.opacity]="
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? '0.5'
+                  : '1'
+              "
               [style.cursor]="
-                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? 'not-allowed'
+                  : 'pointer'
               "
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
@@ -119,21 +138,33 @@
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
+            [style.opacity]="
+              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                ? '0.6'
+                : '1'
+            "
           >
-            {{ item.createdAt | date : "dd.MM.yyyy" }}
+            {{ item.createdAt | date: "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
+            [style.opacity]="
+              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                ? '0.6'
+                : '1'
+            "
           >
-            {{ item.updatedAt | date : "dd.MM.yyyy" }}
+            {{ item.updatedAt | date: "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
+            [style.opacity]="
+              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                ? '0.6'
+                : '1'
+            "
           >
-            {{ item.deletedAt | date : "dd.MM.yyyy" }}
+            {{ item.deletedAt | date: "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32 flex justify-end"
@@ -148,16 +179,28 @@
             <button
               mat-icon-button
               class="text-gray-500 hover:text-secondary"
-              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
+              [style.color]="
+                item.deletedAt || isItemLockedForCurrentUser(item)
+                  ? '#9CA3AF'
+                  : 'inherit'
+              "
               [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
               title="Tätigkeitsdarstellung öffnen"
               (click)="
                 $event.stopPropagation(); loadJobDescriptionIntoWorkplace(item)
               "
-              [disabled]="isLockedByOtherUser(item)"
-              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+              [disabled]="
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+              "
+              [style.opacity]="
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? '0.5'
+                  : '1'
+              "
               [style.cursor]="
-                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                  ? 'not-allowed'
+                  : 'pointer'
               "
             >
               <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
@@ -219,10 +262,18 @@
                 [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
                 title="Löschen"
                 (click)="$event.stopPropagation(); deleteItem(item)"
-                [disabled]="isLockedByOtherUser(item)"
-                [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
+                [disabled]="
+                  isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                "
+                [style.opacity]="
+                  isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                    ? '0.5'
+                    : '1'
+                "
                 [style.cursor]="
-                  isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
+                  isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
+                    ? 'not-allowed'
+                    : 'pointer'
                 "
               >
                 <mat-icon
@@ -232,6 +283,13 @@
                 </mat-icon>
               </button>
             </ng-template>
+          </div>
+          <div class="pr-4 py-2 w-10 flex items-center justify-center">
+            <span
+              *ngIf="item.isLockedForUsers"
+              class="w-2 h-2 rounded-full -translate-y-[1px] -translate-x-[2px]"
+              style="background-color: rgb(0, 133, 216)"
+            ></span>
           </div>
         </div>
 
@@ -248,25 +306,47 @@
                     type="text"
                     placeholder="Tag hinzufügen"
                     [(ngModel)]="tagInput"
-                    [disabled]="!!item.deletedAt"
+                    [disabled]="
+                      !!item.deletedAt || isItemLockedForCurrentUser(item)
+                    "
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic"
+                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic disabled:opacity-50"
                   />
                   <button
                     class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90 disabled:text-black/30 disabled:cursor-not-allowed"
                     (click)="tagInput = ''"
-                    [disabled]="!!item.deletedAt"
+                    [disabled]="
+                      !!item.deletedAt || isItemLockedForCurrentUser(item)
+                    "
                   >
                     <mat-icon class="text-lg">backspace</mat-icon>
                   </button>
                 </div>
                 <button
                   (click)="addTags(item)"
-                  [disabled]="!!item.deletedAt"
+                  [disabled]="
+                    !!item.deletedAt || isItemLockedForCurrentUser(item)
+                  "
                   class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:bg-secondary/50 disabled:cursor-not-allowed"
                 >
                   Hinzufügen
                 </button>
+                <div *ngIf="isAdmin()" class="flex items-center gap-2 ml-8">
+                  <input
+                    type="checkbox"
+                    [id]="'lockForUsers-jd-' + item.id"
+                    [checked]="item.isLockedForUsers"
+                    (change)="toggleLockForUsers(item, $event)"
+                    (click)="$event.stopPropagation()"
+                    class="h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary"
+                  />
+                  <label
+                    [for]="'lockForUsers-jd-' + item.id"
+                    class="text-sm text-gray-700 whitespace-nowrap"
+                  >
+                    Bearbeitung für User sperren
+                  </label>
+                </div>
               </div>
               <div class="text-zinc-600 text-sm mt-1">
                 {{ getTaskCountDisplay(item) }}
@@ -280,7 +360,9 @@
                 *ngFor="let tag of item.tags"
                 class="flex items-center gap-1 pl-2 pr-[0.325rem] py-1 rounded-full text-xs"
                 [style.background-color]="
-                  item.deletedAt ? '#cccccc' : '#888888'
+                  item.deletedAt || isItemLockedForCurrentUser(item)
+                    ? '#cccccc'
+                    : '#888888'
                 "
                 [style.color]="'#ffffff'"
               >
@@ -288,9 +370,13 @@
                   {{ tag.name }}
                 </span>
                 <button
-                  (click)="!item.deletedAt ? removeTag(item, tag) : null"
+                  (click)="
+                    !item.deletedAt && !isItemLockedForCurrentUser(item)
+                      ? removeTag(item, tag)
+                      : null
+                  "
                   [class]="
-                    item.deletedAt
+                    item.deletedAt || isItemLockedForCurrentUser(item)
                       ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#cccccc] opacity-50 cursor-not-allowed'
                       : 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#888888] hover:bg-red-700 hover:text-white cursor-pointer'
                   "

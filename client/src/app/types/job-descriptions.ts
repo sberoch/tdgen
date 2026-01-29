@@ -23,6 +23,7 @@ export type JobDescription = {
   lockedAt?: string;
   lockedById?: string;
   lockExpiry?: string;
+  isLockedForUsers?: boolean;
 };
 
 export type CreateJobDescription = {
@@ -32,7 +33,9 @@ export type CreateJobDescription = {
   formFields: Record<string, string>;
 };
 
-export type UpdateJobDescription = Partial<CreateJobDescription>;
+export type UpdateJobDescription = Partial<CreateJobDescription> & {
+  isLockedForUsers?: boolean;
+};
 
 export type JobDescriptionsListResponse = {
   jobDescriptions: JobDescription[];

@@ -17,6 +17,7 @@ import {
 } from '@kolkov/angular-editor';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.service';
 import { CurrentWorkspaceService } from '../../services/current-workspace.service';
 import { JobDescriptionsService } from '../../services/job-descriptions.service';
 import { FormField } from '../../types/form-field';
@@ -86,8 +87,16 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
 
   constructor(
     private currentWorkspaceService: CurrentWorkspaceService,
-    private jobDescriptionsService: JobDescriptionsService
+    private jobDescriptionsService: JobDescriptionsService,
+    private authService: AuthService,
   ) {}
+
+  isLockedForCurrentUser(): boolean {
+    return (
+      !!this.currentJobDescription?.isLockedForUsers &&
+      !this.authService.isAdmin()
+    );
+  }
 
   ngOnInit(): void {
     this.currentWorkspaceService.currentJobDescription
@@ -141,12 +150,15 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   }
 
   saveForm(): void {
+    if (this.isLockedForCurrentUser()) {
+      return; // Don't save if locked for current user
+    }
     if (this.currentJobDescription && this.currentJobDescription.id) {
       let hasChanged = false;
       const originalFormFields: Record<string, string> =
         this.currentJobDescription.formFields.reduce(
           (acc, field) => ({ ...acc, [field.key]: field.value }),
-          {}
+          {},
         );
       const currentFormValues = this.formData;
 
@@ -184,7 +196,7 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   getMaxLength(field: FormField): number | null {
     if (field.validations) {
       const maxLengthValidation = field.validations.find(
-        (v) => v.name === 'maxlength'
+        (v) => v.name === 'maxlength',
       );
       return maxLengthValidation
         ? parseInt(maxLengthValidation.value, 10)
@@ -196,6 +208,7 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
   getEditorConfig(field: FormField): AngularEditorConfig {
     return {
       ...this.editorConfig,
+      editable: !this.isLockedForCurrentUser(),
     };
   }
 
@@ -225,7 +238,7 @@ export class FlyoutPanelComponent implements OnInit, OnDestroy {
     }
 
     const currentLength = this.getPlainTextLength(
-      this.formData[fieldName] || ''
+      this.formData[fieldName] || '',
     );
 
     if (currentLength >= maxLength) {

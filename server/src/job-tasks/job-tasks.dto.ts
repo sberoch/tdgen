@@ -6,7 +6,9 @@ export type CreateJobTaskDto = {
   metadata: Record<string, any>;
   tags: string[];
 };
-export type UpdateJobTaskDto = Partial<CreateJobTaskDto>;
+export type UpdateJobTaskDto = Partial<CreateJobTaskDto> & {
+  isLockedForUsers?: boolean;
+};
 
 export type JobTaskParams = {
   title?: string;

@@ -34,6 +34,7 @@ model JobTask {
   lockedAt DateTime?
   lockedById String?
   lockExpiry DateTime?
+  isLockedForUsers Boolean @default(false)
 } 
 
 model JobDescription {
@@ -52,6 +53,7 @@ model JobDescription {
   lockedAt DateTime?
   lockedById String?
   lockExpiry DateTime?
+  isLockedForUsers Boolean @default(false)
 }
 
 model JobDescriptionFormField {
