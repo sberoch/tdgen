@@ -49,8 +49,7 @@
         class="text-sm text-zinc-500 translate-y-[2px] italic"
         *ngIf="currentUser"
       >
-        {{ currentUser.id }}
-        ({{ getHigherHierarchyRoleName() }})
+        {{ getHigherHierarchyRoleName() }}
       </div>
       <button
         mat-icon-button

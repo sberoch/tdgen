@@ -257,7 +257,9 @@
                 <div class="text-zinc-600 text-sm mr-3">
                   {{ getJobDescriptionCountDisplay(item) }}
                 </div>
+                <!-- Admin users see the dropdown -->
                 <select
+                  *ngIf="isAdmin()"
                   [disabled]="!!item.deletedAt"
                   class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary disabled:opacity-50"
                   (change)="onEgSelected($any($event.target).value, item)"
@@ -272,6 +274,10 @@
                     {{ eg }}
                   </option>
                 </select>
+                <!-- Non-admin users see text display -->
+                <span *ngIf="!isAdmin()" class="text-zinc-600 text-sm">
+                  {{ item.metadata['paymentGroup'] || 'EG: offen' }}
+                </span>
               </div>
             </div>
             <div

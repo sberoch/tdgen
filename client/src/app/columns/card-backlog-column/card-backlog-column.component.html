@@ -61,7 +61,7 @@
             [innerHTML]="card.text | truncateSafeHtml : 75"
           ></p>
           <p class="text-xs 2xl:text-sm 3xl:text-base text-black/50 mt-1">
-            {{ card.classification }}
+            {{ card.classification || 'EG: offen' }}
           </p>
         </div>
         <div class="flex items-center gap-1">
@@ -75,7 +75,7 @@
         ></p>
         <div class="flex items-center justify-between translate-y-1 h-8">
           <p class="text-xs 2xl:text-sm text-black/50 mt-1">
-            {{ card.classification }}
+            {{ card.classification || 'EG: offen' }}
           </p>
           <div class="flex items-center">
             <mat-icon
@@ -159,13 +159,12 @@
           </div>
           <div class="flex items-center gap-2">
             <p
-              *ngIf="card.classification"
               class="text-xs 2xl:text-sm 3xl:text-base text-black/50"
               [class.line-through]="card.jobTask.deletedAt"
               [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
               [class.italic]="card.jobTask.deletedAt"
             >
-              {{ card.classification }}
+              {{ card.classification || 'EG: offen' }}
             </p>
             <button
               mat-icon-button

@@ -24,8 +24,8 @@
 .modal-content {
   position: relative;
   background-color: white;
-  width: calc(100% - 80px);
-  height: calc(100% - 80px);
+  width: calc(100% - 75px);
+  height: calc(100% - 75px);
   padding: 100px;
   opacity: 0;
   visibility: hidden;

@@ -12,7 +12,7 @@
         [class.!border-[#333]]="card.title === selectedCard?.title"
       >
         <p class="text-black/50 text-sm">
-          {{ card.classification }}
+          {{ card.classification || 'EG: offen' }}
         </p>
         <p class="text-black/50 text-sm">{{ card.percentage.toFixed(0) }}%</p>
       </div>
