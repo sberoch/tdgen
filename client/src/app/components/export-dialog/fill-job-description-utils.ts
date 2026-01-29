@@ -117,12 +117,8 @@ export const fillCheckboxes = async (
   drawMode: boolean,
   pdfDoc: PDFDocument,
   pdfForm: PDFForm,
-  formData: FormGroup<ExportJobDescriptionForm>,
-  bypassFormData: boolean = false
+  formData: FormGroup<ExportJobDescriptionForm>
 ) => {
-  if (bypassFormData) {
-    return;
-  }
   const checkboxes = ['f.kk.1', 'f.kk.2', 'f.kk.21', 'f.kk.22', 'f.kk.23'];
   for (const checkbox of checkboxes) {
     const field = pdfForm.getCheckBox(checkbox);

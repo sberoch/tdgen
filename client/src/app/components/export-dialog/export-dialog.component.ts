@@ -114,6 +114,17 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
       }
     );
 
+    // Hide validation errors when validation is disabled
+    this.formSubscription.add(
+      this.exportForm
+        .get('bypassFormData')
+        ?.valueChanges.subscribe((value) => {
+          if (value && this.showValidationErrors) {
+            this.showValidationErrors = false;
+          }
+        })
+    );
+
     // Subscribe to employment scope changes to handle Vollzeit/Teilzeit logic
     this.formSubscription.add(
       this.exportForm
@@ -218,7 +229,6 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
             this.exportForm,
             currentJobDescription,
             arrayBuffer,
-            bypassFormData || false,
             drawMode
           );
           // Create a blob URL and trigger download
@@ -230,11 +240,10 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
           // Get form data for employee name
           const formData = this.exportForm.value;
-          const employeeName = bypassFormData
-            ? 'Unknown'
-            : formData.employeeName?.trim() ||
-              this.lastEmployeeName ||
-              'Unknown';
+          const employeeName =
+            formData.employeeName?.trim() ||
+            this.lastEmployeeName ||
+            'Unknown';
 
           // Get job description title
           const jobDescriptionTitle =
@@ -279,8 +288,20 @@ export class ExportDialogComponent implements OnInit, OnDestroy {
 
   // Helper method to check if a field has errors and has been touched
   hasFieldError(fieldName: string): boolean {
+    if (this.exportForm.get('bypassFormData')?.value) {
+      return false; // Suppress validation errors when validation is disabled
+    }
     const field = this.exportForm.get(fieldName);
     return !!(field && field.invalid && (field.dirty || field.touched));
+  }
+
+  // Helper method to check if global validation error should be shown
+  shouldShowGlobalError(): boolean {
+    return (
+      this.exportForm.invalid &&
+      this.showValidationErrors &&
+      !this.exportForm.get('bypassFormData')?.value
+    );
   }
 
   // Helper method to get error message for a field

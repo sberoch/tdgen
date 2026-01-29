@@ -23,36 +23,11 @@ const formatDate = (date: string | null | undefined) => {
 
 export const transformFormData = (
   formData: FormGroup<ExportJobDescriptionForm>,
-  jobDescription: JobDescription,
-  bypassFormData: boolean = false
+  jobDescription: JobDescription
 ) => {
   const formValue = formData.value;
   const orderedTasks = jobDescription.tasks.sort((a, b) => a.order - b.order);
   const jobTasksTextSplitResult = jobTasksTextSplit(orderedTasks);
-
-  // If bypassing form data, return empty strings for all export dialog fields
-  if (bypassFormData) {
-    return {
-      'f.dienst.10': '',
-      'f.ort_datum.1': '',
-      'f.sonstiges.1': '',
-      'f.datum.1': '',
-      'f.dienstst.1': '',
-      'f.einheit.1': '',
-      'f.dienstposten.1': '',
-      'f.funktion.1': '',
-      'f.vorn.1': '',
-      'f.uebernahme.1': '',
-      'f.std.1': '',
-      'f.zeitraum.1': '',
-      'f.zeitraum.2': '',
-      'f.beschreibung.1': jobTasksTextSplitResult.group1,
-      'f.beschreibung.2': jobTasksTextSplitResult.group2,
-      'f.zeitanteil.1': jobTasksTextSplitResult.stats1,
-      'f.zeitanteil.2': jobTasksTextSplitResult.stats2,
-      jdFormFields: jobDescription.formFields,
-    };
-  }
 
   return {
     'f.dienst.10': formValue.department,
@@ -94,7 +69,6 @@ export const fillJobDescriptionForm = async (
   form: FormGroup<ExportJobDescriptionForm>,
   jobDescription: JobDescription,
   arrayBuffer: ArrayBuffer,
-  bypassFormData: boolean = false,
   drawMode: boolean = false
 ) => {
   const pdfDoc = await PDFDocument.load(arrayBuffer, {
@@ -119,9 +93,9 @@ export const fillJobDescriptionForm = async (
   const courierRef = pdfDoc.context.register(courierFont.ref);
   fontDict.set(PDFName.of('Courier'), courierRef);
 
-  const formData = transformFormData(form, jobDescription, bypassFormData);
+  const formData = transformFormData(form, jobDescription);
 
-  await fillCheckboxes(drawMode, pdfDoc, pdfForm, form, bypassFormData);
+  await fillCheckboxes(drawMode, pdfDoc, pdfForm, form);
 
   pdfForm.getTextField('f.dienstst.10').setText(formData['f.dienst.10'] || '');
   setTextFieldFontSize(
