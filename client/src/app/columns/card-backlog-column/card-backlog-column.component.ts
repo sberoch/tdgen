@@ -32,6 +32,7 @@ import { JobDescriptionsService } from '../../services/job-descriptions.service'
 import { AuthService } from '../../services/auth.service';
 import { JobDescription } from '../../types/job-descriptions';
 import { Card, getTruncatedPlainText } from '../../utils/card.utils';
+import { InsufficientRightsDialogComponent } from '../../components/insufficient-rights-dialog/insufficient-rights-dialog.component';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -210,6 +211,11 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<Card[]>) {
+    if (this.isJobDescriptionLockedForUsers()) {
+      this.dialog.open(InsufficientRightsDialogComponent, { width: '450px' });
+      this.currentDraggingCard = undefined;
+      return;
+    }
     if (
       event.previousContainer.id === event.container.id &&
       event.previousContainer.id === 'display'

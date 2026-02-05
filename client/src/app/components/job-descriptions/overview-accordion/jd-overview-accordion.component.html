@@ -96,15 +96,9 @@
             <span
               class="mr-2 font-medium"
               [style.cursor]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                  ? 'not-allowed'
-                  : 'pointer'
+                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
               "
-              [style.opacity]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                  ? '0.6'
-                  : '1'
-              "
+              [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
             >
               {{ truncate(item.title, 100) }}
             </span>
@@ -114,26 +108,20 @@
               class="text-gray-500 hover:text-secondary translate-y-[2px]"
               title="Umbenennen"
               (click)="openEditDialog(item, $event)"
-              [style.color]="
-                item.deletedAt || isItemLockedForCurrentUser(item)
-                  ? '#9CA3AF'
-                  : 'inherit'
-              "
+              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               [disabled]="
                 isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
               "
-              [style.opacity]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                  ? '0.5'
-                  : '1'
-              "
+              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
               [style.cursor]="
                 isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
                   ? 'not-allowed'
                   : 'pointer'
               "
             >
-              <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
+              <mat-icon class="text-lg -translate-y-1">{{
+                isItemLockedForCurrentUser(item) ? "edit_off" : "edit"
+              }}</mat-icon>
             </button>
           </div>
           <div class="px-4 py-2 w-10 flex items-center justify-center">
@@ -145,31 +133,19 @@
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="
-              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                ? '0.6'
-                : '1'
-            "
+            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
           >
             {{ item.createdAt | date: "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="
-              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                ? '0.6'
-                : '1'
-            "
+            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
           >
             {{ item.updatedAt | date: "dd.MM.yyyy" }}
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
-            [style.opacity]="
-              isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                ? '0.6'
-                : '1'
-            "
+            [style.opacity]="isLockedByOtherUser(item) ? '0.6' : '1'"
           >
             {{ item.deletedAt | date: "dd.MM.yyyy" }}
           </div>
@@ -186,28 +162,16 @@
             <button
               mat-icon-button
               class="text-gray-500 hover:text-secondary"
-              [style.color]="
-                item.deletedAt || isItemLockedForCurrentUser(item)
-                  ? '#9CA3AF'
-                  : 'inherit'
-              "
+              [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
               [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
               title="Tätigkeitsdarstellung öffnen"
               (click)="
                 $event.stopPropagation(); loadJobDescriptionIntoWorkplace(item)
               "
-              [disabled]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-              "
-              [style.opacity]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                  ? '0.5'
-                  : '1'
-              "
+              [disabled]="isLockedByOtherUser(item)"
+              [style.opacity]="isLockedByOtherUser(item) ? '0.5' : '1'"
               [style.cursor]="
-                isLockedByOtherUser(item) || isItemLockedForCurrentUser(item)
-                  ? 'not-allowed'
-                  : 'pointer'
+                isLockedByOtherUser(item) ? 'not-allowed' : 'pointer'
               "
             >
               <mat-icon class="text-lg -translate-y-1">open_in_new</mat-icon>
@@ -266,7 +230,11 @@
                 mat-icon-button
                 class="group"
                 [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
-                [style.visibility]="item.deletedAt ? 'hidden' : 'visible'"
+                [style.visibility]="
+                  item.deletedAt || isItemLockedForCurrentUser(item)
+                    ? 'hidden'
+                    : 'visible'
+                "
                 title="Löschen"
                 (click)="$event.stopPropagation(); deleteItem(item)"
                 [disabled]="

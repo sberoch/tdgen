@@ -38,23 +38,18 @@
         [class.cursor-move]="
           isWorkspaceSet &&
           !isLockedByOtherUser(card) &&
-          !isJobDescriptionLockedForUsers() &&
           !isCardLockedForUsers(card)
         "
         [class.cursor-not-allowed]="
           !isWorkspaceSet ||
           isLockedByOtherUser(card) ||
-          isJobDescriptionLockedForUsers() ||
           isCardLockedForUsers(card)
         "
-        [class.opacity-60]="
-          isLockedByOtherUser(card) || isCardLockedForUsers(card)
-        "
+        [class.opacity-60]="isLockedByOtherUser(card)"
         cdkDrag
         [cdkDragDisabled]="
           !isWorkspaceSet ||
           isLockedByOtherUser(card) ||
-          isJobDescriptionLockedForUsers() ||
           isCardLockedForUsers(card)
         "
         (cdkDragStarted)="onDragStarted($event, card)"
@@ -145,16 +140,10 @@
           <div
             class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 select-none border border-transparent mb-2 last:mb-0"
             [class.!border-[#333]]="card.title === selectedCard?.title"
-            [class.cursor-move]="
-              !isJobDescriptionLocked() && !isJobDescriptionLockedForUsers()
-            "
-            [class.cursor-not-allowed]="
-              isJobDescriptionLocked() || isJobDescriptionLockedForUsers()
-            "
+            [class.cursor-move]="!isJobDescriptionLocked()"
+            [class.cursor-not-allowed]="isJobDescriptionLocked()"
             cdkDrag
-            [cdkDragDisabled]="
-              isJobDescriptionLocked() || isJobDescriptionLockedForUsers()
-            "
+            [cdkDragDisabled]="isJobDescriptionLocked()"
             (cdkDragStarted)="onDragStarted($event, card)"
             [style.backgroundColor]="$index | pastelColor"
             (click)="selectCard(card)"

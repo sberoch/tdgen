@@ -1,0 +1,20 @@
+<mat-dialog-content>
+  <div class="flex flex-col gap-4 p-4">
+    <div class="flex items-center gap-3 mb-2">
+      <mat-icon class="text-amber-600">warning</mat-icon>
+      <h2 class="text-xl font-semibold text-gray-800">Fehlende Berechtigung</h2>
+    </div>
+    <p class="text-gray-700 leading-relaxed">
+      Sie haben nicht die nötigen Rechte, um diese Tätigkeitsdarstellung zu verändern.
+    </p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="flex justify-end p-4 border-t border-gray-200">
+  <button
+    (click)="close()"
+    class="bg-secondary text-white px-4 py-2 rounded-md hover:bg-secondary/80"
+  >
+    Verstanden
+  </button>
+</mat-dialog-actions>

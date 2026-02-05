@@ -366,7 +366,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     const currentUser = this.authService.getCurrentUser();
     const itemToToggle = this.jobDescriptions.find((jd) => jd.id === id);
 
-    // Prevent toggling if locked by another user
+    // Prevent toggling if locked by another user (unless readonly mode)
     if (
       itemToToggle?.lockedById &&
       itemToToggle.lockedById !== currentUser?.id
@@ -375,7 +375,6 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     }
 
     if (this.expandedItemId === id) {
-      // Collapsing - release lock
       this.lockService.releaseLock('JobDescription', id).subscribe({
         next: () => {
           // Update local state to reflect lock release
@@ -761,8 +760,12 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   loadJobDescriptionIntoWorkplace(item: JobDescription): void {
     const isCurrentlyExpanded = this.expandedItemId === item.id;
 
-    // If not currently expanded, acquire lock for workplace editing
-    if (!isCurrentlyExpanded && item.id) {
+    // If not currently expanded and not readonly, acquire lock for workplace editing
+    if (
+      !isCurrentlyExpanded &&
+      item.id &&
+      !this.isItemLockedForCurrentUser(item)
+    ) {
       this.lockService.acquireLock('JobDescription', item.id).subscribe({
         next: (success) => {
           if (success) {
@@ -803,7 +806,10 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     const expandedItem = this.jobDescriptions.find(
       (jd) => jd.id === this.expandedItemId,
     );
-    if (expandedItem && expandedItem.id) {
+    const isReadonly =
+      expandedItem && this.isItemLockedForCurrentUser(expandedItem);
+
+    if (expandedItem && expandedItem.id && !isReadonly) {
       this.addTags(expandedItem);
 
       this.jobDescriptionsService
@@ -830,26 +836,28 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
         });
     }
 
-    // Release lock when overlay closes (unless keeping lock for workplace)
+    // Release lock when overlay closes (unless keeping lock for workplace or readonly)
     if (this.expandedItemId && !options.keepLock) {
       const itemToRelease = this.jobDescriptions.find(
         (jd) => jd.id === this.expandedItemId,
       );
 
-      this.lockService
-        .releaseLock('JobDescription', this.expandedItemId)
-        .subscribe({
-          next: () => {
-            // Update local state to reflect lock release
-            if (itemToRelease) {
-              itemToRelease.lockedById = undefined;
-              itemToRelease.lockedAt = undefined;
-              itemToRelease.lockExpiry = undefined;
-            }
-          },
-          error: (err) =>
-            console.error('Error releasing lock on overlay close:', err),
-        });
+      if (!isReadonly) {
+        this.lockService
+          .releaseLock('JobDescription', this.expandedItemId)
+          .subscribe({
+            next: () => {
+              // Update local state to reflect lock release
+              if (itemToRelease) {
+                itemToRelease.lockedById = undefined;
+                itemToRelease.lockedAt = undefined;
+                itemToRelease.lockExpiry = undefined;
+              }
+            },
+            error: (err) =>
+              console.error('Error releasing lock on overlay close:', err),
+          });
+      }
 
       // Reset expanded state
       this.expandedItemId = null;
