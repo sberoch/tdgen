@@ -79,17 +79,15 @@
             {{ card.classification || "EG: offen" }}
           </p>
         </div>
-        <div class="flex items-center gap-1">
-          <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
-            {{ card.title }}
-          </p>
+        <p class="font-bold text-xs 2xl:text-sm 3xl:text-base">
+          {{ card.title }}
           <span
             *ngIf="card.jobTask.isLockedForUsers"
-            class="w-2 h-2 rounded-full flex-shrink-0"
+            class="inline-block w-2 h-2 rounded-full ml-1 translate-y-[-2px]"
             style="background-color: rgb(0, 133, 216)"
             title="Bearbeitung für User gesperrt"
           ></span>
-        </div>
+        </p>
         <p
           class="text-xs 2xl:text-sm mt-1"
           [innerHTML]="card.text | truncateSafeHtml: 145"

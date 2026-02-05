@@ -59,6 +59,6 @@ export class AuthService {
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     const adminRoleName = this.runtimeConfig.adminRoleName;
-    return user?.groups?.includes(adminRoleName) || false;
+    return user?.groups?.some(g => g.toLowerCase().includes(adminRoleName.toLowerCase())) || false;
   }
 }

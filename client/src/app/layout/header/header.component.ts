@@ -80,14 +80,14 @@ export class HeaderComponent implements OnInit {
 
   getHigherHierarchyRoleName(): string {
     if (
-      this.currentUser?.groups.includes(this.environmentService.adminRoleName)
+      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.adminRoleName.toLowerCase()))
     ) {
       return (
         this.environmentService.adminRoleName.charAt(0).toUpperCase() +
         this.environmentService.adminRoleName.slice(1)
       );
     } else if (
-      this.currentUser?.groups.includes(this.environmentService.userRoleName)
+      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.userRoleName.toLowerCase()))
     ) {
       return (
         this.environmentService.userRoleName.charAt(0).toUpperCase() +
@@ -224,9 +224,8 @@ export class HeaderComponent implements OnInit {
 
   isUserAdmin(): boolean {
     return (
-      this.currentUser?.groups.includes(
-        this.environmentService.adminRoleName
-      ) || false
+      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.adminRoleName.toLowerCase()))
+       || false
     );
   }
 }

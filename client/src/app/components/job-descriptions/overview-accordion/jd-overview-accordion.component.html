@@ -61,11 +61,11 @@
         class="flex bg-tertiary text-white font-medium text-sm 3xl:text-base sticky top-0 z-10"
       >
         <div class="px-4 py-2 flex-1 text-left">Titel</div>
+        <div class="px-4 py-2 w-10"></div>
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">erstellt am</div>
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">geändert am</div>
         <div class="px-4 py-2 w-28 3xl:w-32 text-left">gelöscht am</div>
         <div class="px-4 py-2 w-28 3xl:w-32"></div>
-        <div class="px-4 py-2 w-10"></div>
       </div>
 
       <!-- Accordion items -->
@@ -135,6 +135,13 @@
             >
               <mat-icon class="text-lg -translate-y-1">edit</mat-icon>
             </button>
+          </div>
+          <div class="px-4 py-2 w-10 flex items-center justify-center">
+            <span
+              *ngIf="item.isLockedForUsers"
+              class="w-2 h-2 rounded-full"
+              style="background-color: rgb(0, 133, 216)"
+            ></span>
           </div>
           <div
             class="px-4 py-2 text-sm 2xl:text-base 3xl:text-lg w-28 3xl:w-32"
@@ -283,13 +290,6 @@
                 </mat-icon>
               </button>
             </ng-template>
-          </div>
-          <div class="pr-4 py-2 w-10 flex items-center justify-center">
-            <span
-              *ngIf="item.isLockedForUsers"
-              class="w-2 h-2 rounded-full -translate-y-[1px] -translate-x-[2px]"
-              style="background-color: rgb(0, 133, 216)"
-            ></span>
           </div>
         </div>
 

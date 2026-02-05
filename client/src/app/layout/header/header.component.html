@@ -12,6 +12,12 @@
       <div class="flex flex-col items-center gap-1" *ngIf="jobDescription">
         <div class="flex items-center gap-2">
           <p class="font-bold">{{ jobDescription.title }}</p>
+          <span
+            *ngIf="jobDescription.isLockedForUsers"
+            class="w-2 h-2 rounded-full flex-shrink-0"
+            style="background-color: rgb(0, 133, 216)"
+            title="Bearbeitung für User gesperrt"
+          ></span>
           <p class="text-sm text-zinc-600">
             (Ø {{ jobDescription.weightedAverage.toFixed(2) }})
           </p>
@@ -49,7 +55,8 @@
         class="text-sm text-zinc-500 translate-y-[2px] italic"
         *ngIf="currentUser"
       >
-        {{ getHigherHierarchyRoleName() }}
+        {{ currentUser.id }}
+        ({{ getHigherHierarchyRoleName() }})
       </div>
       <button
         mat-icon-button
