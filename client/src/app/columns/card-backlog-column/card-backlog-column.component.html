@@ -38,7 +38,8 @@
         [class.cursor-move]="
           isWorkspaceSet &&
           !isLockedByOtherUser(card) &&
-          !isCardLockedForUsers(card)
+          !isCardLockedForUsers(card) &&
+          !isJobDescriptionLockedForUsers()
         "
         [class.cursor-not-allowed]="
           !isWorkspaceSet ||
@@ -50,7 +51,8 @@
         [cdkDragDisabled]="
           !isWorkspaceSet ||
           isLockedByOtherUser(card) ||
-          isCardLockedForUsers(card)
+          isCardLockedForUsers(card) ||
+          isJobDescriptionLockedForUsers()
         "
         (cdkDragStarted)="onDragStarted($event, card)"
         [cardTooltip]="card"
@@ -140,10 +142,14 @@
           <div
             class="shadow-[1px_1px_2px_1px_rgba(0,_0,_0,_0.2)] rounded-md pt-2 px-4 pb-4 select-none border border-transparent mb-2 last:mb-0"
             [class.!border-[#333]]="card.title === selectedCard?.title"
-            [class.cursor-move]="!isJobDescriptionLocked()"
+            [class.cursor-move]="
+              !isJobDescriptionLocked() && !isJobDescriptionLockedForUsers()
+            "
             [class.cursor-not-allowed]="isJobDescriptionLocked()"
             cdkDrag
-            [cdkDragDisabled]="isJobDescriptionLocked()"
+            [cdkDragDisabled]="
+              isJobDescriptionLocked() || isJobDescriptionLockedForUsers()
+            "
             (cdkDragStarted)="onDragStarted($event, card)"
             [style.backgroundColor]="$index | pastelColor"
             (click)="selectCard(card)"
@@ -165,7 +171,7 @@
                 </p>
                 <span
                   *ngIf="card.jobTask.isLockedForUsers"
-                  class="w-2 h-2 rounded-full flex-shrink-0"
+                  class="w-2 h-2 rounded-full flex-shrink-0 ml-1"
                   style="background-color: rgb(0, 133, 216)"
                 ></span>
                 <mat-icon

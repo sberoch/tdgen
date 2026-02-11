@@ -30,7 +30,7 @@ export class CardSizingColumnComponent implements OnInit {
     private currentWorkspaceService: CurrentWorkspaceService,
     private cardService: CardService,
     private jobDescriptionsService: JobDescriptionsService,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit() {
@@ -53,7 +53,7 @@ export class CardSizingColumnComponent implements OnInit {
         } else {
           this.isWorkspaceSet = false;
         }
-      }
+      },
     );
     this.cardService.selectedCard$.subscribe((card) => {
       this.selectedCard = card;
@@ -97,8 +97,12 @@ export class CardSizingColumnComponent implements OnInit {
       this._snackBar.open(
         'Die Tätigkeitsdarstellung ist von einem anderen Benutzer gesperrt',
         'Bestätigen',
-        { duration: 3000 }
+        { duration: 3000 },
       );
+      return;
+    }
+
+    if (this.isJobDescriptionLockedForUsers()) {
       return;
     }
 
@@ -168,7 +172,7 @@ export class CardSizingColumnComponent implements OnInit {
 
     const taskPercentages = this.cards.map((card) => {
       const jdt = jobDescriptionTasks.find(
-        (task) => task.jobTask.id === card.jobTask.id
+        (task) => task.jobTask.id === card.jobTask.id,
       );
       return {
         taskId: jdt!.id,
@@ -196,6 +200,14 @@ export class CardSizingColumnComponent implements OnInit {
       !!this.jobDescription &&
       !!this.jobDescription.lockedById &&
       this.jobDescription.lockedById !== currentUser?.id
+    );
+  }
+
+  isJobDescriptionLockedForUsers(): boolean {
+    return (
+      !!this.jobDescription &&
+      !!this.jobDescription.isLockedForUsers &&
+      !this.authService.isAdmin()
     );
   }
 }

@@ -21,7 +21,9 @@
         class="absolute -bottom-[6.5px] left-0 right-0 flex items-center justify-center bg-inherit z-20"
       >
         <mat-icon
-          class="text-black/30 text-3xl cursor-grab"
+          class="text-black/30 text-3xl"
+          [class.cursor-grab]="!isJobDescriptionLocked() && !isJobDescriptionLockedForUsers()"
+          [class.cursor-not-allowed]="isJobDescriptionLocked() || isJobDescriptionLockedForUsers()"
           (mousedown)="startDrag($event, $index)"
           >drag_handle</mat-icon
         >

@@ -278,10 +278,14 @@
                       !!item.deletedAt || isItemLockedForCurrentUser(item)
                     "
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic disabled:opacity-50"
+                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic disabled:cursor-not-allowed"
+                    [class.opacity-50]="!!item.deletedAt"
+                    [class.opacity-80]="isItemLockedForCurrentUser(item)"
                   />
                   <button
                     class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90 disabled:text-black/30 disabled:cursor-not-allowed"
+                    [class.opacity-50]="!!item.deletedAt"
+                    [class.opacity-80]="isItemLockedForCurrentUser(item)"
                     (click)="tagInput = ''"
                     [disabled]="
                       !!item.deletedAt || isItemLockedForCurrentUser(item)
@@ -295,7 +299,9 @@
                   [disabled]="
                     !!item.deletedAt || isItemLockedForCurrentUser(item)
                   "
-                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:bg-secondary/50 disabled:cursor-not-allowed"
+                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:bg-secondary/60 disabled:cursor-not-allowed"
+                  [class.opacity-50]="!!item.deletedAt"
+                  [class.opacity-80]="isItemLockedForCurrentUser(item)"
                 >
                   Hinzufügen
                 </button>
@@ -345,9 +351,11 @@
                   "
                   [class]="
                     item.deletedAt || isItemLockedForCurrentUser(item)
-                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#cccccc] opacity-50 cursor-not-allowed'
+                      ? 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#cccccc] disabled:cursor-not-allowed'
                       : 'w-4 h-4 flex items-center justify-center rounded-full bg-white text-[#888888] hover:bg-red-700 hover:text-white cursor-pointer'
                   "
+                  [class.opacity-50]="!!item.deletedAt"
+                  [class.opacity-80]="isItemLockedForCurrentUser(item)"
                 >
                   <mat-icon class="text-xs mt-2">close</mat-icon>
                 </button>

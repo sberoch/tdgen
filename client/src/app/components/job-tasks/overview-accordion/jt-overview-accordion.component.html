@@ -263,13 +263,17 @@
                     "
                     [(ngModel)]="tagInput"
                     (keyup.enter)="handleKeyPress($any($event), item)"
-                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm disabled:opacity-50 placeholder:italic"
+                    class="w-full border border-[#e2e8f0] rounded-sm py-1 px-2 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic disabled:cursor-not-allowed"
+                    [class.opacity-50]="!!item.deletedAt"
+                    [class.opacity-80]="isItemLockedForCurrentUser(item)"
                   />
                   <button
                     [disabled]="
                       !!item.deletedAt || isItemLockedForCurrentUser(item)
                     "
-                    class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90 disabled:opacity-50"
+                    class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90 disabled:cursor-not-allowed"
+                    [class.opacity-50]="!!item.deletedAt"
+                    [class.opacity-80]="isItemLockedForCurrentUser(item)"
                     (click)="tagInput = ''"
                   >
                     <mat-icon class="text-lg">backspace</mat-icon>
@@ -280,7 +284,9 @@
                     !!item.deletedAt || isItemLockedForCurrentUser(item)
                   "
                   (click)="addTags(item)"
-                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:opacity-50"
+                  class="bg-secondary text-white px-3 py-1 rounded-md hover:bg-secondary/80 text-sm disabled:cursor-not-allowed"
+                  [class.opacity-50]="!!item.deletedAt"
+                  [class.opacity-80]="isItemLockedForCurrentUser(item)"
                 >
                   Hinzufügen
                 </button>
@@ -309,7 +315,9 @@
                 <select
                   *ngIf="isAdmin()"
                   [disabled]="!!item.deletedAt"
-                  class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary disabled:opacity-50"
+                  class="text-zinc-600 text-sm border border-[#e2e8f0] rounded-sm h-[30px] px-2 focus:outline-none focus:ring-secondary focus:border-secondary"
+                  [class.opacity-50]="!!item.deletedAt"
+                  [class.opacity-80]="isItemLockedForCurrentUser(item)"
                   (change)="onEgSelected($any($event.target).value, item)"
                 >
                   <option value="">Auswählen...</option>
@@ -323,7 +331,12 @@
                   </option>
                 </select>
                 <!-- Non-admin users see text display -->
-                <span *ngIf="!isAdmin()" class="text-zinc-600 text-sm">
+                <span
+                  *ngIf="!isAdmin()"
+                  class="text-zinc-600 text-sm"
+                  [class.opacity-50]="!!item.deletedAt"
+                  [class.opacity-80]="isItemLockedForCurrentUser(item)"
+                >
                   {{ item.metadata["paymentGroup"] || "EG: offen" }}
                 </span>
               </div>
@@ -361,12 +374,13 @@
                 </button>
               </div>
             </div>
-            <div class="mt-2">
+            <div
+              class="mt-2"
+              [class.readonly]="isItemLockedForCurrentUser(item)"
+            >
               <h3
                 class="text-sm 2xl:text-base 3xl:text-lg font-semibold mb-2"
-                [class.opacity-50]="
-                  !!item.deletedAt || isItemLockedForCurrentUser(item)
-                "
+                [class.opacity-50]="!!item.deletedAt"
               >
                 Beschreibung des Arbeitsvorganges:
               </h3>

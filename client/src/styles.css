@@ -283,6 +283,15 @@ angular-editor:has([contenteditable="false"]) .angular-editor-toolbar {
   cursor: default !important;
 }
 
+.readonly .angular-editor-wrapper:has([contenteditable="false"]),
+.readonly angular-editor:has([contenteditable="false"]) {
+  opacity: 1 !important;
+}
+
+.readonly [contenteditable="false"].angular-editor-textarea {
+  color: #000 !important;
+}
+
 /* Angular Editor textarea focus styling */
 .angular-editor-textarea:focus {
   outline: none !important;
