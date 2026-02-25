@@ -40,7 +40,7 @@
           <div
             *ngIf="field.type === 'text' && field.name && field.label"
             class="mb-12 mt-2"
-            [class.opacity-60]="isLockedForCurrentUser()"
+            [class.readonly]="isLockedForCurrentUser()"
           >
             <label
               [for]="field.name"

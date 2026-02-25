@@ -38,20 +38,17 @@
         [class.cursor-move]="
           isWorkspaceSet &&
           !isLockedByOtherUser(card) &&
-          !isCardLockedForUsers(card) &&
           !isJobDescriptionLockedForUsers()
         "
         [class.cursor-not-allowed]="
           !isWorkspaceSet ||
-          isLockedByOtherUser(card) ||
-          isCardLockedForUsers(card)
+          isLockedByOtherUser(card)
         "
         [class.opacity-60]="isLockedByOtherUser(card)"
         cdkDrag
         [cdkDragDisabled]="
           !isWorkspaceSet ||
           isLockedByOtherUser(card) ||
-          isCardLockedForUsers(card) ||
           isJobDescriptionLockedForUsers()
         "
         (cdkDragStarted)="onDragStarted($event, card)"
@@ -263,8 +260,7 @@
     (click)="moveCardToTop(currentIndex)"
     [disabled]="
       isJobDescriptionLocked() ||
-      isJobDescriptionLockedForUsers() ||
-      isCardLockedForUsers(displayCards[currentIndex])
+      isJobDescriptionLockedForUsers()
     "
   >
     <mat-icon>vertical_align_top</mat-icon>
@@ -275,8 +271,7 @@
     (click)="moveCardToBottom(currentIndex)"
     [disabled]="
       isJobDescriptionLocked() ||
-      isJobDescriptionLockedForUsers() ||
-      isCardLockedForUsers(displayCards[currentIndex])
+      isJobDescriptionLockedForUsers()
     "
   >
     <mat-icon>vertical_align_bottom</mat-icon>
@@ -302,8 +297,7 @@
     (click)="removeFromDisplay(displayCards[currentIndex])"
     [disabled]="
       isJobDescriptionLocked() ||
-      isJobDescriptionLockedForUsers() ||
-      isCardLockedForUsers(displayCards[currentIndex])
+      isJobDescriptionLockedForUsers()
     "
     class="!text-red-500"
   >
