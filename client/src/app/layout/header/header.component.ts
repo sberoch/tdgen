@@ -61,7 +61,7 @@ export class HeaderComponent implements OnInit {
     private jobDescriptionsService: JobDescriptionsService,
     private authService: AuthService,
     private environmentService: EnvironmentService,
-    private lockService: LockService
+    private lockService: LockService,
   ) {}
 
   ngOnInit() {
@@ -70,7 +70,7 @@ export class HeaderComponent implements OnInit {
         this.jobDescription = jobDescription;
         this.isWorkspaceSet = jobDescription !== null;
         this.tags = jobDescription?.tags.map((tag) => tag.name) || [];
-      }
+      },
     );
 
     this.authService.user$.subscribe((user) => {
@@ -80,19 +80,21 @@ export class HeaderComponent implements OnInit {
 
   getHigherHierarchyRoleName(): string {
     if (
-      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.adminRoleName.toLowerCase()))
+      this.currentUser?.groups.some((g) =>
+        g
+          .toLowerCase()
+          .includes(this.environmentService.adminRoleName.toLowerCase()),
+      )
     ) {
-      return (
-        this.environmentService.adminRoleName.charAt(0).toUpperCase() +
-        this.environmentService.adminRoleName.slice(1)
-      );
+      return 'Admin';
     } else if (
-      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.userRoleName.toLowerCase()))
+      this.currentUser?.groups.some((g) =>
+        g
+          .toLowerCase()
+          .includes(this.environmentService.userRoleName.toLowerCase()),
+      )
     ) {
-      return (
-        this.environmentService.userRoleName.charAt(0).toUpperCase() +
-        this.environmentService.userRoleName.slice(1)
-      );
+      return 'User';
     }
     if (this.currentUser?.groups[0]) {
       return (
@@ -185,7 +187,7 @@ export class HeaderComponent implements OnInit {
       this.jobDescription?.tasks?.some(
         (task) =>
           task.jobTask.deletedAt !== undefined &&
-          task.jobTask.deletedAt !== null
+          task.jobTask.deletedAt !== null,
       )
     ) {
       this.dialog.open(DeletedTasksWarningDialogComponent, {
@@ -224,8 +226,11 @@ export class HeaderComponent implements OnInit {
 
   isUserAdmin(): boolean {
     return (
-      this.currentUser?.groups.some(g => g.toLowerCase().includes(this.environmentService.adminRoleName.toLowerCase()))
-       || false
+      this.currentUser?.groups.some((g) =>
+        g
+          .toLowerCase()
+          .includes(this.environmentService.adminRoleName.toLowerCase()),
+      ) || false
     );
   }
 }
