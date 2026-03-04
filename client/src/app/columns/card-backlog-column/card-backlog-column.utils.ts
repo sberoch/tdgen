@@ -47,11 +47,7 @@ export function validateFilterToken(token: string): FilterValidationResult {
   const validator = FILTER_VALIDATORS[identifier];
 
   if (!validator) {
-    // Unknown filter name — but only flag if there's actually an identifier before the colon
-    if (identifier.length > 0) {
-      return { valid: false, error: 'Filtername unbekannt' };
-    }
-    return { valid: true };
+    return { valid: false, error: 'Filtername unbekannt' };
   }
 
   // Known filter but no value yet (still typing)

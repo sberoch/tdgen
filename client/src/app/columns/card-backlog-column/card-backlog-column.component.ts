@@ -68,6 +68,21 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
         line-height: normal;
       }
 
+      :host ::ng-deep .token-valid {
+        background-color: #e0e0e0;
+        font-style: italic;
+        border-radius: 3px;
+        box-shadow: -2px 0 0 #e0e0e0, 2px 0 0 #e0e0e0;
+      }
+
+      :host ::ng-deep .token-invalid {
+        background-color: #fecaca;
+        color: #dc2626;
+        font-style: italic;
+        border-radius: 3px;
+        box-shadow: -2px 0 0 #fecaca, 2px 0 0 #fecaca;
+      }
+
       :host ::ng-deep ol {
         list-style: decimal;
         padding-left: 1.5rem;
@@ -93,7 +108,7 @@ export class CardBacklogColumnComponent implements OnInit {
   backlogSearchInputRef!: ElementRef<HTMLInputElement>;
   @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
   @ViewChild('searchArea') searchArea!: ElementRef<HTMLElement>;
-  @ViewChild('tooltipOverlay') tooltipOverlayRef!: ElementRef<HTMLElement>;
+  @ViewChild('tooltipOverlay') tooltipOverlayRef?: ElementRef<HTMLElement>;
 
   isWorkspaceSet = false;
   isHelpPanelOpen = false;
@@ -114,7 +129,6 @@ export class CardBacklogColumnComponent implements OnInit {
   filterTooltipText: string = '';
   filterTooltipVisible: boolean = false;
   filterTooltipLeft: number = 0;
-  private readonly TOKEN_REGEX = /[A-Za-z]+:(?:[A-Za-z0-9,.]+|"[^"]*")?(?=\s|$)/g;
   private destroy$ = new Subject<void>();
   leftWidth = this.loadColumnWidth();
   resizing = false;
@@ -242,11 +256,8 @@ export class CardBacklogColumnComponent implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
-    if (
-      this.isHelpPanelOpen &&
-      this.searchArea &&
-      !this.searchArea.nativeElement.contains(event.target as Node)
-    ) {
+    if (!this.isHelpPanelOpen) return;
+    if (!this.searchArea.nativeElement.contains(event.target as Node)) {
       this.isHelpPanelOpen = false;
     }
   }
@@ -268,27 +279,31 @@ export class CardBacklogColumnComponent implements OnInit {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    let tooltipHtml = escaped;
-    const html = escaped.replace(
-      this.TOKEN_REGEX,
-      (match) => {
-        const result = validateFilterToken(match);
-        if (!result.valid) {
-          const bg = '#fecaca';
-          tooltipHtml = tooltipHtml.replace(
-            match,
-            `<span style="pointer-events: auto; cursor: default;" data-filter-tooltip="${result.error}">${match}</span>`,
-          );
-          return `<span style="background-color: ${bg}; color: #dc2626; font-style: italic; border-radius: 3px; box-shadow: -2px 0 0 ${bg}, 2px 0 0 ${bg};">${match}</span>`;
-        }
-        tooltipHtml = tooltipHtml.replace(match, `<span>${match}</span>`);
-        return `<span style="background-color: #e0e0e0; font-style: italic; border-radius: 3px; box-shadow: -2px 0 0 #e0e0e0, 2px 0 0 #e0e0e0;">${match}</span>`;
-      },
-    );
+    // Collect matches with positions to avoid string.replace() first-occurrence bug
+    const matches: { start: number; end: number; text: string; valid: boolean; error?: string }[] = [];
+    const regex = /[A-Za-z]+:(?:[A-Za-z0-9,.]+|"[^"]*")?(?=\s|$)/g;
+    let m;
+    while ((m = regex.exec(escaped)) !== null) {
+      const result = validateFilterToken(m[0]);
+      matches.push({ start: m.index, end: m.index + m[0].length, text: m[0], valid: result.valid, error: result.error });
+    }
 
-    this.highlightedSearchHtml = this.sanitizer.bypassSecurityTrustHtml(html);
-    this.tooltipOverlayHtml =
-      this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
+    // Build both HTML strings using index-based splicing (reverse order to preserve positions)
+    let highlightedHtml = escaped;
+    let tooltipHtml = escaped;
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const { start, end, text: token, valid, error } = matches[i];
+      if (valid) {
+        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-valid">${token}</span>` + highlightedHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span>${token}</span>` + tooltipHtml.slice(end);
+      } else {
+        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-invalid">${token}</span>` + highlightedHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span style="pointer-events: auto; cursor: default;" data-filter-tooltip="${error}">${token}</span>` + tooltipHtml.slice(end);
+      }
+    }
+
+    this.highlightedSearchHtml = this.sanitizer.bypassSecurityTrustHtml(highlightedHtml);
+    this.tooltipOverlayHtml = this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
   }
 
   private applySearchFilter(searchTerm: string): void {
