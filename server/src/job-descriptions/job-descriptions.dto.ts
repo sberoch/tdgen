@@ -18,6 +18,14 @@ export type JobDescriptionParams = {
   includeDeleted?: boolean;
   search?: string;
   createdById?: string;
+  createdBefore?: string;
+  createdAt?: string;
+  createdAfter?: string;
+  modifiedBefore?: string;
+  modifiedAt?: string;
+  modifiedAfter?: string;
+  modifiedBy?: string;
+  readonly?: string;
 };
 
 export type UpdateJobDescriptionPercentagesDto = {

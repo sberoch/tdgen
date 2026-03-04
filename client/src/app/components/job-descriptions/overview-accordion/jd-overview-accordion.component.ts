@@ -12,6 +12,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnInit,
   Output,
@@ -20,6 +21,7 @@ import {
   ViewChildren,
   ViewChild,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,13 +35,19 @@ import {
   JobDescriptionFilter,
   JobDescriptionsService,
 } from '../../../services/job-descriptions.service';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, debounceTime } from 'rxjs';
 import { JobDescription } from '../../../types/job-descriptions';
 import { Tag } from '../../../types/tag';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
 import { LockConflictDialogComponent } from '../../lock-conflict-dialog/lock-conflict-dialog.component';
 import { getTruncatedPlainText } from '../../../utils/card.utils';
+import {
+  validateFilterToken,
+  extractFilters,
+  TOKEN_REGEX,
+  FilterContext,
+} from '../../../columns/card-backlog-column/card-backlog-column.utils';
 
 interface ExpandableJobDescription extends JobDescription {
   expanded: boolean;
@@ -81,6 +89,28 @@ interface ExpandableJobDescription extends JobDescription {
       transition('collapsed <=> expanded', [animate('200ms ease-in-out')]),
     ]),
   ],
+  styles: [
+    `
+      .search-backdrop {
+        line-height: normal;
+      }
+
+      :host ::ng-deep .token-valid {
+        background-color: #e0e0e0;
+        font-style: italic;
+        border-radius: 3px;
+        box-shadow: -2px 0 0 #e0e0e0, 2px 0 0 #e0e0e0;
+      }
+
+      :host ::ng-deep .token-invalid {
+        background-color: #fecaca;
+        color: #dc2626;
+        font-style: italic;
+        border-radius: 3px;
+        box-shadow: -2px 0 0 #fecaca, 2px 0 0 #fecaca;
+      }
+    `,
+  ],
 })
 export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   @Input() initialJobDescription: JobDescription | null = null;
@@ -96,7 +126,20 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   @ViewChildren('accordionItem') accordionItems!: QueryList<ElementRef>;
   @ViewChild('searchInput') searchInput!: ElementRef;
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
+  @ViewChild('searchArea') searchArea!: ElementRef<HTMLElement>;
+  @ViewChild('tooltipOverlay') tooltipOverlayRef?: ElementRef<HTMLElement>;
   @Output() closeModal = new EventEmitter<void>();
+
+  // Search overlay properties
+  highlightedSearchHtml: SafeHtml = '';
+  tooltipOverlayHtml: SafeHtml = '';
+  filterTooltipText: string = '';
+  filterTooltipVisible: boolean = false;
+  filterTooltipLeft: number = 0;
+  isHelpPanelOpen: boolean = false;
+  private filterContext: FilterContext = 'jd';
+  private searchSubject$ = new Subject<string>();
+  private currentSearchRawValue: string = '';
 
   jobDescriptions: ExpandableJobDescription[] = [];
   private subscription: Subscription = new Subscription();
@@ -110,6 +153,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     private lockService: LockService,
     private sseService: SseService,
     private cdr: ChangeDetectorRef,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -138,6 +182,23 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           isNew: false,
         })) as ExpandableJobDescription[];
         this.cdr.markForCheck();
+      }),
+    );
+
+    // Debounced search
+    this.subscription.add(
+      this.searchSubject$.pipe(debounceTime(300)).subscribe((rawValue) => {
+        const { filters, freeText } = extractFilters(rawValue, this.filterContext);
+        const combinedFilter: JobDescriptionFilter = {
+          includeDeleted: undefined,
+          createdById: this.showOwnEntriesOnly
+            ? this.authService.getCurrentUser()?.id
+            : undefined,
+          search: freeText || undefined,
+          ...filters,
+        };
+        this.filter = combinedFilter;
+        this.loadJobDescriptions();
       }),
     );
   }
@@ -786,8 +847,114 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     this.onOverlayModalClosed({ keepLock: isCurrentlyExpanded });
   }
 
+  onSearch(event: Event): void {
+    const rawValue = (event.target as HTMLInputElement).value;
+    this.currentSearchRawValue = rawValue;
+    this.updateHighlightedSearch(rawValue);
+    this.searchSubject$.next(rawValue);
+  }
+
+  clearSearch(inputElement: HTMLInputElement): void {
+    inputElement.value = '';
+    this.currentSearchRawValue = '';
+    this.highlightedSearchHtml = '';
+    this.tooltipOverlayHtml = '';
+    this.filter = {
+      createdById: this.showOwnEntriesOnly
+        ? this.authService.getCurrentUser()?.id
+        : undefined,
+    };
+    this.loadJobDescriptions();
+  }
+
+  private updateHighlightedSearch(text: string): void {
+    if (!text) {
+      this.highlightedSearchHtml = '';
+      this.tooltipOverlayHtml = '';
+      return;
+    }
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const matches: { start: number; end: number; text: string; valid: boolean; error?: string }[] = [];
+    const regex = new RegExp(TOKEN_REGEX.source, TOKEN_REGEX.flags);
+    let m;
+    while ((m = regex.exec(escaped)) !== null) {
+      const result = validateFilterToken(m[0], this.filterContext);
+      matches.push({ start: m.index, end: m.index + m[0].length, text: m[0], valid: result.valid, error: result.error });
+    }
+
+    let highlightedHtml = escaped;
+    let tooltipHtml = escaped;
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const { start, end, text: token, valid, error } = matches[i];
+      if (valid) {
+        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-valid">${token}</span>` + highlightedHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span>${token}</span>` + tooltipHtml.slice(end);
+      } else {
+        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-invalid">${token}</span>` + highlightedHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span style="pointer-events: auto; cursor: default;" data-filter-tooltip="${error}">${token}</span>` + tooltipHtml.slice(end);
+      }
+    }
+
+    this.highlightedSearchHtml = this.sanitizer.bypassSecurityTrustHtml(highlightedHtml);
+    this.tooltipOverlayHtml = this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
+  }
+
+  onSearchAreaMouseMove(event: MouseEvent): void {
+    if (!this.tooltipOverlayRef) {
+      this.filterTooltipVisible = false;
+      return;
+    }
+    const overlayEl = this.tooltipOverlayRef.nativeElement;
+    const spans = overlayEl.querySelectorAll('[data-filter-tooltip]');
+    let found = false;
+    for (let i = 0; i < spans.length; i++) {
+      const rect = spans[i].getBoundingClientRect();
+      if (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        const tooltip = spans[i].getAttribute('data-filter-tooltip')!;
+        this.filterTooltipText = tooltip;
+        this.filterTooltipVisible = true;
+        const parentRect = overlayEl.closest('.relative')!.getBoundingClientRect();
+        this.filterTooltipLeft = rect.left - parentRect.left + rect.width / 2;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      this.filterTooltipVisible = false;
+    }
+  }
+
+  onTooltipOverlayMouseLeave(): void {
+    this.filterTooltipVisible = false;
+  }
+
+  toggleHelpPanel(event: Event): void {
+    event.stopPropagation();
+    this.isHelpPanelOpen = !this.isHelpPanelOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isHelpPanelOpen || !this.searchArea) return;
+    if (!this.searchArea.nativeElement.contains(event.target as Node)) {
+      this.isHelpPanelOpen = false;
+    }
+  }
+
   resetSearchInput(): void {
     this.filter = {};
+    this.currentSearchRawValue = '';
+    this.highlightedSearchHtml = '';
+    this.tooltipOverlayHtml = '';
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
     }
@@ -796,6 +963,9 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   resetFiltersAndInput(): void {
     this.filter = {};
     this.showOwnEntriesOnly = false;
+    this.currentSearchRawValue = '';
+    this.highlightedSearchHtml = '';
+    this.tooltipOverlayHtml = '';
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
     }

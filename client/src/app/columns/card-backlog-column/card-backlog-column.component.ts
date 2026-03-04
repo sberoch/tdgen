@@ -35,8 +35,8 @@ import { JobDescription } from '../../types/job-descriptions';
 import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { InsufficientRightsDialogComponent } from '../../components/insufficient-rights-dialog/insufficient-rights-dialog.component';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
-import { Subject, takeUntil } from 'rxjs';
-import { validateFilterToken } from './card-backlog-column.utils';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
+import { validateFilterToken, extractFilters, TOKEN_REGEX } from './card-backlog-column.utils';
 
 const MAX_DISPLAY_CARDS = 10;
 const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
@@ -130,6 +130,8 @@ export class CardBacklogColumnComponent implements OnInit {
   filterTooltipVisible: boolean = false;
   filterTooltipLeft: number = 0;
   private destroy$ = new Subject<void>();
+  private filterSubject$ = new Subject<string>();
+  private hasActiveServerFilters = false;
   leftWidth = this.loadColumnWidth();
   resizing = false;
 
@@ -183,6 +185,26 @@ export class CardBacklogColumnComponent implements OnInit {
         setTimeout(() => {
           this.scrollToSelectedCard();
         }, 50);
+      });
+
+    this.filterSubject$
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe((searchTerm) => {
+        const { filters, freeText } = extractFilters(searchTerm);
+        const hasFilters = Object.keys(filters).length > 0;
+
+        if (hasFilters) {
+          this.hasActiveServerFilters = true;
+          this.cardService.fetchFilteredCards(filters);
+          // Store free text for client-side filtering after server response
+          this.currentSearchTerm = freeText;
+        } else if (this.hasActiveServerFilters) {
+          // Had filters before, now removed — reload all cards
+          this.hasActiveServerFilters = false;
+          this.cardService.initializeCards();
+          this.currentSearchTerm = searchTerm;
+        }
+        // If no filters and no previous filters, client-side filtering already handled in onSearch
       });
   }
 
@@ -263,9 +285,27 @@ export class CardBacklogColumnComponent implements OnInit {
   }
 
   onSearch(event: Event) {
-    this.currentSearchTerm = (event.target as HTMLInputElement).value;
-    this.updateHighlightedSearch(this.currentSearchTerm);
-    this.applySearchFilter(this.currentSearchTerm);
+    const rawValue = (event.target as HTMLInputElement).value;
+    this.currentSearchTerm = rawValue;
+    this.updateHighlightedSearch(rawValue);
+
+    // Extract filters to decide if we need server-side filtering
+    const { filters, freeText } = extractFilters(rawValue);
+    const hasFilters = Object.keys(filters).length > 0;
+
+    if (hasFilters) {
+      // Apply client-side filter on free text immediately for responsiveness
+      this.applySearchFilter(freeText);
+      // Debounced server call
+      this.filterSubject$.next(rawValue);
+    } else {
+      if (this.hasActiveServerFilters) {
+        // Filters were just removed — trigger reload
+        this.filterSubject$.next(rawValue);
+      }
+      // Pure free text — client-side only
+      this.applySearchFilter(rawValue);
+    }
   }
 
   private updateHighlightedSearch(text: string): void {
@@ -281,7 +321,7 @@ export class CardBacklogColumnComponent implements OnInit {
 
     // Collect matches with positions to avoid string.replace() first-occurrence bug
     const matches: { start: number; end: number; text: string; valid: boolean; error?: string }[] = [];
-    const regex = /[A-Za-z]+:(?:[A-Za-z0-9,.]+|"[^"]*")?(?=\s|$)/g;
+    const regex = new RegExp(TOKEN_REGEX.source, TOKEN_REGEX.flags);
     let m;
     while ((m = regex.exec(escaped)) !== null) {
       const result = validateFilterToken(m[0]);
@@ -326,6 +366,10 @@ export class CardBacklogColumnComponent implements OnInit {
     this.currentSearchTerm = '';
     this.highlightedSearchHtml = '';
     this.tooltipOverlayHtml = '';
+    if (this.hasActiveServerFilters) {
+      this.hasActiveServerFilters = false;
+      this.cardService.initializeCards();
+    }
     this.applySearchFilter('');
   }
 

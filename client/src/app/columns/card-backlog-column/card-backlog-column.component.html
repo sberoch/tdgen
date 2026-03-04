@@ -36,7 +36,7 @@
         <div
           *ngIf="filterTooltipVisible"
           class="absolute bottom-full mb-2 px-3 py-2 text-sm rounded-md whitespace-nowrap bg-[#f2f6fa] border-2 border-red-500 text-red-600 shadow-lg before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-red-500"
-          style="z-index: 20;"
+          style="z-index: 20"
           [style.left.px]="filterTooltipLeft"
           [style.transform]="'translateX(-50%)'"
         >
@@ -98,12 +98,17 @@
               <!-- Erstellungsdatum -->
               <tr>
                 <td colspan="2" class="border border-[#ddd] p-[3px]">
-                  <span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Erstellungsdatum</span>
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Erstellungsdatum</span
+                  >
                 </td>
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  createdBefore:<span class="italic text-[#808080]">01.01.2025</span>
+                  createdBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Erstellt vor diesem Datum
@@ -111,7 +116,9 @@
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  createdAt:<span class="italic text-[#808080]">01.01.2025</span>
+                  createdAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Genau an diesem Datum erstellt
@@ -119,7 +126,9 @@
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  createdAfter:<span class="italic text-[#808080]">01.01.2025</span>
+                  createdAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Erstellt nach diesem Datum
@@ -128,12 +137,17 @@
               <!-- Änderungsdatum -->
               <tr>
                 <td colspan="2" class="border border-[#ddd] p-[3px]">
-                  <span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Änderungsdatum</span>
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Änderungsdatum</span
+                  >
                 </td>
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  modifiedBefore:<span class="italic text-[#808080]">01.01.2025</span>
+                  modifiedBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Zuletzt geändert vor diesem Datum
@@ -141,7 +155,9 @@
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  modifiedAt:<span class="italic text-[#808080]">01.01.2025</span>
+                  modifiedAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Genau an diesem Datum geändert
@@ -149,7 +165,9 @@
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  modifiedAfter:<span class="italic text-[#808080]">01.01.2025</span>
+                  modifiedAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
                   Zuletzt geändert nach diesem Datum
@@ -158,7 +176,10 @@
               <!-- Nutzer -->
               <tr>
                 <td colspan="2" class="border border-[#ddd] p-[3px]">
-                  <span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Nutzer</span>
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Nutzer</span
+                  >
                 </td>
               </tr>
               <tr>
@@ -180,7 +201,10 @@
               <!-- Sonstige -->
               <tr>
                 <td colspan="2" class="border border-[#ddd] p-[3px]">
-                  <span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Sonstige</span>
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Sonstige</span
+                  >
                 </td>
               </tr>
               <tr>
@@ -188,8 +212,9 @@
                   readonly:<span class="italic text-[#808080]">true</span>
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
-                  Schreibschutz: <span class="italic text-[#808080]">true</span>
-                  oder <span class="italic text-[#808080]">false</span>
+                  Schreibschutz:
+                  <span class="italic text-[#808080]">true</span> oder
+                  <span class="italic text-[#808080]">false</span>
                 </td>
               </tr>
               <tr>

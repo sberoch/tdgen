@@ -17,6 +17,14 @@ export interface JobDescriptionFilter {
   includeDeleted?: boolean;
   search?: string;
   createdById?: string;
+  createdBefore?: string;
+  createdAt?: string;
+  createdAfter?: string;
+  modifiedBefore?: string;
+  modifiedAt?: string;
+  modifiedAfter?: string;
+  modifiedBy?: string;
+  readonly?: string;
 }
 
 @Injectable({
@@ -212,6 +220,24 @@ export class JobDescriptionsService {
 
     if (filter?.createdById) {
       params = params.set('createdById', filter.createdById);
+    }
+
+    const dateFilterKeys = [
+      'createdBefore', 'createdAt', 'createdAfter',
+      'modifiedBefore', 'modifiedAt', 'modifiedAfter',
+    ] as const;
+    for (const key of dateFilterKeys) {
+      if (filter?.[key]) {
+        params = params.set(key, filter[key]!);
+      }
+    }
+
+    if (filter?.modifiedBy) {
+      params = params.set('modifiedBy', filter.modifiedBy);
+    }
+
+    if (filter?.readonly) {
+      params = params.set('readonly', filter.readonly);
     }
 
     return params;

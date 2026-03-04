@@ -1,4 +1,7 @@
-<div class="flex flex-col gap-4 h-full" style="--flash-color: #ffffe6">
+<div
+  class="flex flex-col gap-4 h-full relative isolate"
+  style="--flash-color: #ffffe6"
+>
   <div class="flex justify-between">
     <h1 class="text-2xl 3xl:text-3xl font-medium tracking-wide text-zinc-600">
       Arbeitsvorgänge
@@ -11,21 +14,229 @@
     </button>
   </div>
 
-  <div class="flex items-center gap-2">
-    <div class="relative w-full max-w-md">
-      <input
-        type="text"
-        placeholder="Arbeitsvorgänge filtern"
-        class="w-full border border-[#e2e8f0] rounded-sm py-2 px-3 pr-8 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic"
-        (input)="applyFilter({ search: $any($event.target).value })"
-        #searchInput
-      />
-      <button
-        class="absolute right-2 top-0 h-full text-black/70 hover:text-black/90"
-        (click)="clearFilter(); clearInput(searchInput)"
+  <div class="flex items-center gap-2 relative z-30">
+    <div class="relative w-full max-w-md" #searchArea>
+      <div
+        class="relative w-full bg-white"
+        (mousemove)="onSearchAreaMouseMove($event)"
+        (mouseleave)="onTooltipOverlayMouseLeave()"
       >
-        <mat-icon class="text-lg">backspace</mat-icon>
-      </button>
+        <div
+          class="search-backdrop absolute inset-0 right-14 px-3 py-2 text-sm pointer-events-none overflow-hidden whitespace-pre border border-transparent"
+          [innerHTML]="highlightedSearchHtml"
+        ></div>
+        <input
+          type="text"
+          placeholder="Arbeitsvorgänge filtern"
+          class="w-full border border-[#e2e8f0] rounded-sm py-2 px-3 pr-14 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic bg-transparent"
+          style="
+            color: transparent;
+            caret-color: black;
+            position: relative;
+            z-index: 1;
+          "
+          (input)="onSearch($event)"
+          #searchInput
+        />
+        <div
+          class="absolute inset-0 right-14 px-3 py-2 text-sm pointer-events-none overflow-hidden whitespace-pre border border-transparent"
+          style="z-index: 2; color: transparent"
+          [innerHTML]="tooltipOverlayHtml"
+          #tooltipOverlay
+        ></div>
+        <!-- Filter validation tooltip -->
+        <div
+          *ngIf="filterTooltipVisible"
+          class="absolute bottom-full mb-2 px-3 py-2 text-sm rounded-md whitespace-nowrap bg-[#f2f6fa] border-2 border-red-500 text-red-600 shadow-lg before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-red-500"
+          style="z-index: 20"
+          [style.left.px]="filterTooltipLeft"
+          [style.transform]="'translateX(-50%)'"
+        >
+          {{ filterTooltipText }}
+        </div>
+        <div
+          class="absolute right-1 top-0 h-full flex items-center gap-0.5"
+          style="z-index: 3"
+        >
+          <button
+            class="text-black/70 hover:text-black/90"
+            (click)="clearSearch(searchInput)"
+          >
+            <mat-icon class="text-lg">backspace</mat-icon>
+          </button>
+          <button
+            class="flex items-center justify-center"
+            [ngClass]="{
+              'text-black/70': !isHelpPanelOpen,
+              'hover:text-black/90': !isHelpPanelOpen,
+            }"
+            [style.color]="isHelpPanelOpen ? 'rgb(0, 133, 216)' : ''"
+            (click)="toggleHelpPanel($event)"
+          >
+            <span class="text-lg pl-1 pr-2 font-black translate-y-[-1px]"
+              >?</span
+            >
+          </button>
+        </div>
+      </div>
+      <!-- Help panel -->
+      @if (isHelpPanelOpen) {
+        <div
+          class="absolute left-0 right-0 mt-1 bg-white border border-black/30 rounded-md shadow-lg p-3 text-sm"
+          style="z-index: 40"
+        >
+          <p class="text-[13px] mb-2">
+            Neben Suchbegriffen und Tags können Sie auch die folgenden Filter
+            nutzen (Format "[FILTERNAME]:[WERT]"):
+          </p>
+          <table class="w-full text-[11px] border-collapse">
+            <thead>
+              <tr>
+                <th
+                  class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]"
+                  style="width: 40%"
+                >
+                  Filter
+                </th>
+                <th
+                  class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]"
+                  style="width: 60%"
+                >
+                  Beschreibung
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Erstellungsdatum</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Erstellt vor diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Genau an diesem Datum erstellt
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Erstellt nach diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Änderungsdatum</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Zuletzt geändert vor diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Genau an diesem Datum geändert
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Zuletzt geändert nach diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Nutzer</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdBy:<span class="italic text-[#808080]">499999</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Erstellt von diesem Nutzer (Viererkennung)
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedBy:<span class="italic text-[#808080]">499999</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Zuletzt geändert von diesem Nutzer (Viererkennung)
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Sonstige</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  readonly:<span class="italic text-[#808080]">true</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Schreibschutz:
+                  <span class="italic text-[#808080]">true</span> oder
+                  <span class="italic text-[#808080]">false</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  paygroup:<span class="italic text-[#808080]">3</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                  Entgeltgruppe (1–15)
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
     <input
       type="checkbox"
@@ -56,7 +267,7 @@
   </div>
 
   <div
-    class="overflow-y-scroll mt-2 flex-grow border-y border-y-tertiary"
+    class="overflow-y-scroll mt-2 flex-grow border-y border-y-tertiary relative z-0"
     #scrollContainer
   >
     <div class="w-full">

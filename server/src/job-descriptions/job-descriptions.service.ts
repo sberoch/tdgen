@@ -461,6 +461,70 @@ export class JobDescriptionsService {
       where.createdById = params.createdById;
     }
 
+    // Date filters (format: DD.MM.YYYY)
+    const parseDate = (dateStr: string): Date | null => {
+      const parts = dateStr.split('.');
+      if (parts.length !== 3) return null;
+      const [day, month, year] = parts.map(Number);
+      const date = new Date(year, month - 1, day);
+      return isNaN(date.getTime()) ? null : date;
+    };
+
+    if (params?.createdBefore) {
+      const date = parseDate(params.createdBefore);
+      if (date) where.createdAt = { ...where.createdAt as any, lt: date };
+    }
+
+    if (params?.createdAt) {
+      const date = parseDate(params.createdAt);
+      if (date) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        where.createdAt = { ...where.createdAt as any, gte: date, lt: nextDay };
+      }
+    }
+
+    if (params?.createdAfter) {
+      const date = parseDate(params.createdAfter);
+      if (date) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        where.createdAt = { ...where.createdAt as any, gte: nextDay };
+      }
+    }
+
+    if (params?.modifiedBefore) {
+      const date = parseDate(params.modifiedBefore);
+      if (date) where.updatedAt = { ...where.updatedAt as any, lt: date };
+    }
+
+    if (params?.modifiedAt) {
+      const date = parseDate(params.modifiedAt);
+      if (date) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        where.updatedAt = { ...where.updatedAt as any, gte: date, lt: nextDay };
+      }
+    }
+
+    if (params?.modifiedAfter) {
+      const date = parseDate(params.modifiedAfter);
+      if (date) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        where.updatedAt = { ...where.updatedAt as any, gte: nextDay };
+      }
+    }
+
+    if (params?.modifiedBy) {
+      where.updatedById = params.modifiedBy;
+    }
+
+    if (params?.readonly) {
+      const val = params.readonly.toLowerCase();
+      where.isLockedForUsers = val === 'true' || val === 'yes';
+    }
+
     return where;
   }
 }

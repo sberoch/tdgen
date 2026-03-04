@@ -1,5 +1,5 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { JobDescription } from '../types/job-descriptions';
@@ -71,6 +71,28 @@ export class CardService {
         this.allBacklogCards = cards;
 
         // Apply current job description filtering
+        this.updateCardsSubjects();
+      });
+  }
+
+  fetchFilteredCards(filters: Record<string, string>) {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(filters)) {
+      params = params.set(key, value);
+    }
+    this.http
+      .get<JobTasksListResponse>(`${this.apiUrl}/job-tasks`, { params })
+      .subscribe((jobTasksListResponse) => {
+        const cards = jobTasksListResponse.tasks.map((task) => ({
+          classification: task.metadata?.['paymentGroup'] || '',
+          jobTask: task,
+          title: task.title,
+          text: task.text,
+          percentage: 5,
+          order: 0,
+          tags: task.tags.map((tag) => tag.name),
+        }));
+        this.allBacklogCards = cards;
         this.updateCardsSubjects();
       });
   }

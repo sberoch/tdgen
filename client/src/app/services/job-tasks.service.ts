@@ -18,6 +18,15 @@ export interface JobTaskFilter {
   includeDeleted?: boolean;
   search?: string;
   createdById?: string;
+  createdBefore?: string;
+  createdAt?: string;
+  createdAfter?: string;
+  modifiedBefore?: string;
+  modifiedAt?: string;
+  modifiedAfter?: string;
+  modifiedBy?: string;
+  readonly?: string;
+  paygroup?: string;
 }
 
 @Injectable({
@@ -186,6 +195,28 @@ export class JobTasksService {
 
     if (filter?.createdById) {
       params = params.set('createdById', filter.createdById);
+    }
+
+    const dateFilterKeys = [
+      'createdBefore', 'createdAt', 'createdAfter',
+      'modifiedBefore', 'modifiedAt', 'modifiedAfter',
+    ] as const;
+    for (const key of dateFilterKeys) {
+      if (filter?.[key]) {
+        params = params.set(key, filter[key]!);
+      }
+    }
+
+    if (filter?.modifiedBy) {
+      params = params.set('modifiedBy', filter.modifiedBy);
+    }
+
+    if (filter?.readonly) {
+      params = params.set('readonly', filter.readonly);
+    }
+
+    if (filter?.paygroup) {
+      params = params.set('paygroup', filter.paygroup);
     }
 
     return params;
