@@ -15,6 +15,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
@@ -35,6 +36,7 @@ import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { InsufficientRightsDialogComponent } from '../../components/insufficient-rights-dialog/insufficient-rights-dialog.component';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 import { Subject, takeUntil } from 'rxjs';
+import { validateFilterToken } from './card-backlog-column.utils';
 
 const MAX_DISPLAY_CARDS = 10;
 const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
@@ -62,6 +64,10 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
   ],
   styles: [
     `
+      .search-backdrop {
+        line-height: normal;
+      }
+
       :host ::ng-deep ol {
         list-style: decimal;
         padding-left: 1.5rem;
@@ -86,8 +92,11 @@ export class CardBacklogColumnComponent implements OnInit {
   @ViewChild('backlogSearchInput')
   backlogSearchInputRef!: ElementRef<HTMLInputElement>;
   @ViewChild('jtAccordion') jtOverviewAccordion!: JtOverviewAccordionComponent;
+  @ViewChild('searchArea') searchArea!: ElementRef<HTMLElement>;
+  @ViewChild('tooltipOverlay') tooltipOverlayRef!: ElementRef<HTMLElement>;
 
   isWorkspaceSet = false;
+  isHelpPanelOpen = false;
   private currentJobDescription: JobDescription | null = null;
   private allBacklogCards: Card[] = [];
   private filteredBacklogCards: Card[] = [];
@@ -100,6 +109,12 @@ export class CardBacklogColumnComponent implements OnInit {
   selectedCardToOpenModal: Card | null = null;
   currentDraggingCard: Card | undefined;
   private currentSearchTerm: string = '';
+  highlightedSearchHtml: SafeHtml = '';
+  tooltipOverlayHtml: SafeHtml = '';
+  filterTooltipText: string = '';
+  filterTooltipVisible: boolean = false;
+  filterTooltipLeft: number = 0;
+  private readonly TOKEN_REGEX = /[A-Za-z]+:(?:[A-Za-z0-9,.]+|"[^"]*")?(?=\s|$)/g;
   private destroy$ = new Subject<void>();
   leftWidth = this.loadColumnWidth();
   resizing = false;
@@ -110,6 +125,7 @@ export class CardBacklogColumnComponent implements OnInit {
     private currentWorkspaceService: CurrentWorkspaceService,
     private jobDescriptionsService: JobDescriptionsService,
     private authService: AuthService,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit() {
@@ -121,6 +137,8 @@ export class CardBacklogColumnComponent implements OnInit {
         this.isWorkspaceSet = newWorkspaceSet;
         if (!jobDescription) {
           this.currentSearchTerm = '';
+          this.highlightedSearchHtml = '';
+          this.tooltipOverlayHtml = '';
           if (this.backlogSearchInputRef) {
             this.backlogSearchInputRef.nativeElement.value = '';
           }
@@ -180,9 +198,97 @@ export class CardBacklogColumnComponent implements OnInit {
     }
   }
 
+  onSearchAreaMouseMove(event: MouseEvent) {
+    if (!this.tooltipOverlayRef) {
+      this.filterTooltipVisible = false;
+      return;
+    }
+    const overlayEl = this.tooltipOverlayRef.nativeElement;
+    const spans = overlayEl.querySelectorAll('[data-filter-tooltip]');
+    let found = false;
+    for (let i = 0; i < spans.length; i++) {
+      const rect = spans[i].getBoundingClientRect();
+      if (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        const tooltip = spans[i].getAttribute('data-filter-tooltip')!;
+        this.filterTooltipText = tooltip;
+        this.filterTooltipVisible = true;
+        const parentRect = overlayEl
+          .closest('.relative')!
+          .getBoundingClientRect();
+        this.filterTooltipLeft =
+          rect.left - parentRect.left + rect.width / 2;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      this.filterTooltipVisible = false;
+    }
+  }
+
+  onTooltipOverlayMouseLeave() {
+    this.filterTooltipVisible = false;
+  }
+
+  toggleHelpPanel(event: Event) {
+    event.stopPropagation();
+    this.isHelpPanelOpen = !this.isHelpPanelOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (
+      this.isHelpPanelOpen &&
+      this.searchArea &&
+      !this.searchArea.nativeElement.contains(event.target as Node)
+    ) {
+      this.isHelpPanelOpen = false;
+    }
+  }
+
   onSearch(event: Event) {
     this.currentSearchTerm = (event.target as HTMLInputElement).value;
+    this.updateHighlightedSearch(this.currentSearchTerm);
     this.applySearchFilter(this.currentSearchTerm);
+  }
+
+  private updateHighlightedSearch(text: string): void {
+    if (!text) {
+      this.highlightedSearchHtml = '';
+      this.tooltipOverlayHtml = '';
+      return;
+    }
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    let tooltipHtml = escaped;
+    const html = escaped.replace(
+      this.TOKEN_REGEX,
+      (match) => {
+        const result = validateFilterToken(match);
+        if (!result.valid) {
+          const bg = '#fecaca';
+          tooltipHtml = tooltipHtml.replace(
+            match,
+            `<span style="pointer-events: auto; cursor: default;" data-filter-tooltip="${result.error}">${match}</span>`,
+          );
+          return `<span style="background-color: ${bg}; color: #dc2626; font-style: italic; border-radius: 3px; box-shadow: -2px 0 0 ${bg}, 2px 0 0 ${bg};">${match}</span>`;
+        }
+        tooltipHtml = tooltipHtml.replace(match, `<span>${match}</span>`);
+        return `<span style="background-color: #e0e0e0; font-style: italic; border-radius: 3px; box-shadow: -2px 0 0 #e0e0e0, 2px 0 0 #e0e0e0;">${match}</span>`;
+      },
+    );
+
+    this.highlightedSearchHtml = this.sanitizer.bypassSecurityTrustHtml(html);
+    this.tooltipOverlayHtml =
+      this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
   }
 
   private applySearchFilter(searchTerm: string): void {
@@ -203,6 +309,8 @@ export class CardBacklogColumnComponent implements OnInit {
   clearSearch(inputElement: HTMLInputElement) {
     inputElement.value = '';
     this.currentSearchTerm = '';
+    this.highlightedSearchHtml = '';
+    this.tooltipOverlayHtml = '';
     this.applySearchFilter('');
   }
 
