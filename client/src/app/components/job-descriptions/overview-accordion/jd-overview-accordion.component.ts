@@ -119,6 +119,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   tagInput: string = '';
   filter: JobDescriptionFilter = {};
   showOwnEntriesOnly: boolean = false;
+  ownEntriesCheckboxDisabled: boolean = false;
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
   totalJobDescriptionsCount: number = 0;
@@ -189,6 +190,11 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     this.subscription.add(
       this.searchSubject$.pipe(debounceTime(300)).subscribe((rawValue) => {
         const { filters, freeText } = extractFilters(rawValue, this.filterContext);
+        // Disable "nur eigene Einträge" checkbox when createdBy/modifiedBy filter is active
+        if (filters['createdById'] || filters['modifiedBy']) {
+          this.ownEntriesCheckboxDisabled = true;
+          this.showOwnEntriesOnly = false;
+        }
         const combinedFilter: JobDescriptionFilter = {
           includeDeleted: undefined,
           createdById: this.showOwnEntriesOnly
@@ -859,6 +865,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     this.currentSearchRawValue = '';
     this.highlightedSearchHtml = '';
     this.tooltipOverlayHtml = '';
+    this.ownEntriesCheckboxDisabled = false;
     this.filter = {
       createdById: this.showOwnEntriesOnly
         ? this.authService.getCurrentUser()?.id

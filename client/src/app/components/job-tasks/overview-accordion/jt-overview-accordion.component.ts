@@ -137,6 +137,7 @@ export class JtOverviewAccordionComponent
   filter: JobTaskFilter = {};
   showDeleted: boolean = false;
   showOwnEntriesOnly: boolean = false;
+  ownEntriesCheckboxDisabled: boolean = false;
   newlyCreatedTitle: string | null = null;
   shouldScrollToNew: boolean = false;
   totalJobTasksCount: number = 0;
@@ -263,6 +264,11 @@ export class JtOverviewAccordionComponent
     this.subscription.add(
       this.searchSubject$.pipe(debounceTime(300)).subscribe((rawValue) => {
         const { filters, freeText } = extractFilters(rawValue, this.filterContext);
+        // Disable "nur eigene Einträge" checkbox when createdBy/modifiedBy filter is active
+        if (filters['createdById'] || filters['modifiedBy']) {
+          this.ownEntriesCheckboxDisabled = true;
+          this.showOwnEntriesOnly = false;
+        }
         // Merge structured filters with existing non-search filters
         const combinedFilter: JobTaskFilter = {
           includeDeleted: this.showDeleted || undefined,
@@ -1094,6 +1100,7 @@ export class JtOverviewAccordionComponent
     this.currentSearchRawValue = '';
     this.highlightedSearchHtml = '';
     this.tooltipOverlayHtml = '';
+    this.ownEntriesCheckboxDisabled = false;
     this.filter = {
       includeDeleted: this.showDeleted || undefined,
       createdById: this.showOwnEntriesOnly

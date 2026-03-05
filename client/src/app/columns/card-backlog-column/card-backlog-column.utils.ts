@@ -12,7 +12,7 @@ function isValidDate(v: string): boolean {
 }
 
 function isValidUserId(v: string): boolean {
-  return /^\d{6}$/.test(v);
+  return /^\d{7}$/.test(v);
 }
 
 function isValidBoolean(v: string): boolean {

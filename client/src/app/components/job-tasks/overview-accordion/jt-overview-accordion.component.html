@@ -82,7 +82,7 @@
       <!-- Help panel -->
       @if (isHelpPanelOpen) {
         <div
-          class="absolute left-0 right-0 mt-1 bg-white border border-black/30 rounded-md shadow-lg p-3 text-sm"
+          class="absolute left-0 right-0 mt-1 bg-white border border-black/30 rounded-sm shadow-lg p-3 text-sm"
           style="z-index: 40"
         >
           <p class="text-[13px] mb-2">
@@ -121,7 +121,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Erstellt vor diesem Datum
                 </td>
               </tr>
@@ -131,7 +131,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Genau an diesem Datum erstellt
                 </td>
               </tr>
@@ -141,7 +141,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Erstellt nach diesem Datum
                 </td>
               </tr>
@@ -159,7 +159,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Zuletzt geändert vor diesem Datum
                 </td>
               </tr>
@@ -169,7 +169,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Genau an diesem Datum geändert
                 </td>
               </tr>
@@ -179,7 +179,7 @@
                     >01.01.2025</span
                   >
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Zuletzt geändert nach diesem Datum
                 </td>
               </tr>
@@ -193,17 +193,17 @@
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  createdBy:<span class="italic text-[#808080]">499999</span>
+                  createdBy:<span class="italic text-[#808080]">4999999</span>
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Erstellt von diesem Nutzer (Viererkennung)
                 </td>
               </tr>
               <tr>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  modifiedBy:<span class="italic text-[#808080]">499999</span>
+                  modifiedBy:<span class="italic text-[#808080]">4999999</span>
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Zuletzt geändert von diesem Nutzer (Viererkennung)
                 </td>
               </tr>
@@ -219,7 +219,7 @@
                 <td class="align-top border border-[#ddd] p-[3px]">
                   readonly:<span class="italic text-[#808080]">true</span>
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Schreibschutz:
                   <span class="italic text-[#808080]">true</span> oder
                   <span class="italic text-[#808080]">false</span>
@@ -229,7 +229,7 @@
                 <td class="align-top border border-[#ddd] p-[3px]">
                   paygroup:<span class="italic text-[#808080]">3</span>
                 </td>
-                <td class="align-top border border-[#ddd] p-[3px] text-[13px]">
+                <td class="align-top border border-[#ddd] p-[3px]">
                   Entgeltgruppe (1–15)
                 </td>
               </tr>
@@ -254,14 +254,20 @@
     <input
       type="checkbox"
       id="showOwnEntriesOnly"
-      class="!ml-8 h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary"
+      class="!ml-8 h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary disabled:opacity-50 disabled:cursor-not-allowed"
       [checked]="showOwnEntriesOnly"
+      [disabled]="ownEntriesCheckboxDisabled"
       (change)="
         showOwnEntriesOnly = $any($event.target).checked;
         applyOwnEntriesFilter()
       "
     />
-    <label for="showOwnEntriesOnly" class="text-sm text-gray-700">
+    <label
+      for="showOwnEntriesOnly"
+      class="text-sm"
+      [class.text-gray-700]="!ownEntriesCheckboxDisabled"
+      [class.text-gray-400]="ownEntriesCheckboxDisabled"
+    >
       nur eigene Einträge anzeigen
     </label>
   </div>
