@@ -128,13 +128,13 @@ interface ExpandableJobTask extends JobTask {
       :host ::ng-deep .token-remove-btn {
         display: none;
         position: absolute;
-        right: -8px;
-        top: -10px;
-        width: 18px;
-        height: 18px;
-        line-height: 18px;
+        right: -14px;
+        top: -6px;
+        width: 15px;
+        height: 15px;
+        line-height: 15px;
         text-align: center;
-        font-size: 13px;
+        font-size: 11px;
         font-style: normal;
         background: #9e9e9e;
         color: white;
