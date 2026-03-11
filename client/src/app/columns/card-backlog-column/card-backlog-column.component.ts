@@ -36,7 +36,11 @@ import { Card, getTruncatedPlainText } from '../../utils/card.utils';
 import { InsufficientRightsDialogComponent } from '../../components/insufficient-rights-dialog/insufficient-rights-dialog.component';
 import { CardTooltipDirective } from '../../utils/directives/card-tooltip.directive';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
-import { validateFilterToken, extractFilters, TOKEN_REGEX } from './card-backlog-column.utils';
+import {
+  validateFilterToken,
+  extractFilters,
+  TOKEN_REGEX,
+} from './card-backlog-column.utils';
 
 const MAX_DISPLAY_CARDS = 10;
 const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
@@ -72,7 +76,7 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
         background-color: #e0e0e0;
         font-style: italic;
         border-radius: 3px;
-        box-shadow: 0 0 0 4px #e0e0e0;
+        box-shadow: -0.75px 2.25px 0 4px #e0e0e0;
       }
 
       :host ::ng-deep .token-invalid {
@@ -80,7 +84,7 @@ const COLUMN_WIDTH_STORAGE_KEY = 'cardBacklogColumnWidth';
         color: #dc2626;
         font-style: italic;
         border-radius: 3px;
-        box-shadow: 0 0 0 4px #fecaca;
+        box-shadow: -0.75px 2.25px 0 4px #fecaca;
       }
 
       :host ::ng-deep .token-remove-target {
@@ -283,8 +287,7 @@ export class CardBacklogColumnComponent implements OnInit {
         const parentRect = overlayEl
           .closest('.relative')!
           .getBoundingClientRect();
-        this.filterTooltipLeft =
-          rect.left - parentRect.left + rect.width / 2;
+        this.filterTooltipLeft = rect.left - parentRect.left + rect.width / 2;
         found = true;
         break;
       }
@@ -347,12 +350,24 @@ export class CardBacklogColumnComponent implements OnInit {
       .replace(/>/g, '&gt;');
 
     // Collect matches with positions to avoid string.replace() first-occurrence bug
-    const matches: { start: number; end: number; text: string; valid: boolean; error?: string }[] = [];
+    const matches: {
+      start: number;
+      end: number;
+      text: string;
+      valid: boolean;
+      error?: string;
+    }[] = [];
     const regex = new RegExp(TOKEN_REGEX.source, TOKEN_REGEX.flags);
     let m;
     while ((m = regex.exec(escaped)) !== null) {
       const result = validateFilterToken(m[0]);
-      matches.push({ start: m.index, end: m.index + m[0].length, text: m[0], valid: result.valid, error: result.error });
+      matches.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        text: m[0],
+        valid: result.valid,
+        error: result.error,
+      });
     }
 
     // Build both HTML strings using index-based splicing (reverse order to preserve positions)
@@ -361,16 +376,30 @@ export class CardBacklogColumnComponent implements OnInit {
     for (let i = matches.length - 1; i >= 0; i--) {
       const { start, end, text: token, valid, error } = matches[i];
       if (valid) {
-        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-valid">${token}</span>` + highlightedHtml.slice(end);
-        tooltipHtml = tooltipHtml.slice(0, start) + `<span class="token-remove-target" data-filter-token="${token}">${token}<span class="token-remove-btn">\u00d7</span></span>` + tooltipHtml.slice(end);
+        highlightedHtml =
+          highlightedHtml.slice(0, start) +
+          `<span class="token-valid">${token}</span>` +
+          highlightedHtml.slice(end);
+        tooltipHtml =
+          tooltipHtml.slice(0, start) +
+          `<span class="token-remove-target" data-filter-token="${token}">${token}<span class="token-remove-btn">\u00d7</span></span>` +
+          tooltipHtml.slice(end);
       } else {
-        highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-invalid">${token}</span>` + highlightedHtml.slice(end);
-        tooltipHtml = tooltipHtml.slice(0, start) + `<span class="token-remove-target" data-filter-tooltip="${error}" data-filter-token="${token}" style="cursor: default;">${token}<span class="token-remove-btn">\u00d7</span></span>` + tooltipHtml.slice(end);
+        highlightedHtml =
+          highlightedHtml.slice(0, start) +
+          `<span class="token-invalid">${token}</span>` +
+          highlightedHtml.slice(end);
+        tooltipHtml =
+          tooltipHtml.slice(0, start) +
+          `<span class="token-remove-target" data-filter-tooltip="${error}" data-filter-token="${token}" style="cursor: default;">${token}<span class="token-remove-btn">\u00d7</span></span>` +
+          tooltipHtml.slice(end);
       }
     }
 
-    this.highlightedSearchHtml = this.sanitizer.bypassSecurityTrustHtml(highlightedHtml);
-    this.tooltipOverlayHtml = this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
+    this.highlightedSearchHtml =
+      this.sanitizer.bypassSecurityTrustHtml(highlightedHtml);
+    this.tooltipOverlayHtml =
+      this.sanitizer.bypassSecurityTrustHtml(tooltipHtml);
   }
 
   private applySearchFilter(searchTerm: string): void {
@@ -388,7 +417,10 @@ export class CardBacklogColumnComponent implements OnInit {
     });
   }
 
-  onTooltipOverlayClick(event: MouseEvent, inputElement: HTMLInputElement): void {
+  onTooltipOverlayClick(
+    event: MouseEvent,
+    inputElement: HTMLInputElement,
+  ): void {
     const target = event.target as HTMLElement;
     if (!target.classList.contains('token-remove-btn')) return;
     const tokenSpan = target.closest('[data-filter-token]');
@@ -397,9 +429,15 @@ export class CardBacklogColumnComponent implements OnInit {
     this.removeFilterToken(token, inputElement);
   }
 
-  private removeFilterToken(token: string, inputElement: HTMLInputElement): void {
+  private removeFilterToken(
+    token: string,
+    inputElement: HTMLInputElement,
+  ): void {
     const raw = inputElement.value;
-    const newValue = raw.replace(token, '').replace(/\s{2,}/g, ' ').trim();
+    const newValue = raw
+      .replace(token, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
     inputElement.value = newValue;
     this.currentSearchTerm = newValue;
     this.updateHighlightedSearch(newValue);
