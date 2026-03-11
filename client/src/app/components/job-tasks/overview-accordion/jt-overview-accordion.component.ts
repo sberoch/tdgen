@@ -109,7 +109,7 @@ interface ExpandableJobTask extends JobTask {
         background-color: #e0e0e0;
         font-style: italic;
         border-radius: 3px;
-        box-shadow: -2px 0 0 #e0e0e0, 2px 0 0 #e0e0e0;
+        box-shadow: 0 0 0 4px #e0e0e0;
       }
 
       :host ::ng-deep .token-invalid {
@@ -117,7 +117,34 @@ interface ExpandableJobTask extends JobTask {
         color: #dc2626;
         font-style: italic;
         border-radius: 3px;
-        box-shadow: -2px 0 0 #fecaca, 2px 0 0 #fecaca;
+        box-shadow: 0 0 0 4px #fecaca;
+      }
+
+      :host ::ng-deep .token-remove-target {
+        pointer-events: auto;
+        position: relative;
+      }
+
+      :host ::ng-deep .token-remove-btn {
+        display: none;
+        position: absolute;
+        right: -8px;
+        top: -10px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        text-align: center;
+        font-size: 13px;
+        font-style: normal;
+        background: #9e9e9e;
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 5;
+      }
+
+      :host ::ng-deep .token-remove-target:hover .token-remove-btn {
+        display: block;
       }
     `,
   ],
@@ -268,6 +295,8 @@ export class JtOverviewAccordionComponent
         if (filters['createdById'] || filters['modifiedBy']) {
           this.ownEntriesCheckboxDisabled = true;
           this.showOwnEntriesOnly = false;
+        } else {
+          this.ownEntriesCheckboxDisabled = false;
         }
         // Merge structured filters with existing non-search filters
         const combinedFilter: JobTaskFilter = {
@@ -1095,6 +1124,24 @@ export class JtOverviewAccordionComponent
     this.searchSubject$.next(rawValue);
   }
 
+  onTooltipOverlayClick(event: MouseEvent, inputElement: HTMLInputElement): void {
+    const target = event.target as HTMLElement;
+    if (!target.classList.contains('token-remove-btn')) return;
+    const tokenSpan = target.closest('[data-filter-token]');
+    if (!tokenSpan) return;
+    const token = tokenSpan.getAttribute('data-filter-token')!;
+    this.removeFilterToken(token, inputElement);
+  }
+
+  private removeFilterToken(token: string, inputElement: HTMLInputElement): void {
+    const raw = inputElement.value;
+    const newValue = raw.replace(token, '').replace(/\s{2,}/g, ' ').trim();
+    inputElement.value = newValue;
+    this.currentSearchRawValue = newValue;
+    this.updateHighlightedSearch(newValue);
+    this.searchSubject$.next(newValue);
+  }
+
   clearSearch(inputElement: HTMLInputElement): void {
     inputElement.value = '';
     this.currentSearchRawValue = '';
@@ -1135,10 +1182,10 @@ export class JtOverviewAccordionComponent
       const { start, end, text: token, valid, error } = matches[i];
       if (valid) {
         highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-valid">${token}</span>` + highlightedHtml.slice(end);
-        tooltipHtml = tooltipHtml.slice(0, start) + `<span>${token}</span>` + tooltipHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span class="token-remove-target" data-filter-token="${token}">${token}<span class="token-remove-btn">\u00d7</span></span>` + tooltipHtml.slice(end);
       } else {
         highlightedHtml = highlightedHtml.slice(0, start) + `<span class="token-invalid">${token}</span>` + highlightedHtml.slice(end);
-        tooltipHtml = tooltipHtml.slice(0, start) + `<span style="pointer-events: auto; cursor: default;" data-filter-tooltip="${error}">${token}</span>` + tooltipHtml.slice(end);
+        tooltipHtml = tooltipHtml.slice(0, start) + `<span class="token-remove-target" data-filter-tooltip="${error}" data-filter-token="${token}" style="cursor: default;">${token}<span class="token-remove-btn">\u00d7</span></span>` + tooltipHtml.slice(end);
       }
     }
 
