@@ -223,7 +223,7 @@
                   paygroup:<span class="italic text-[#808080]">3</span>
                 </td>
                 <td class="align-top border border-[#ddd] p-[3px]">
-                  Entgeltgruppe (1–15) (nur Arbeitsvorgänge)
+                  Entgeltgruppe (1–15)
                 </td>
               </tr>
             </tbody>
@@ -374,7 +374,7 @@
                   [style.color]="card.jobTask.deletedAt ? '#9CA3AF' : 'inherit'"
                   [class.italic]="card.jobTask.deletedAt"
                 >
-                  {{ $index + 1 }}. {{ card.title }}
+                  {{ card.title }}
                 </p>
                 <span
                   *ngIf="card.jobTask.isLockedForUsers"
