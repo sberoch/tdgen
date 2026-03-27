@@ -328,11 +328,11 @@ export class JobDescriptionTasksService {
     const where: Prisma.JobDescriptionTaskWhereInput = {};
 
     if (params?.jobDescriptionId) {
-      where.jobDescriptionId = params.jobDescriptionId;
+      where.jobDescriptionId = Number(params.jobDescriptionId);
     }
 
     if (params?.jobTaskId) {
-      where.jobTaskId = params.jobTaskId;
+      where.jobTaskId = Number(params.jobTaskId);
     }
 
     return where;
