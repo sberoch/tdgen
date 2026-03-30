@@ -35,6 +35,9 @@ import {
   AngularEditorModule,
 } from '@kolkov/angular-editor';
 import { Subject, Subscription, debounceTime } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { JobDescriptionTask } from '../../../types/job-description-tasks';
+import { JobDescriptionTasksService } from '../../../services/job-description-tasks.service';
 import { CardService } from '../../../services/card.service';
 import { CurrentWorkspaceService } from '../../../services/current-workspace.service';
 import { AuthService } from '../../../services/auth.service';
@@ -159,6 +162,7 @@ export class JtOverviewAccordionComponent
   htmlContent: string = '';
   currentJobDescription: JobDescription | null = null;
   jobTasks: ExpandableJobTask[] = [];
+  relatedJobDescriptions: Map<number, JobDescriptionTask[]> = new Map();
   private subscription: Subscription = new Subscription();
   private loadJobTasksSubscription?: Subscription;
   filter: JobTaskFilter = {};
@@ -245,6 +249,7 @@ export class JtOverviewAccordionComponent
   constructor(
     private dialog: MatDialog,
     private jobTasksService: JobTasksService,
+    private jobDescriptionTasksService: JobDescriptionTasksService,
     private cardService: CardService,
     private currentWorkspaceService: CurrentWorkspaceService,
     private cdr: ChangeDetectorRef,
@@ -252,6 +257,7 @@ export class JtOverviewAccordionComponent
     private lockService: LockService,
     private sseService: SseService,
     private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -653,6 +659,23 @@ export class JtOverviewAccordionComponent
     } else {
       return `In ${count} Tätigkeitsdarstellungen enthalten.`;
     }
+  }
+
+  getRelatedJobDescriptionsSorted(itemId: number): JobDescriptionTask[] {
+    const jdTasks = this.relatedJobDescriptions.get(itemId) || [];
+    return [...jdTasks].sort((a, b) =>
+      a.jobDescription.title.localeCompare(b.jobDescription.title),
+    );
+  }
+
+  copyToClipboard(title: string): void {
+    navigator.clipboard.writeText(title).then(() => {
+      this.snackBar.open(
+        'Der Titel wurde in die Zwischenablage kopiert.',
+        undefined,
+        { duration: 3000 },
+      );
+    });
   }
 
   addTags(item: JobTask): void {
@@ -1067,6 +1090,17 @@ export class JtOverviewAccordionComponent
               this.cdr.markForCheck();
             },
           });
+          // Fetch related job descriptions
+          this.jobDescriptionTasksService
+            .getJobDescriptionsByTaskId(taskId)
+            .subscribe({
+              next: (jdTasks) => {
+                this.relatedJobDescriptions.set(taskId, jdTasks);
+                this.cdr.markForCheck();
+              },
+              error: (err) =>
+                console.error('Error loading related job descriptions:', err),
+            });
         } else {
           this.dialog.open(LockConflictDialogComponent, {
             width: '500px',

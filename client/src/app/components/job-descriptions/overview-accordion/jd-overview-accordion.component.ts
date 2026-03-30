@@ -36,7 +36,10 @@ import {
   JobDescriptionsService,
 } from '../../../services/job-descriptions.service';
 import { Subject, Subscription, debounceTime } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { JobDescription } from '../../../types/job-descriptions';
+import { JobDescriptionTask } from '../../../types/job-description-tasks';
+import { JobDescriptionTasksService } from '../../../services/job-description-tasks.service';
 import { Tag } from '../../../types/tag';
 import { ConfirmDialogComponent } from '../../confirm-dialog/confirm-dialog-component';
 import { JobDescriptionTitleDialogComponent } from '../job-description-title-dialog/job-description-title-dialog.component';
@@ -170,18 +173,21 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   private currentSearchRawValue: string = '';
 
   jobDescriptions: ExpandableJobDescription[] = [];
+  relatedJobTasks: Map<number, JobDescriptionTask[]> = new Map();
   private subscription: Subscription = new Subscription();
   private loadJobDescriptionsSubscription?: Subscription;
 
   constructor(
     private dialog: MatDialog,
     private jobDescriptionsService: JobDescriptionsService,
+    private jobDescriptionTasksService: JobDescriptionTasksService,
     private currentWorkspaceService: CurrentWorkspaceService,
     private authService: AuthService,
     private lockService: LockService,
     private sseService: SseService,
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -837,6 +843,17 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
             itemToExpand.lockedById = currentUser?.id;
             itemToExpand.lockedAt = new Date().toISOString();
           }
+          // Fetch related job tasks
+          this.jobDescriptionTasksService
+            .getTasksByJobDescriptionId(descriptionId)
+            .subscribe({
+              next: (tasks) => {
+                this.relatedJobTasks.set(descriptionId, tasks);
+                this.cdr.markForCheck();
+              },
+              error: (err) =>
+                console.error('Error loading related job tasks:', err),
+            });
         } else {
           this.dialog.open(LockConflictDialogComponent, {
             width: '500px',
@@ -850,6 +867,23 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
       error: (err) => {
         console.error('Error acquiring lock:', err);
       },
+    });
+  }
+
+  getRelatedJobTasksSorted(itemId: number): JobDescriptionTask[] {
+    const tasks = this.relatedJobTasks.get(itemId) || [];
+    return [...tasks].sort((a, b) =>
+      a.jobTask.title.localeCompare(b.jobTask.title),
+    );
+  }
+
+  copyToClipboard(title: string): void {
+    navigator.clipboard.writeText(title).then(() => {
+      this.snackBar.open(
+        'Der Titel wurde in die Zwischenablage kopiert.',
+        undefined,
+        { duration: 3000 },
+      );
     });
   }
 
