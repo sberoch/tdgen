@@ -1,4 +1,7 @@
-<div class="flex flex-col gap-4 h-full relative isolate" style="--flash-color: #ffffe6">
+<div
+  class="flex flex-col gap-4 h-full relative isolate"
+  style="--flash-color: #ffffe6"
+>
   <div class="flex justify-between">
     <h1 class="text-2xl 3xl:text-3xl font-medium tracking-wide text-zinc-600">
       Tätigkeitsdarstellungen
@@ -26,7 +29,12 @@
           type="text"
           placeholder="Tätigkeitsdarstellungen filtern"
           class="w-full border border-[#e2e8f0] rounded-sm py-2 px-3 pr-14 focus:outline-none focus:ring-secondary focus:border-secondary text-sm placeholder:italic bg-transparent"
-          style="color: transparent; caret-color: black; position: relative; z-index: 1;"
+          style="
+            color: transparent;
+            caret-color: black;
+            position: relative;
+            z-index: 1;
+          "
           (input)="onSearch($event)"
           #searchInput
         />
@@ -41,7 +49,7 @@
         <div
           *ngIf="filterTooltipVisible"
           class="absolute bottom-full mb-2 px-3 py-2 text-sm rounded-md whitespace-nowrap bg-[#f2f6fa] border-2 border-red-500 text-red-600 shadow-lg before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-red-500"
-          style="z-index: 20;"
+          style="z-index: 20"
           [style.left.px]="filterTooltipLeft"
           [style.transform]="'translateX(-50%)'"
         >
@@ -66,7 +74,9 @@
             [style.color]="isHelpPanelOpen ? 'rgb(0, 133, 216)' : ''"
             (click)="toggleHelpPanel($event)"
           >
-            <span class="text-lg pl-1 pr-2 font-black translate-y-[-1px]">?</span>
+            <span class="text-lg pl-1 pr-2 font-black translate-y-[-1px]"
+              >?</span
+            >
           </button>
         </div>
       </div>
@@ -83,24 +93,139 @@
           <table class="w-full text-[11px] border-collapse">
             <thead>
               <tr>
-                <th class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]" style="width: 40%">Filter</th>
-                <th class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]" style="width: 60%">Beschreibung</th>
+                <th
+                  class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]"
+                  style="width: 40%"
+                >
+                  Filter
+                </th>
+                <th
+                  class="text-left text-[13px] text-[rgb(0,133,216)] align-top border border-[#ddd] p-[3px]"
+                  style="width: 60%"
+                >
+                  Beschreibung
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="2" class="border border-[#ddd] p-[3px]"><span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Erstellungsdatum</span></td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">createdBefore:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Erstellt vor diesem Datum</td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">createdAt:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Genau an diesem Datum erstellt</td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">createdAfter:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Erstellt nach diesem Datum</td></tr>
-              <tr><td colspan="2" class="border border-[#ddd] p-[3px]"><span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Änderungsdatum</span></td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">modifiedBefore:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Zuletzt geändert vor diesem Datum</td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">modifiedAt:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Genau an diesem Datum geändert</td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">modifiedAfter:<span class="italic text-[#808080]">01.01.2025</span></td><td class="align-top border border-[#ddd] p-[3px]">Zuletzt geändert nach diesem Datum</td></tr>
-              <tr><td colspan="2" class="border border-[#ddd] p-[3px]"><span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Nutzer</span></td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">createdBy:<span class="italic text-[#808080]">4999999</span></td><td class="align-top border border-[#ddd] p-[3px]">Erstellt von diesem Nutzer (Viererkennung)</td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">modifiedBy:<span class="italic text-[#808080]">4999999</span></td><td class="align-top border border-[#ddd] p-[3px]">Zuletzt geändert von diesem Nutzer (Viererkennung)</td></tr>
-              <tr><td colspan="2" class="border border-[#ddd] p-[3px]"><span class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold">Sonstige</span></td></tr>
-              <tr><td class="align-top border border-[#ddd] p-[3px]">readonly:<span class="italic text-[#808080]">true</span></td><td class="align-top border border-[#ddd] p-[3px]">Schreibschutz: <span class="italic text-[#808080]">true</span> oder <span class="italic text-[#808080]">false</span></td></tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Erstellungsdatum</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Erstellt vor diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Genau an diesem Datum erstellt
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Erstellt nach diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Änderungsdatum</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedBefore:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Zuletzt geändert vor diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedAt:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Genau an diesem Datum geändert
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedAfter:<span class="italic text-[#808080]"
+                    >01.01.2025</span
+                  >
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Zuletzt geändert nach diesem Datum
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Nutzer</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  createdBy:<span class="italic text-[#808080]">4999999</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Erstellt von diesem Nutzer (Viererkennung)
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  modifiedBy:<span class="italic text-[#808080]">4999999</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Zuletzt geändert von diesem Nutzer (Viererkennung)
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" class="border border-[#ddd] p-[3px]">
+                  <span
+                    class="inline-block pt-[10px] pb-[3px] text-[13px] font-bold"
+                    >Sonstige</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  readonly:<span class="italic text-[#808080]">true</span>
+                </td>
+                <td class="align-top border border-[#ddd] p-[3px]">
+                  Schreibschutz:
+                  <span class="italic text-[#808080]">true</span> oder
+                  <span class="italic text-[#808080]">false</span>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -214,6 +339,7 @@
               *ngIf="item.isLockedForUsers"
               class="w-2 h-2 rounded-full"
               style="background-color: rgb(0, 133, 216)"
+              title="Bearbeitung für User gesperrt"
             ></span>
           </div>
           <div
@@ -449,20 +575,38 @@
 
             <!-- Related Job Tasks -->
             <div class="mt-4" *ngIf="isExpanded(item.id!)">
-              <div class="flex text-white font-medium text-sm px-4 py-1.5" style="background-color: #888888">
-                <div class="flex-1 text-left">Enthaltene Arbeitsvorgänge</div>
+              <div
+                class="flex text-white font-medium text-sm px-4 py-1.5"
+                style="background-color: #888888"
+              >
+                <div class="flex-1 text-left">
+                  Enthaltene Arbeitsvorgänge ({{
+                    getRelatedJobTasksSorted(item.id!).length
+                  }})
+                </div>
                 <div class="w-10"></div>
               </div>
-              <div *ngIf="getRelatedJobTasksSorted(item.id!).length === 0" class="px-4 py-2">
+              <div
+                *ngIf="getRelatedJobTasksSorted(item.id!).length === 0"
+                class="px-4 py-2"
+              >
                 <span class="text-sm italic text-gray-400">keine Einträge</span>
               </div>
               <div *ngIf="getRelatedJobTasksSorted(item.id!).length > 0">
                 <div
-                  *ngFor="let jdt of getRelatedJobTasksSorted(item.id!); let j = index"
+                  *ngFor="
+                    let jdt of getRelatedJobTasksSorted(item.id!);
+                    let j = index
+                  "
                   class="flex items-center text-sm cursor-default"
-                  [style.background-color]="j % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(229 231 235)'"
-                  onmouseenter="this.dataset.bg=this.style.backgroundColor;this.style.backgroundColor='rgb(219 221 225)'"
-                  onmouseleave="this.style.backgroundColor=this.dataset.bg"
+                  [style.background-color]="
+                    j % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(239 241 245)'
+                  "
+                  onmouseenter="
+                    this.dataset.bg = this.style.backgroundColor;
+                    this.style.backgroundColor = 'rgb(219 221 225)';
+                  "
+                  onmouseleave="this.style.backgroundColor = this.dataset.bg"
                 >
                   <div class="flex items-center gap-2 px-4 py-2 flex-1">
                     <span>{{ jdt.jobTask.title }}</span>
@@ -470,12 +614,13 @@
                       *ngIf="jdt.jobTask.isLockedForUsers"
                       class="w-2 h-2 rounded-full inline-block flex-shrink-0"
                       style="background-color: rgb(0, 133, 216)"
+                      title="Bearbeitung für User gesperrt"
                     ></span>
                   </div>
                   <div class="w-10 flex items-center justify-center">
                     <button
                       class="text-gray-400 hover:text-gray-600"
-                      title="Titel kopieren"
+                      title="Titel in Zwischenablage kopieren"
                       (click)="copyToClipboard(jdt.jobTask.title)"
                     >
                       <mat-icon class="text-base">content_copy</mat-icon>

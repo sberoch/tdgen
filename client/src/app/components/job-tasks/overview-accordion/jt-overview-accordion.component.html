@@ -349,6 +349,7 @@
               *ngIf="item.isLockedForUsers"
               class="w-2 h-2 rounded-full"
               style="background-color: rgb(0, 133, 216)"
+              title="Bearbeitung für User gesperrt"
             ></span>
           </div>
           <div
@@ -612,20 +613,38 @@
 
             <!-- Related Job Descriptions -->
             <div class="mt-4" *ngIf="isExpanded(item.id!)">
-              <div class="flex text-white font-medium text-sm px-4 py-1.5" style="background-color: #888888">
-                <div class="flex-1 text-left">Enthaltende Tätigkeitsdarstellungen</div>
+              <div
+                class="flex text-white font-medium text-sm px-4 py-1.5"
+                style="background-color: #888888"
+              >
+                <div class="flex-1 text-left">
+                  Enthaltende Tätigkeitsdarstellungen ({{
+                    getRelatedJobDescriptionsSorted(item.id!).length
+                  }})
+                </div>
                 <div class="w-10"></div>
               </div>
-              <div *ngIf="getRelatedJobDescriptionsSorted(item.id!).length === 0" class="px-4 py-2">
+              <div
+                *ngIf="getRelatedJobDescriptionsSorted(item.id!).length === 0"
+                class="px-4 py-2"
+              >
                 <span class="text-sm italic text-gray-400">keine Einträge</span>
               </div>
               <div *ngIf="getRelatedJobDescriptionsSorted(item.id!).length > 0">
                 <div
-                  *ngFor="let jdt of getRelatedJobDescriptionsSorted(item.id!); let j = index"
+                  *ngFor="
+                    let jdt of getRelatedJobDescriptionsSorted(item.id!);
+                    let j = index
+                  "
                   class="flex items-center text-sm cursor-default"
-                  [style.background-color]="j % 2 === 0 ? 'rgb(243 244 246)' : 'rgb(229 231 235)'"
-                  onmouseenter="this.dataset.bg=this.style.backgroundColor;this.style.backgroundColor='rgb(219 221 225)'"
-                  onmouseleave="this.style.backgroundColor=this.dataset.bg"
+                  [style.background-color]="
+                    j % 2 === 0 ? 'rgb(229 231 235)' : 'rgb(239 241 245)'
+                  "
+                  onmouseenter="
+                    this.dataset.bg = this.style.backgroundColor;
+                    this.style.backgroundColor = 'rgb(219 221 225)';
+                  "
+                  onmouseleave="this.style.backgroundColor = this.dataset.bg"
                 >
                   <div class="flex items-center gap-2 px-4 py-2 flex-1">
                     <span>{{ jdt.jobDescription.title }}</span>
@@ -633,12 +652,13 @@
                       *ngIf="jdt.jobDescription.isLockedForUsers"
                       class="w-2 h-2 rounded-full inline-block flex-shrink-0"
                       style="background-color: rgb(0, 133, 216)"
+                      title="Bearbeitung für User gesperrt"
                     ></span>
                   </div>
                   <div class="w-10 flex items-center justify-center">
                     <button
                       class="text-gray-400 hover:text-gray-600"
-                      title="Titel kopieren"
+                      title="Titel in Zwischenablage kopieren"
                       (click)="copyToClipboard(jdt.jobDescription.title)"
                     >
                       <mat-icon class="text-base">content_copy</mat-icon>
