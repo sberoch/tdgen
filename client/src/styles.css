@@ -303,6 +303,10 @@ angular-editor:has([contenteditable="false"]) .angular-editor-toolbar {
   border-color: #004371 !important;
 }
 
+.mat-mdc-snack-bar-label {
+  text-align: center !important;
+}
+
 .light-gray-menu {
   .mat-mdc-menu-content {
     background: #fafafa;
