@@ -148,6 +148,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
   expandedItemId: number | null = null;
   tagInput: string = '';
   filter: JobDescriptionFilter = {};
+  showDeleted: boolean = false;
   showOwnEntriesOnly: boolean = false;
   ownEntriesCheckboxDisabled: boolean = false;
   newlyCreatedTitle: string | null = null;
@@ -231,7 +232,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
           this.ownEntriesCheckboxDisabled = false;
         }
         const combinedFilter: JobDescriptionFilter = {
-          includeDeleted: undefined,
+          includeDeleted: this.showDeleted || undefined,
           createdById: this.showOwnEntriesOnly
             ? this.authService.getCurrentUser()?.id
             : undefined,
@@ -948,6 +949,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
     this.tooltipOverlayHtml = '';
     this.ownEntriesCheckboxDisabled = false;
     this.filter = {
+      includeDeleted: this.showDeleted || undefined,
       createdById: this.showOwnEntriesOnly
         ? this.authService.getCurrentUser()?.id
         : undefined,
@@ -1050,6 +1052,7 @@ export class JdOverviewAccordionComponent implements OnInit, AfterViewChecked {
 
   resetFiltersAndInput(): void {
     this.filter = {};
+    this.showDeleted = false;
     this.showOwnEntriesOnly = false;
     this.currentSearchRawValue = '';
     this.highlightedSearchHtml = '';

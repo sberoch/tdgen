@@ -234,7 +234,11 @@
     <input
       type="checkbox"
       id="showDeleted"
-      (change)="applyFilter({ includeDeleted: $any($event.target).checked })"
+      [checked]="showDeleted"
+      (change)="
+        showDeleted = $any($event.target).checked;
+        applyFilter({ includeDeleted: showDeleted || undefined })
+      "
       class="!ml-8 h-4 w-4 rounded border-[#e2e8f0] text-secondary focus:outline-none focus:ring-secondary/50 focus:border-secondary"
     />
     <label for="showDeleted" class="text-sm text-gray-700">
@@ -393,7 +397,6 @@
                 mat-icon-button
                 [matMenuTriggerFor]="actionMenu"
                 class="text-gray-500 hover:text-secondary"
-                [style.color]="item.deletedAt ? '#9CA3AF' : 'inherit'"
                 title="Aktionen"
                 (click)="$event.stopPropagation()"
               >

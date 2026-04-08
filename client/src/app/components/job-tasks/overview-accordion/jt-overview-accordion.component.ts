@@ -1295,6 +1295,7 @@ export class JtOverviewAccordionComponent
       this.searchInput.nativeElement.value = '';
     }
     this.loadJobTasks();
+    this.cdr.markForCheck();
   }
 
   onOverlayModalClosed(): void {
